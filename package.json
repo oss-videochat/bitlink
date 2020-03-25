@@ -1,0 +1,21 @@
+{
+  "name": "untitled2",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "start": "node ./build/bin/www",
+    "build": "tsc && npm run copy-assets",
+    "copy-assets": "cp -R ./bin ./build"
+  },
+  "dependencies": {
+    "@types/express": "^4.17.3",
+    "@types/node": "^12.12.31",
+    "cookie-parser": "~1.4.4",
+    "debug": "~2.6.9",
+    "express": "~4.16.1",
+    "morgan": "~1.9.1"
+  },
+  "devDependencies": {
+    "typescript": "^3.8.3"
+  }
+}

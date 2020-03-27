@@ -1,15 +1,16 @@
 import * as Events from 'events';
+import * as socket from 'socket.io'
 
 interface Event {
     event: string,
     listener: (...args: any[]) => void
 }
 
-class Socket extends Events.EventEmitter {
+export class SocketWrapper extends Events.EventEmitter {
     private _socket;
-    private sockets: Array<Object> = [];
+    private sockets: Array<socket> = [];
     private events: Array<Event> = [];
-    private allSockets = new Events.EventEmitter();
+    public allSockets = new Events.EventEmitter();
 
     get socket() {
         return this._socket;
@@ -18,24 +19,30 @@ class Socket extends Events.EventEmitter {
     set socket(value) {
         this._socket = value;
         this._socket.on("connection", (socket) => this.addSocket(socket));
-        this._socket.on("disconnect", (reason) => this.sockets.splice(this.sockets.indexOf(socket)));
+        this._socket.on("disconnect", (reason) => this.removeSocket(socket));
     }
 
     constructor() {
         super();
-        this.allSockets.on("newListener", (event, listener) => this.addListenerToSockets(event, listener));
         this.allSockets.on("removeListener", (event) => this.removeListenerFromSockets(event));
+        this.allSockets.on("newListener", (event, listener) => this.addListenerToSockets(event, listener));
     }
 
     addSocket(socket) {
         this.sockets.push(socket);
         this.events.forEach(event => {
-            socket.on(event.event, event.listener);
+            socket.on(event.event, function() {
+                event.listener(socket, ...arguments)
+            });
         });
     }
 
+    removeSocket(socket){
+        this.sockets.splice(this.sockets.indexOf(socket));
+    }
+
     addListenerToSockets(event: string, listener: (...args: any[]) => void) {
-        this.socket.forEach(socket => {
+        this.sockets.forEach(socket => {
             socket.on(event, function () {
                 listener(socket, ...arguments);
             });
@@ -51,6 +58,6 @@ class Socket extends Events.EventEmitter {
     }
 }
 
-const socket = new Socket();
+const socketWrapper = new SocketWrapper();
 
-export default socket;
+export default socketWrapper;

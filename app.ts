@@ -2,6 +2,7 @@ import * as express from "express";
 import * as path from "path";
 import * as cookieParser from "cookie-parser";
 import * as logger from "morgan";
+import socketWrapper from "./src/models/SocketWrapper";
 
 const app: express.Application = express();
 

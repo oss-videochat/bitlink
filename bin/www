@@ -6,7 +6,8 @@
 const app = require('../app').default;
 const debug = require('debug')('untitled2:server');
 const http = require('http');
-const socket = require('../src/models/Socket').default;
+const socket = require('../src/models/SocketWrapper').default;
+const RoomManager = require('../src/models/RoomManager').default;
 
 /**
  * Get port from environment and store in Express.
@@ -20,6 +21,8 @@ app.set('port', port);
 const server = http.createServer(app);
 const io = require('socket.io')(server);
 socket.socket = io;
+
+app.roomManager = new RoomManager(socket);
 
 /**
  * Listen on provided port, on all network interfaces.

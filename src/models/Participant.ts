@@ -1,5 +1,5 @@
 import * as Event from 'events'
-import { v4 as uuidv4 } from 'uuid';
+import {v4 as uuidv4} from 'uuid';
 
 interface UserSettings {
     cameraEnabled?: boolean,
@@ -7,6 +7,39 @@ interface UserSettings {
 }
 
 class Participant extends Event.EventEmitter {
+    get settings(): UserSettings {
+        return this._settings;
+    }
+
+    get id() {
+        return this._id;
+    }
+
+    private _name;
+    private _id;
+    public readonly socket;
+    public isHost = false;
+
+    private _settings: UserSettings = {
+        cameraEnabled: false,
+        microphoneEnabled: false
+    };
+
+    constructor(name: string, socket) {
+        super();
+        this._id = uuidv4();
+        this.socket = socket;
+        this.socket.on("disconnect", () => {
+            this.emit("leave");
+        });
+        this.socket.on("update-name", (name) => {
+            this.name = name;
+        });
+        this.socket.on("update-settings", (name) => {
+            this.updateUserSettings(name);
+        });
+    }
+
     get name() {
         return this._name;
     }
@@ -15,20 +48,9 @@ class Participant extends Event.EventEmitter {
         this._name = value;
         this.emit("update-name");
     }
-    private _name;
-    private id;
-    private settings: UserSettings = {
-        cameraEnabled: false,
-        microphoneEnabled: false
-    };
 
-    constructor(name: string) {
-        super();
-        this.id = uuidv4();
-    }
-
-    updateUserSettings(object: UserSettings){
-        Object.assign(this.settings, object);
+    updateUserSettings(object: UserSettings) {
+        Object.assign(this._settings, object);
         this.emit("update-settings");
     }
 

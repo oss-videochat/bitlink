@@ -146,7 +146,7 @@ body: {
 }
 ```
 
-### Editing Messages
+### Deleting Messages
 
 ```text
 POST /api/:roomIdHash/delete

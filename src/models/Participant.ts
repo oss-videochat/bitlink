@@ -1,5 +1,7 @@
 import * as Event from 'events'
 import {v4 as uuidv4} from 'uuid';
+import * as cryptoRandomString from 'crypto-random-string';
+import Message from "./Message";
 
 interface UserSettings {
     cameraEnabled?: boolean,
@@ -16,9 +18,10 @@ class Participant extends Event.EventEmitter {
     }
 
     private _name;
-    private _id;
+    private readonly _id;
     public readonly socket;
     public isHost = false;
+    public readonly key = cryptoRandomString({length: 12});
 
     private _settings: UserSettings = {
         cameraEnabled: false,
@@ -54,6 +57,9 @@ class Participant extends Event.EventEmitter {
         this.emit("update-settings");
     }
 
+    directMessage(message: Message, eventType: "new" | "edit" | "delete"){
+        this.socket.emit(eventType + "-direct-message", JSON.stringify(message.toJSON()));
+    }
 }
 
 export default Participant;

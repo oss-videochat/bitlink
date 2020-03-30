@@ -8,14 +8,14 @@ Contains the code for the backend of the video conference call app.
 Format
 
 
-```js
+```
 event-string(arg1,arg2) - description
 ```
 
 equals
 
 ```
-io.emit('event-string', 'arg1', 'arg2'
+io.emit('event-string', 'arg1', 'arg2')
 ```
 
 ### Sending (Client → Server)
@@ -41,10 +41,11 @@ interface UserSettings {
 - `join-room(idOfRoom)` - User should attempt to join the room in the id provided by emitting `join-room`.
 - `room-summary(summary)` - [TODO]
 - `new-participant(participantInformation)` - A new user has joined. Information about that client in  `participantInformation` arg.
+- `destory` - The room has been destroyed (host either closed it or error occurred).
 
 ```typescript
 interface ParticipantInformation {
-    id: number,
+    id: string,
     name: string,
     settings: UserSettings
  }

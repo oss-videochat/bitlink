@@ -23,6 +23,7 @@ const io = require('socket.io')(server);
 socket.socket = io;
 
 app.roomManager = new RoomManager(socket);
+app.use("/api", app.roomManager.router);
 
 /**
  * Listen on provided port, on all network interfaces.

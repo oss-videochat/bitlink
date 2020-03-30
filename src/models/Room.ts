@@ -113,7 +113,7 @@ class Room extends Event.EventEmitter {
         message.on("edit", () => this.alertRelevantParticipantsAboutMessage(message, "edit"));
         message.on("delete", () => this.alertRelevantParticipantsAboutMessage(message, "delete"));
 
-        return {success: true, error: null, data: { messageId: message.id },status: 200};
+        return {success: true, error: null, data:  message.toJSON(),status: 200};
     }
 
     alertRelevantParticipantsAboutMessage(message: Message, eventType: "new" | "edit" | "delete"){

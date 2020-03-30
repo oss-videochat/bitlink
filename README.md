@@ -50,3 +50,124 @@ interface ParticipantInformation {
     settings: UserSettings
  }
 ```
+
+- `<new|edit|delete>-<room|direct>-message(MessageJSONSummary)` - A message event has occurred. Message event type could been `new`, `edit`, or `delete`. Message type could be `room` or a `direct` message.
+
+```typescript
+enum Reactions {
+    ThumbsUp,
+    ThumbsDown,
+    Laugh,
+    Confused,
+    Celebrate,
+    OneHundred,
+    QuestionMark,
+    Clap,
+}
+
+interface ReactionSummary {
+    type: Reactions,
+    participantId: string, // id of participant to reacted
+}
+
+interface MessageJSONSummary {
+    from: string // id of participant
+    to: string, // id of participant
+    message: string, // id of message
+    content: string,
+    reactions: Array<ReactionSummary>
+}
+```
+
+## HTTP API
+
+`:roomIdHash` is a md5 hash of the room id
+
+
+```typescript
+interface ParticipantAuthObj {
+    id: string,
+    key: string
+}
+```
+
+### Sending Messages
+
+```text
+POST /api/:roomIdHash/send
+-------------------------------
+
+Content-Type: application/json
+```
+
+
+```text
+body: {
+    from: ParticipantAuthObj,
+    to: string, // id of to participant || "everyone" if its a room message,
+    content: "Message content"
+}
+```
+
+#### Successful Response
+
+```json
+{
+ "success": true,
+ "error": null,
+ "data": MessageJSONSummary
+}
+```
+
+### Editing Messages
+
+```text
+POST /api/:roomIdHash/edit
+-------------------------------
+
+Content-Type: application/json
+```
+
+
+```text
+body: {
+    from: ParticipantAuthObj,
+    messageId: string, // id of the message the user wishes to edit
+    content: "Message content" // new content
+}
+```
+
+#### Successful Response
+
+```json
+{
+ "success": true,
+ "error": null
+}
+```
+
+### Editing Messages
+
+```text
+POST /api/:roomIdHash/delete
+-------------------------------
+
+Content-Type: application/json
+```
+
+
+```text
+body: {
+    from: ParticipantAuthObj,
+    messageId: string, // id of the message the user wishes to delete
+}
+```
+
+#### Successful Response
+
+```json
+{
+ "success": true,
+ "error": null
+}
+```

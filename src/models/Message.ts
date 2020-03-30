@@ -7,13 +7,17 @@ interface Reaction {
     type: Reactions,
     participant: Participant,
 }
+interface ReactionSummary {
+    type: Reactions,
+    participant: string,
+}
 
 interface MessageJSONSummary {
     from: string // id of participant
     to: string, // id of participant
-    message: string,
+    message: string, // id of message
     content: string,
-    reactions: Array<Reaction>
+    reactions: Array<ReactionSummary>
 }
 
 class Message extends Event.EventEmitter {
@@ -62,12 +66,22 @@ class Message extends Event.EventEmitter {
 
     toJSON(): MessageJSONSummary {
         return {
-            from: this.from.id, // id of participant
+            from: this.from.id,
             to: this.isToEveryone ? "everyone" : this.to.id,
             message: this.id,
             content: this.content,
-            reactions: this.reactions
+            reactions: this.summarizeReactions()
         }
+    }
+
+    summarizeReactions(): Array<ReactionSummary> {
+        const reactionSummaries: Array<any> = this.reactions.map(reaction => Object.assign({}, reaction));
+
+        reactionSummaries.forEach((summary) => {
+            summary.participant = summary.participant.id;
+        });
+
+        return reactionSummaries;
     }
 
 }

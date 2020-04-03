@@ -64,7 +64,7 @@ class Message extends Event.EventEmitter {
         this.emit("deleted");
     }
 
-    toJSON(): MessageJSONSummary {
+    toSummary(): MessageJSONSummary {
         return {
             from: this.from.id,
             to: this.isToEveryone ? "everyone" : this.to.id,

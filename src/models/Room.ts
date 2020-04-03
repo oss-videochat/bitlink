@@ -70,9 +70,13 @@ class Room extends Event.EventEmitter {
             );
         });
 
-        participant.socket.emit("room-summary", {
-            // TODO
+        participant.socket.emit("room-summary", this.getSummary(participant));
+
+       /* participant.socket.on("video-data", data => {
+            //      console.log("Receive server: " + data.length + " - " + participant.id);
+            this.broadcast("video-data", [participant], data);
         });
+        */
     }
 
     broadcast(event: string, ignoreParticipants: Array<Participant> = [], ...args: any[]) {
@@ -80,6 +84,7 @@ class Room extends Event.EventEmitter {
             if (ignoreParticipants.includes(participant)) {
                 return;
             }
+            console.log("sent to participant");
             participant.socket.emit(event, ...args);
         });
     }
@@ -113,42 +118,56 @@ class Room extends Event.EventEmitter {
         message.on("edit", () => this.alertRelevantParticipantsAboutMessage(message, "edit"));
         message.on("delete", () => this.alertRelevantParticipantsAboutMessage(message, "delete"));
 
-        return {success: true, error: null, data:  message.toJSON(),status: 200};
+        return {success: true, error: null, data: message.toJSON(), status: 200};
     }
 
-    alertRelevantParticipantsAboutMessage(message: Message, eventType: "new" | "edit" | "delete"){
-        if(message.isToEveryone) {
-            return this.broadcast(eventType + "-room-message", [message.from], JSON.stringify(message.toJSON()));
+    alertRelevantParticipantsAboutMessage(message: Message, eventType: "new" | "edit" | "delete") {
+        if (message.isToEveryone) {
+            return this.broadcast(eventType + "-room-message", [message.from], JSON.stringify(message.toSummary()));
         }
         return message.to.directMessage(message, eventType);
     }
 
-    editMessage(from: ParticipantAuthObj, messageId: string, content: string){
+    editMessage(from: ParticipantAuthObj, messageId: string, content: string) {
         const message = this.getMessage(messageId);
-        if(!message) {
+        if (!message) {
             return {success: false, error: "Could not find message", status: 404}
         }
-        if(message.from.id !== from.id ||  message.from.key !== from.key){
+        if (message.from.id !== from.id || message.from.key !== from.key) {
             return {success: false, error: "You are not authorized to preform this action", status: 403}
         }
         message.edit(content);
         return {success: true, error: null, status: 200};
     }
 
-    deleteMessage(from: ParticipantAuthObj, messageId: string){
+    deleteMessage(from: ParticipantAuthObj, messageId: string) {
         const message = this.getMessage(messageId);
-        if(!message) {
+        if (!message) {
             return {success: false, error: "Could not find message", status: 404}
         }
-        if(message.from.id !== from.id ||  message.from.key !== from.key){
+        if (message.from.id !== from.id || message.from.key !== from.key) {
             return {success: false, error: "You are not authorized to preform this action", status: 403}
         }
         message.delete();
         return {success: true, error: null, status: 200};
     }
 
-    getMessage(messageId: string){
+    getMessage(messageId: string) {
         return this.messages.find(message => message.id === messageId);
+    }
+
+    getSummary(participant?: Participant) {
+        return {
+            id: this.id,
+            idHash: this.idHash,
+            participants: this.participants.map(participant => participant.toSummary()),
+            messages: this.messages.filter(message => message.isToEveryone
+                || (participant
+                    && message.from.id === participant.id
+                    || message.to.id === participant.id
+                )
+            ).map(message => message.toSummary())
+        }
     }
 
 }

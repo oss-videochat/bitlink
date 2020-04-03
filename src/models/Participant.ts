@@ -8,6 +8,12 @@ interface UserSettings {
     microphoneEnabled?: boolean,
 }
 
+interface ParticipantSummary {
+    id: string,
+    settings: UserSettings,
+    isHost: boolean
+}
+
 class Participant extends Event.EventEmitter {
     get settings(): UserSettings {
         return this._settings;
@@ -57,8 +63,16 @@ class Participant extends Event.EventEmitter {
         this.emit("update-settings");
     }
 
-    directMessage(message: Message, eventType: "new" | "edit" | "delete"){
-        this.socket.emit(eventType + "-direct-message", JSON.stringify(message.toJSON()));
+    directMessage(message: Message, eventType: "new" | "edit" | "delete") {
+        this.socket.emit(eventType + "-direct-message", JSON.stringify(message.toSummary()));
+    }
+
+    toSummary(): ParticipantSummary {
+        return {
+            id: this.id,
+            settings: this.settings,
+            isHost: this.isHost
+        }
     }
 }
 

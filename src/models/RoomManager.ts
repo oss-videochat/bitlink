@@ -11,7 +11,6 @@ interface roomObject {
 }
 
 class RoomManager {
-    private activeMembers = 0;
     private rooms: roomObject = {};
     private socketWrapper: SocketWrapper;
     public readonly router = Router();

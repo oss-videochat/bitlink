@@ -5,7 +5,7 @@
   "scripts": {
     "start": "node ./build/bin/www",
     "build": "tsc && npm run copy-assets",
-    "copy-assets": "cp -R ./bin ./build"
+    "copy-assets": "cp -R ./bin ./build;"
   },
   "dependencies": {
     "@types/express": "^4.17.3",

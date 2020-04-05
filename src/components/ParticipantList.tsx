@@ -3,7 +3,7 @@ import {observer} from "mobx-react"
 
 import {Participant} from "./Participant";
 
-import {participantStore} from '../stores/ParticipantsStore'
+import ParticipantsStore from '../stores/ParticipantsStore'
 
 
 @observer
@@ -15,7 +15,7 @@ export class ParticipantList extends React.Component<any, any> {
     render() {
         return (
             <div className={"participant-list"}>
-                {participantStore.map(participant => <Participant participant={participant}/>)}
+                {ParticipantsStore.participants.map(participant => <Participant key={participant.id} participant={participant}/>)}
             </div>
         );
     }

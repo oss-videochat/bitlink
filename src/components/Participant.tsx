@@ -16,14 +16,14 @@ export class Participant extends React.Component<any, any> {
         return (
             <div className={"participant"}>
                 <div className={"name-wrapper"}>
-                    <span className={"name"}>{this.props.name}</span>
+                    <span className={"name"}>{this.props.participant.id}</span>
                 </div>
                 <div className={"user-settings-wrapper"}>
-                    {this.props.settings.microphoneEnabled ?
+                    {this.props.participant.settings.microphoneEnabled ?
                         <FontAwesomeIcon icon={faMicrophone}/> :
                         <FontAwesomeIcon icon={faMicrophoneSlash}/>
                     }
-                    {this.props.settings.cameraEnabled ?
+                    {this.props.participant.settings.cameraEnabled ?
                         <FontAwesomeIcon icon={faVideo}/> :
                         <FontAwesomeIcon icon={faVideoSlash}/>
                     }

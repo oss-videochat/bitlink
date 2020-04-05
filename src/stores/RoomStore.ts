@@ -1,5 +1,5 @@
 import {ParticipantInformation} from "./ParticipantsStore";
-import { observable } from "mobx";
+import {observable} from "mobx";
 import {MessageSummary} from "./MessagesStore";
 
 export interface RoomSummary {
@@ -10,17 +10,7 @@ export interface RoomSummary {
 }
 
 class RoomStore {
-    get room(): RoomSummary | undefined {
-        return this._room;
-    }
-
-    set room(value: RoomSummary | undefined) {
-        this._room = value;
-    }
-
-    @observable
-    private _room: RoomSummary | undefined;
-
+    @observable public room?: RoomSummary;
 }
 
 export default new RoomStore();

@@ -7,17 +7,8 @@ export interface CurrentUserInformation extends ParticipantInformation{
 
 
 class CurrentUserInformationStore {
-    get info(): CurrentUserInformation | undefined {
-        return this._info;
-    }
-
-    set info(value: CurrentUserInformation | undefined) {
-        this._info = value;
-    }
-
     @observable
-    private _info: CurrentUserInformation | undefined;
-
+    public info?: CurrentUserInformation;
 }
 
 export default new CurrentUserInformationStore();

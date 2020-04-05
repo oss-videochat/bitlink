@@ -1,19 +1,12 @@
 import io from 'socket.io-client';
-import {findById, participantStore, ParticipantInformation} from "../stores/ParticipantsStore";
-
+import ParticipantsStore, {ParticipantInformation} from "../stores/ParticipantsStore";
+import {action} from 'mobx';
 import * as Event from 'events';
-
-import {
-    getMessageById,
-    Message,
-    messagesStore,
-    MessageSummary,
-    Reaction,
-    ReactionSummary
-} from "../stores/MessagesStore";
 
 import CurrentUserInformationStore, {CurrentUserInformation} from "../stores/MyInfo";
 import RoomStore, {RoomSummary} from "../stores/RoomStore";
+import MessagesStore from "../stores/MessagesStore";
+import MyInfo from "../stores/MyInfo";
 
 
 interface APIResponse {
@@ -48,8 +41,9 @@ class IO extends Event.EventEmitter {
         this.joinRoom(id);
     }
 
+    @action
     _handleRoomSummary(roomSummary: any) {
-        participantStore.replace(roomSummary.participants);
+        ParticipantsStore.participants.replace(roomSummary.participants);
 
         roomSummary.participants.forEach((participant: ParticipantInformation | CurrentUserInformation) => {
             if (participant.isMe) {
@@ -58,15 +52,15 @@ class IO extends Event.EventEmitter {
         });
 
         roomSummary.messages.forEach((message: any) => {
-            message.from = findById(message.from) || null;
+            message.from = ParticipantsStore.getById(message.from) || null;
             if (message.to !== "everyone") {
-                message.to = findById(message.to) || null;
+                message.to = ParticipantsStore.getById(message.to) || null;
             }
             message.reactions.forEach((reaction: any) => {
-                reaction.participant = findById(reaction.participant);
+                reaction.participant = ParticipantsStore.getById(reaction.participant);
             });
 
-            messagesStore.push(message);
+            MessagesStore.messages.push(message);
         });
 
         RoomStore.room = roomSummary as RoomSummary;
@@ -82,6 +76,7 @@ class IO extends Event.EventEmitter {
         this.emit("room-closure");
     }
 
+    @action
     async sendDirect(to: ParticipantInformation, content: string) {
         const response = await this.apiRequest("send", {
             from: {
@@ -97,6 +92,7 @@ class IO extends Event.EventEmitter {
         return true;
     }
 
+    @action
     async sendToRoom(content: string) {
         const response = await this.apiRequest("send", {
             from: {
@@ -109,9 +105,17 @@ class IO extends Event.EventEmitter {
         if (!response.success) {
             throw response.error;
         }
+        MessagesStore.messages.push({
+            id: response.data.id,
+            from: MyInfo.info!,
+            to: "everyone",
+            content: content,
+            reactions: []
+        });
         return true;
     }
 
+    @action
     async edit(id: string, content: string) {
         const response = await this.apiRequest("edit", {
             from: {
@@ -124,10 +128,15 @@ class IO extends Event.EventEmitter {
         if (!response.success) {
             throw response.error;
         }
-        getMessageById(id)!.content = content;
+        const message = MessagesStore.getMessageById(id);
+        if (!message) {
+            return true;
+        }
+        message.content = content;
         return true;
     }
 
+    @action
     async delete(id: string, content: string) {
         const response = await this.apiRequest("delete", {
             from: {
@@ -139,6 +148,11 @@ class IO extends Event.EventEmitter {
         if (!response.success) {
             throw response.error;
         }
+        const messageIndex = MessagesStore.getIndexMessageById(id);
+        if (!messageIndex) {
+            return true;
+        }
+        MessagesStore.messages.splice(messageIndex, 1);
         return true;
     }
 

@@ -1,4 +1,5 @@
 import {observable} from "mobx"
+import {Message} from "./MessagesStore";
 
 interface UserSettings {
     cameraEnabled: boolean,
@@ -13,10 +14,19 @@ export interface ParticipantInformation {
     isMe: boolean
 }
 
-export const participantStore =  observable<ParticipantInformation>([]);
+class ParticipantsStore {
+    @observable
+    public participants = observable<ParticipantInformation>([]);
 
-export function findById(id: string): ParticipantInformation | undefined {
-    return participantStore.find((participant: ParticipantInformation) => {
-        return participant.id === id;
-    });
+    getById(id: string): ParticipantInformation | undefined {
+        return this.participants?.find((participant: ParticipantInformation) =>  participant.id = id);
+    }
+
+    getIndexById(id: string): number | undefined {
+        return this.participants?.findIndex((participant: ParticipantInformation) =>  participant.id = id);
+    }
+
 }
+
+
+export default new ParticipantsStore();

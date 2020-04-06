@@ -1,0 +1,45 @@
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-size: 15px;
+    color: #151948;
+    background: #fbfbfb;
+    font-family: 'Lato', sans-serif;
+    height: 100vh;
+    overflow: hidden;
+}
+
+#root, .app {
+    height: 100vh;
+}
+
+.app {
+    display: flex;
+    flex-direction: column;
+}
+
+
+.main-container {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.video-participant-container {
+    flex: 1;
+    height: 100%;
+    display: flex;
+}
+.video-container {
+    flex: 1;
+    background: purple;
+}
+
+.chat-container {
+    flex-basis: 200px;
+    background: red;
+}
+

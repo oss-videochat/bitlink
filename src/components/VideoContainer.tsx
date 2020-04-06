@@ -1,6 +1,7 @@
 import React from 'react';
 import {observer} from "mobx-react"
 import {observable} from "mobx"
+import './VideoContainer.css';
 
 export class VideoContainer extends React.Component<any, any> {
     constructor(props: any) {
@@ -9,7 +10,7 @@ export class VideoContainer extends React.Component<any, any> {
 
     render() {
         return (
-            <div className={"main-video"}>
+            <div className={"video-container"}>
             </div>
         );
     }

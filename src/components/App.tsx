@@ -4,26 +4,21 @@ import {observable} from "mobx"
 
 import {VideoContainer} from "./VideoContainer";
 import {ParticipantList} from "./ParticipantList";
-import IO from "../controllers/IO";
-import RoomStore from "../stores/RoomStore";
+import {Header} from './Header';
+import './App.css';
+import {ChatContainer} from "./ChatContainer";
 
 @observer
 export class App extends React.Component<any, any> {
     constructor(props: any) {
         super(props);
-        this._handleJoinButton = this._handleJoinButton.bind(this);
-    }
-
-    _handleJoinButton() {
-        IO.createRoom();
     }
 
     render() {
         return (
-            <div>
+            <div className={"app"}>
                 <header className={"header"}>
-                    <span>Current Room id: {RoomStore.room?.id}</span>
-                    <button onClick={this._handleJoinButton}>Create</button>
+                    <Header/>
                 </header>
                 <div className={"main-container"}>
                     <div className={"video-participant-container"}>
@@ -31,7 +26,7 @@ export class App extends React.Component<any, any> {
                         <ParticipantList/>
                     </div>
                     <div className={"chat-container"}>
-
+                        <ChatContainer/>
                     </div>
                 </div>
             </div>

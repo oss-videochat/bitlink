@@ -12,7 +12,8 @@ export interface Message {
     from: ParticipantInformation | null,
     to: ParticipantInformation | "everyone" | null,
     content: string,
-    reactions: Array<Reaction>
+    reactions: Array<Reaction>,
+    created: number,
 }
 
 export interface ReactionSummary {
@@ -25,7 +26,8 @@ export interface MessageSummary {
     from: string,
     to: string | "everyone";
     content: string,
-    reactions: Array<ReactionSummary>
+    reactions: Array<ReactionSummary>,
+    created: number,
 }
 
 class MessagesStore {
@@ -33,13 +35,17 @@ class MessagesStore {
     public messages: Array<Message> = [];
 
     getMessageById(id: string): Message | undefined {
-        return this.messages?.find((message: Message) =>  message.id = id);
+        return this.messages.find((message: Message) =>  message.id = id);
     }
 
     getIndexMessageById(id: string): number | undefined {
-        return this.messages?.findIndex((message: Message) =>  message.id = id);
+        return this.messages.findIndex((message: Message) =>  message.id = id);
     }
 
+    getRelevantMessages(id: string): Array<Message> {
+        // @ts-ignore
+        return this.messages.filter((message: Message) => message.from!.id === id || (message.to === id || message.to!.id === id));
+    }
 }
 
 

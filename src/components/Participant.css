@@ -1,0 +1,24 @@
+.participant {
+    display: flex;
+    padding: 10px;
+    color: white;
+    user-select: none;
+    -webkit-user-select: none;
+    cursor: pointer;
+}
+.participant:hover {
+    opacity: 0.8;
+    background: #3b3b3b;
+}
+
+.participant--name-wrapper {
+    flex: 1;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+.participant--icon {
+    margin: 0 5px;
+    color: #ff8878;
+}
+

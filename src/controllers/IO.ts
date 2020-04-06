@@ -30,10 +30,12 @@ class IO extends Event.EventEmitter {
     }
 
     createRoom() {
+        console.log("Creating room...");
         this.io.emit("create-room");
     }
 
     joinRoom(id: string) {
+        console.log("Joining room " + id + "...");
         this.io.emit("join-room", id);
     }
 
@@ -69,6 +71,7 @@ class IO extends Event.EventEmitter {
     }
 
     _handleNewParticipant(participantSummary: ParticipantInformation) {
+        ParticipantsStore.participants.push(participantSummary);
         this.emit("new-participant", participantSummary);
     }
 

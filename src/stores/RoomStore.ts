@@ -5,6 +5,7 @@ import {MessageSummary} from "./MessagesStore";
 export interface RoomSummary {
     id: string,
     idHash: string,
+    name: string,
     participants: Array<ParticipantInformation>,
     messages: Array<MessageSummary>
 }

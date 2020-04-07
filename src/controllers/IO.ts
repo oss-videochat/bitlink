@@ -5,8 +5,9 @@ import * as Event from 'events';
 
 import CurrentUserInformationStore, {CurrentUserInformation} from "../stores/MyInfo";
 import RoomStore, {RoomSummary} from "../stores/RoomStore";
-import MessagesStore from "../stores/MessagesStore";
 import MyInfo from "../stores/MyInfo";
+import ChatStore from "../stores/ChatStore";
+import {Message, MessageSummary} from "../stores/MessagesStore";
 
 
 interface APIResponse {
@@ -27,6 +28,14 @@ class IO extends Event.EventEmitter {
         this.io.on("new-participant", this._handleNewParticipant.bind(this));
         this.io.on("destroy", this._handleRoomClosure.bind(this));
 
+        this.io.on("new-room-message", this._handleNewMessage.bind(this));
+        this.io.on("new-direct-message", this._handleNewMessage.bind(this));
+
+        this.io.on("edit-room-message", this._handleEditMessage.bind(this));
+        this.io.on("edit-direct-message", this._handleEditMessage.bind(this));
+
+        this.io.on("delete-room-message", this._handleDeleteMessage.bind(this));
+        this.io.on("delete-direct-message", this._handleDeleteMessage.bind(this));
     }
 
     createRoom() {
@@ -34,18 +43,18 @@ class IO extends Event.EventEmitter {
         this.io.emit("create-room");
     }
 
-    joinRoom(id: string) {
-        console.log("Joining room " + id + "...");
-        this.io.emit("join-room", id);
+    joinRoom(id: string, name?: string) {
+        this.io.emit("join-room", id, name);
     }
 
     _handleJoinRoom(id: string) {
-        this.joinRoom(id);
+        this.joinRoom(id, MyInfo.chosenName);
     }
 
     @action
-    _handleRoomSummary(roomSummary: any) {
+    _handleRoomSummary(roomSummary: RoomSummary) {
         ParticipantsStore.participants.replace(roomSummary.participants);
+        ChatStore.addParticipant(...roomSummary.participants);
 
         roomSummary.participants.forEach((participant: ParticipantInformation | CurrentUserInformation) => {
             if (participant.isMe) {
@@ -53,30 +62,53 @@ class IO extends Event.EventEmitter {
             }
         });
 
-        roomSummary.messages.forEach((message: any) => {
-            message.from = ParticipantsStore.getById(message.from) || null;
-            if (message.to !== "everyone") {
-                message.to = ParticipantsStore.getById(message.to) || null;
-            }
-            message.reactions.forEach((reaction: any) => {
-                reaction.participant = ParticipantsStore.getById(reaction.participant);
-            });
-
-            MessagesStore.messages.push(message);
+        roomSummary.messages.forEach((message: MessageSummary) => {
+            const realMessage = this.convertMessageSummaryToMessage(message);
+            ChatStore.addMessage(realMessage);
         });
 
-        RoomStore.room = roomSummary as RoomSummary;
+        RoomStore.room = roomSummary;
 
         this.emit("room-summary", roomSummary);
     }
 
+    convertMessageSummaryToMessage(message: MessageSummary): Message {
+        const replacementObj: any = {};
+        replacementObj.from = ParticipantsStore.getById(message.from) || null;
+        if (replacementObj.to !== "everyone") {
+            replacementObj.to = ParticipantsStore.getById(message.to) || null;
+        }
+        replacementObj.reactions = JSON.parse(JSON.stringify(message.reactions));
+        replacementObj.reactions.forEach((reaction: any) => {
+            reaction.participant = ParticipantsStore.getById(reaction.participant);
+        });
+        return replacementObj as Message;
+    }
+
     _handleNewParticipant(participantSummary: ParticipantInformation) {
+        ParticipantsStore.participants.push(participantSummary);
+        ParticipantsStore.participants.push(participantSummary);
+        ParticipantsStore.participants.push(participantSummary);
         ParticipantsStore.participants.push(participantSummary);
         this.emit("new-participant", participantSummary);
     }
 
     _handleRoomClosure() {
         this.emit("room-closure");
+    }
+
+    _handleNewMessage(messageSummary: MessageSummary){
+        const realMessage = this.convertMessageSummaryToMessage(messageSummary);
+        ChatStore.addMessage(realMessage);
+    }
+
+    _handleEditMessage(messageSummary: MessageSummary){
+        const realMessage = this.convertMessageSummaryToMessage(messageSummary);
+        ChatStore.editMessage(realMessage);
+    }
+
+    _handleDeleteMessage(messageSummary: MessageSummary){
+        ChatStore.removeMessage(messageSummary.id);
     }
 
     @action
@@ -108,12 +140,13 @@ class IO extends Event.EventEmitter {
         if (!response.success) {
             throw response.error;
         }
-        MessagesStore.messages.push({
+        ChatStore.addMessage({
             id: response.data.id,
             from: MyInfo.info!,
             to: "everyone",
             content: content,
-            reactions: []
+            reactions: [],
+            created: response.data.created
         });
         return true;
     }
@@ -131,7 +164,7 @@ class IO extends Event.EventEmitter {
         if (!response.success) {
             throw response.error;
         }
-        const message = MessagesStore.getMessageById(id);
+        const message = ChatStore.getMessageById(id);
         if (!message) {
             return true;
         }
@@ -151,11 +184,7 @@ class IO extends Event.EventEmitter {
         if (!response.success) {
             throw response.error;
         }
-        const messageIndex = MessagesStore.getIndexMessageById(id);
-        if (!messageIndex) {
-            return true;
-        }
-        MessagesStore.messages.splice(messageIndex, 1);
+        ChatStore.removeMessage(id);
         return true;
     }
 
@@ -175,4 +204,4 @@ class IO extends Event.EventEmitter {
 
 }
 
-export default new IO("http://127.0.0.1:3001");
+export default new IO("http://" + window.location.hostname + ":3001");

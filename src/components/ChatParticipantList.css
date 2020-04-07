@@ -1,0 +1,11 @@
+.chat-participant-wrapper {
+    min-width: 200px;
+    width: 25%;
+    max-width: 300px;
+    border-right: 1px solid #e4e4e4;
+}
+
+
+.chat-participant-list {
+    overflow: auto;
+}

@@ -9,6 +9,7 @@ export interface CurrentUserInformation extends ParticipantInformation{
 class CurrentUserInformationStore {
     @observable
     public info?: CurrentUserInformation;
+    public chosenName?: string ;
 }
 
 export default new CurrentUserInformationStore();

@@ -17,7 +17,7 @@ export class Participant extends React.Component<any, any> {
         return (
             <div className={"participant"}>
                 <div className={"participant--name-wrapper"}>
-                    <span className={"name"}>{this.props.participant.id}</span>
+                    <span className={"name"}>{this.props.participant.name}</span>
                 </div>
                 <div className={"participant--user-settings-wrapper"}>
                      <span className={"participant--icon"}>

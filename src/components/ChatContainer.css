@@ -1,0 +1,22 @@
+.chat-container {
+    height: 0;
+    width: 100%;
+    transition: height 100ms ease-in-out;
+    border-top: 1px solid #bbbbbb;
+}
+
+.chat-container--content {
+    display: flex;
+}
+
+.chat-container.open {
+    height: 200px;
+}
+
+.chat-container--content {
+    height: 200px;
+}
+
+.message-container {
+    flex: 1;
+}

@@ -9,8 +9,8 @@ export interface Reaction {
 
 export interface Message {
     id: string,
-    from: ParticipantInformation | null,
-    to: ParticipantInformation | "everyone" | null,
+    from: ParticipantInformation,
+    to: ParticipantInformation | "everyone",
     content: string,
     reactions: Array<Reaction>,
     created: number,
@@ -30,6 +30,10 @@ export interface MessageSummary {
     created: number,
 }
 
+interface MessageLike {
+
+}
+
 class MessagesStore {
     @observable
     public messages: Array<Message> = [];
@@ -41,12 +45,7 @@ class MessagesStore {
     getIndexMessageById(id: string): number | undefined {
         return this.messages.findIndex((message: Message) =>  message.id = id);
     }
-
-    getRelevantMessages(id: string): Array<Message> {
-        // @ts-ignore
-        return this.messages.filter((message: Message) => message.from!.id === id || (message.to === id || message.to!.id === id));
-    }
 }
 
 
-export default new MessagesStore();
+export default MessagesStore;

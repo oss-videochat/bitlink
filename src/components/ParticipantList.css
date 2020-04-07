@@ -1,8 +1,8 @@
 .participant-list {
     position: relative;
     width: 0;
+    color: #5c8dff;
     transition: width 100ms ease-in-out;
-    background: #2b2b2b;
 }
 
 .participant-list.open {
@@ -11,28 +11,4 @@
 
 .participant-list--contents {
     width: 300px;
-}
-
-.participant-list--toggler {
-    position: absolute;
-    background: #f2f2f2;
-    height: 70px;
-    width: 15px;
-    right: 100%;
-    top: 50%;
-    border: gray solid 1px;
-    border-right: none;
-    transform: translateY(-50%);
-    border-top-left-radius: 7px;
-    border-bottom-left-radius: 7px;
-}
-
-.participant-list--toggler--line {
-    position: absolute;
-    background: black;
-    width: 1px;
-    height: 90%;
-    left: 50%;
-    top: 50%;
-    transform: translateY(-50%);
 }

@@ -21,11 +21,8 @@ export class App extends React.Component<any, any> {
                     <Header/>
                 </header>
                 <div className={"main-container"}>
-                    <div className={"video-participant-container"}>
-                        <VideoContainer/>
-                        <ParticipantList/>
-                    </div>
                     <ChatContainer/>
+                    <VideoContainer/>
                 </div>
             </div>
         );

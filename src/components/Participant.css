@@ -1,14 +1,14 @@
 .participant {
     display: flex;
     padding: 10px;
-    color: white;
     user-select: none;
     -webkit-user-select: none;
     cursor: pointer;
+    border-bottom: #e4e4e4 1px solid;
 }
 .participant:hover {
-    opacity: 0.8;
-    background: #3b3b3b;
+    background: #ededed;
+    color: #5c8dff;
 }
 
 .participant--name-wrapper {
@@ -19,6 +19,6 @@
 }
 .participant--icon {
     margin: 0 5px;
-    color: #ff5954;
+    color: #ff5f66;
 }
 

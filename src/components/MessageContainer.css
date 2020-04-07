@@ -1,0 +1,19 @@
+.message-container {
+    display: flex;
+    flex-direction: column;
+}
+.message-list {
+    flex: 1;
+}
+
+.chat--input-container {
+    border-top: solid 1px #d8d8d8;
+    padding: 10px;
+}
+.chat--input {
+    border: 1px solid #d8d8d8;
+    width: 100%;
+    padding: 7px 7px 7px 10px;
+    border-radius: 5px;
+    resize: none;
+}

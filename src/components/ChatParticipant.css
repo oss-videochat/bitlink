@@ -14,3 +14,19 @@
     background: #e1e1e1;
     color: #556bd6;
 }
+
+.chat-participant-name-container {
+    display: flex;
+}
+
+.chat-participant--name {
+    flex: 1;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+.participant--icon {
+    margin: 0 5px;
+    color: #ff5f66;
+}

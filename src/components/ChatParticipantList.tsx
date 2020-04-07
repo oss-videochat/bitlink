@@ -7,6 +7,7 @@ import MyInfo from "../stores/MyInfo";
 import ChatStore from "../stores/ChatStore";
 import {SearchBar} from "./SearchBar";
 import './ChatParticipantList.css';
+import UIStore from "../stores/UIStore";
 
 @observer
 export class ChatParticipantList extends React.Component<any, any> {
@@ -28,33 +29,38 @@ export class ChatParticipantList extends React.Component<any, any> {
 
     render() {
         return (
-            <div className={"chat-participant-wrapper"}>
-                <SearchBar onChange={this.handleSearchChange}/>
-                {RoomStore.room ?
-                    <div className={"chat-participant-list"}>
-                        {
-                            (!this.state.searchText || RoomStore.room.name.toLowerCase().includes(this.state.searchText.toLowerCase())) ?
-                                <ChatParticipant key={"chat-everyone"} name={RoomStore.room.name}/> :
-                                null
-                        }
-                        {ParticipantsStore.participants
-                            .filter(participant => participant.id !== MyInfo.info?.id)
-                            .filter(participant => {
-                                if (this.state.searchText) {
-                                    return participant.name.toLowerCase().includes(this.state.searchText.toLowerCase());
-                                }
-                                return true;
-                            })
-                            .map(participant => {
-                                const store = ChatStore.chatStore[participant.id];
-                                const lastMessage = store[store.length - 1];
-                                return <ChatParticipant key={"chat-" + participant.id} lastMessage={lastMessage}
-                                                        name={participant.name}/>
-                            })
-                        }
-                    </div>
-                    : null
-                }
+            <div className={"chat-participant-wrapper " + (UIStore.store.participantPanel ? "open" : "")}>
+                <div className={"chat-participant-wrapper--content"}>
+                    <SearchBar onChange={this.handleSearchChange}/>
+                    {RoomStore.room ?
+                        <div className={"chat-participant-list"}>
+                            {
+                                (!this.state.searchText || RoomStore.room.name.toLowerCase().includes(this.state.searchText.toLowerCase())) ?
+                                    <ChatParticipant key={"chat-everyone"} name={RoomStore.room.name}/> :
+                                    null
+                            }
+                            {ParticipantsStore.participants
+                                .filter(participant => participant.id !== MyInfo.info?.id)
+                                .filter(participant => {
+                                    if (this.state.searchText) {
+                                        return participant.name.toLowerCase().includes(this.state.searchText.toLowerCase());
+                                    }
+                                    return true;
+                                })
+                                .map(participant => {
+                                    const store = ChatStore.chatStore[participant.id];
+                                    let lastMessage;
+                                    if(store){
+                                        lastMessage = store[store.length - 1];
+                                    }
+                                    return <ChatParticipant key={"chat-" + participant.id} lastMessage={lastMessage}
+                                                            participant={participant}/>
+                                })
+                            }
+                        </div>
+                        : null
+                    }
+                </div>
             </div>
         );
     }

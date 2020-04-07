@@ -197,11 +197,11 @@ class IO extends Event.EventEmitter {
                 },
                 body: JSON.stringify(body)
             });
-            const data = resp.json();
+            const data = await resp.json();
             resolve(data);
         });
     }
 
 }
 
-export default new IO("http://" + window.location.hostname + ":3001");
+export default new IO("http://" + window.location.hostname + ":3000");

@@ -19,20 +19,33 @@ export class MessagesContainer extends React.Component<any, any> {
 
     enterHandle(e: any) {
         if (e.key === "Enter" && !e.shiftKey) {
-            IO.sendToRoom(this.state.inputValue);
             e.preventDefault();
-            this.setState({inputValue: ""});
+            if(this.state.inputValue.trim().length > 0){
+                if(this.props.selectedUser === "everyone"){
+                    IO.sendToRoom(this.state.inputValue);
+                } else {
+                    IO.sendDirect(this.props.selectedUser, this.state.inputValue);
+                }
+                this.setState({inputValue: ""});
+            }
         }
     }
 
     render() {
+        let lastParticipant = "";
+        let lastTime = 0;
         return (
             <div className={"message-container"}>
                 <div className={"message-list"}>
                     {ChatStore.chatStore[this.props.selectedUser]?.map((message: Message) => {
-                            console.log("here");
-                            return <MessageComponent key={message.id} fromMe={message.from.id === MyInfo.info!.id}
-                                                     message={message}/>
+                            const el = <MessageComponent
+                                startGroup={lastParticipant !== message.from.id || message.created - lastTime > 1000 * 60 * 5}
+                                key={message.id}
+                                fromMe={message.from.id === MyInfo.info!.id}
+                                message={message}/>;
+                            lastParticipant = message.from.id;
+                            lastTime = message.created;
+                            return el;
                         }
                     )}
                 </div>

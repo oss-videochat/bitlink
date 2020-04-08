@@ -75,20 +75,17 @@ class IO extends Event.EventEmitter {
     convertMessageSummaryToMessage(message: MessageSummary): Message {
         const replacementObj: any = {};
         replacementObj.from = ParticipantsStore.getById(message.from) || null;
-        if (replacementObj.to !== "everyone") {
+        if (message.to !== "everyone") {
             replacementObj.to = ParticipantsStore.getById(message.to) || null;
         }
         replacementObj.reactions = JSON.parse(JSON.stringify(message.reactions));
         replacementObj.reactions.forEach((reaction: any) => {
             reaction.participant = ParticipantsStore.getById(reaction.participant);
         });
-        return replacementObj as Message;
+        return Object.assign({}, message, replacementObj) as Message;
     }
 
     _handleNewParticipant(participantSummary: ParticipantInformation) {
-        ParticipantsStore.participants.push(participantSummary);
-        ParticipantsStore.participants.push(participantSummary);
-        ParticipantsStore.participants.push(participantSummary);
         ParticipantsStore.participants.push(participantSummary);
         this.emit("new-participant", participantSummary);
     }
@@ -112,18 +109,27 @@ class IO extends Event.EventEmitter {
     }
 
     @action
-    async sendDirect(to: ParticipantInformation, content: string) {
+    async sendDirect(to: ParticipantInformation | string, content: string) {
+        const toId = typeof to === "string" ? to : to.id;
         const response = await this.apiRequest("send", {
             from: {
                 id: CurrentUserInformationStore.info?.id,
                 key: CurrentUserInformationStore.info?.key
             },
-            to: to.id,
+            to: toId,
             content
         });
         if (!response.success) {
             throw response.error;
         }
+        ChatStore.addMessage({
+            id: response.data.id,
+            from: MyInfo.info!,
+            to:  ParticipantsStore.getById(toId)!,
+            content: content,
+            reactions: [],
+            created: response.data.created
+        });
         return true;
     }
 
@@ -190,7 +196,7 @@ class IO extends Event.EventEmitter {
 
     apiRequest(url: string, body: Object): Promise<APIResponse> {
         return new Promise(async (resolve, reject) => {
-            const resp = await fetch(`/api/${RoomStore.room?.idHash}/${url}`, {
+            const resp = await fetch(`http://${window.location.hostname}:3001/api/${RoomStore.room?.idHash}/${url}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -204,4 +210,4 @@ class IO extends Event.EventEmitter {
 
 }
 
-export default new IO("http://" + window.location.hostname + ":3000");
+export default new IO("http://" + window.location.hostname + ":3001");

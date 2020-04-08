@@ -24,7 +24,7 @@ export class ChatContainer extends React.Component<any, any> {
         return (
             <div className={"chat-container " + (UIStore.store.chatPanel ? "open" : "")}>
                 <div className={"chat-container--content"}>
-                    <ChatParticipantList onUserSelect={this._handleUserSelect}/>
+                    <ChatParticipantList selectedUser={this.state.selectedUser} onUserSelect={this._handleUserSelect}/>
                     <MessagesContainer selectedUser={this.state.selectedUser}/>
                 </div>
             </div>

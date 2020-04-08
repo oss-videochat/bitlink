@@ -19,11 +19,11 @@ class ParticipantsStore {
     public participants = observable<ParticipantInformation>([]);
 
     getById(id: string): ParticipantInformation | undefined {
-        return this.participants?.find((participant: ParticipantInformation) =>  participant.id = id);
+        return this.participants?.find((participant: ParticipantInformation) =>  participant.id === id);
     }
 
     getIndexById(id: string): number | undefined {
-        return this.participants?.findIndex((participant: ParticipantInformation) =>  participant.id = id);
+        return this.participants?.findIndex((participant: ParticipantInformation) =>  participant.id === id);
     }
 
 }

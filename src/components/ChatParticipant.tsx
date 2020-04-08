@@ -15,7 +15,7 @@ export class ChatParticipant extends React.Component<any, any> {
 
     render() {
         return (
-            <div className={"chat-participant"}>
+            <div onClick={() => this.props.onChosen(this.props.name ? "everyone" : this.props.participant.id)} className={"chat-participant " + (this.props.selected ? "selected" : "")}>
                 <div className={"chat-participant-name-container"}>
                     <span className={"chat-participant--name"}>{this.props.name || this.props.participant.name}</span>
                     {this.props.participant ?
@@ -37,10 +37,7 @@ export class ChatParticipant extends React.Component<any, any> {
                     }
                 </div>
                 {this.props.lastMessage ?
-                    this.props.lastMessage.length > ChatParticipant.previewLength ?
-                        <span
-                            className={"chat-participant--content"}>{this.props.lastMessage.slice(0, ChatParticipant.previewLength - 3) + "..."}</span>
-                        : <span className={"chat-participant--content"}>{this.props.lastMessage}</span>
+                    <span className={"chat-participant--content"}>{this.props.lastMessage}</span>
                     : null
                 }
             </div>

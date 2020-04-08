@@ -27,6 +27,15 @@ export class ChatParticipantList extends React.Component<any, any> {
         }
     }
 
+    getLastMessage(id: string) {
+        const store = ChatStore.chatStore[id];
+        let lastMessage = undefined;
+        if (store) {
+            lastMessage = store[store.length - 1]?.content;
+        }
+        return lastMessage;
+    }
+
     render() {
         return (
             <div className={"chat-participant-wrapper " + (UIStore.store.participantPanel ? "open" : "")}>
@@ -36,11 +45,16 @@ export class ChatParticipantList extends React.Component<any, any> {
                         <div className={"chat-participant-list"}>
                             {
                                 (!this.state.searchText || RoomStore.room.name.toLowerCase().includes(this.state.searchText.toLowerCase())) ?
-                                    <ChatParticipant key={"chat-everyone"} name={RoomStore.room.name}/> :
+                                    <ChatParticipant onChosen={this.props.onUserSelect} key={"chat-everyone"}
+                                                     selected={this.props.selectedUser === "everyone"}
+                                                     name={RoomStore.room.name}
+                                                     lastMessage={this.getLastMessage("everyone")}/> :
                                     null
                             }
                             {ParticipantsStore.participants
-                                .filter(participant => participant.id !== MyInfo.info?.id)
+                                .filter(participant => {
+                                    return participant.id !== MyInfo.info?.id
+                                })
                                 .filter(participant => {
                                     if (this.state.searchText) {
                                         return participant.name.toLowerCase().includes(this.state.searchText.toLowerCase());
@@ -48,12 +62,10 @@ export class ChatParticipantList extends React.Component<any, any> {
                                     return true;
                                 })
                                 .map(participant => {
-                                    const store = ChatStore.chatStore[participant.id];
-                                    let lastMessage;
-                                    if(store){
-                                        lastMessage = store[store.length - 1];
-                                    }
-                                    return <ChatParticipant key={"chat-" + participant.id} lastMessage={lastMessage}
+                                    const lastMessage = this.getLastMessage(participant.id);
+                                    return <ChatParticipant onChosen={this.props.onUserSelect}
+                                                            selected={this.props.selectedUser === participant.id}
+                                                            key={"chat-" + participant.id} lastMessage={lastMessage}
                                                             participant={participant}/>
                                 })
                             }

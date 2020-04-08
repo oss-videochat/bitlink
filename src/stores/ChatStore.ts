@@ -40,6 +40,9 @@ class ChatStore {
             } else {
                 key = externalParticipant.id;
             }
+            if(message.to === "everyone"){
+                key = "everyone";
+            }
             this.messageStore[message.id] = {
                 message: message,
                 chatStoreKey: key

@@ -19,6 +19,7 @@
     width: 25%;
     max-width: 300px;
     overflow: auto;
+    max-height: 100%;
 }
 
 .chat-participant-list {

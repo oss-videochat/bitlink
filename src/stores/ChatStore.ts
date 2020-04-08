@@ -20,6 +20,11 @@ class ChatStore {
     @observable public chatStore: ChatStoreObj = {};
     private messageStore: MessageStore = {};
 
+    reset(){
+        this.chatStore = {};
+        this.messageStore = {};
+    }
+
     @action
     addParticipant(...participants: Array<ParticipantInformation>) {
         participants.forEach((participant: ParticipantInformation) => {

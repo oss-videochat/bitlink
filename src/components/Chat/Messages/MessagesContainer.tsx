@@ -1,11 +1,11 @@
 import React from 'react';
 import {observer} from "mobx-react"
-import ChatStore from "../stores/ChatStore";
-import {Message} from "../stores/MessagesStore";
-import MyInfo from "../stores/MyInfo";
+import ChatStore from "../../../stores/ChatStore";
+import {Message} from "../../../stores/MessagesStore";
+import MyInfo from "../../../stores/MyInfo";
 import {MessageComponent} from "./MessageComponent";
 import './MessageContainer.css'
-import IO from "../controllers/IO";
+import IO from "../../../controllers/IO";
 
 @observer
 export class MessagesContainer extends React.Component<any, any> {

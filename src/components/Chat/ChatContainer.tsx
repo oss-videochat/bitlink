@@ -1,10 +1,10 @@
 import React from 'react';
 import {observer} from "mobx-react"
-import {ChatParticipantList} from "./ChatParticipantList";
-import {MessagesContainer} from "./MessagesContainer";
+import {ChatParticipantList} from "./ParticipantList/ChatParticipantList";
+import {MessagesContainer} from "./Messages/MessagesContainer";
 import './ChatContainer.css';
-import {SearchBar} from "./SearchBar";
-import UIStore from "../stores/UIStore";
+import {SearchBar} from "./ParticipantList/SearchBar";
+import UIStore from "../../stores/UIStore";
 
 @observer
 export class ChatContainer extends React.Component<any, any> {

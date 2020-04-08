@@ -36,7 +36,11 @@ interface MessageLike {
 
 class MessagesStore {
     @observable
-    public messages: Array<Message> = [];
+    public messages = observable<Message>([]);
+
+    reset(){
+        this.messages.clear();
+    }
 
     getMessageById(id: string): Message | undefined {
         return this.messages.find((message: Message) =>  message.id = id);

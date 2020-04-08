@@ -38,9 +38,9 @@ class IO extends Event.EventEmitter {
         this.io.on("delete-direct-message", this._handleDeleteMessage.bind(this));
     }
 
-    createRoom() {
+    createRoom(name: string) {
         console.log("Creating room...");
-        this.io.emit("create-room");
+        this.io.emit("create-room", name);
     }
 
     joinRoom(id: string, name?: string) {

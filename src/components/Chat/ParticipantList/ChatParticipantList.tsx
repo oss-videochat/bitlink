@@ -1,13 +1,13 @@
 import React from 'react';
 import {observer} from "mobx-react"
 import {ChatParticipant} from "./ChatParticipant";
-import RoomStore from "../stores/RoomStore";
-import ParticipantsStore from "../stores/ParticipantsStore";
-import MyInfo from "../stores/MyInfo";
-import ChatStore from "../stores/ChatStore";
+import RoomStore from "../../../stores/RoomStore";
+import ParticipantsStore from "../../../stores/ParticipantsStore";
+import MyInfo from "../../../stores/MyInfo";
+import ChatStore from "../../../stores/ChatStore";
 import {SearchBar} from "./SearchBar";
 import './ChatParticipantList.css';
-import UIStore from "../stores/UIStore";
+import UIStore from "../../../stores/UIStore";
 
 @observer
 export class ChatParticipantList extends React.Component<any, any> {

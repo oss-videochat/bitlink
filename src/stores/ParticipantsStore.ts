@@ -18,6 +18,10 @@ class ParticipantsStore {
     @observable
     public participants = observable<ParticipantInformation>([]);
 
+    reset(){
+        this.participants.clear();
+    }
+
     getById(id: string): ParticipantInformation | undefined {
         return this.participants?.find((participant: ParticipantInformation) =>  participant.id === id);
     }

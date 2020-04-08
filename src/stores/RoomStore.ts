@@ -12,6 +12,10 @@ export interface RoomSummary {
 
 class RoomStore {
     @observable public room?: RoomSummary;
+
+    reset(){
+        this.room = undefined;
+    }
 }
 
 export default new RoomStore();

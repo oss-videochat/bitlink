@@ -1,0 +1,12 @@
+.dialog-modal.join-or-create {
+    width: 300px;
+}
+
+.join-or-create-button {
+    margin: 10px;
+    width: 100%;
+    background: #5958ff;
+}
+.modal--button.join-or-create-button:hover {
+    background: #4744d5;
+}

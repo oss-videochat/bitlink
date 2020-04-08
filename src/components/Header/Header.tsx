@@ -1,11 +1,11 @@
 import React from 'react';
 import {observer} from "mobx-react"
 import './Header.css';
-import RoomStore from "../stores/RoomStore";
-import IO from "../controllers/IO";
+import RoomStore from "../../stores/RoomStore";
+import IO from "../../controllers/IO";
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
 import {faUsers, faComments} from '@fortawesome/free-solid-svg-icons'
-import UIStore from "../stores/UIStore";
+import UIStore from "../../stores/UIStore";
 
 @observer
 export class Header extends React.Component<any, any> {
@@ -38,8 +38,8 @@ export class Header extends React.Component<any, any> {
                     </ul>
                     <span className={"divider"}/>
                     <ul>
-                        <li onClick={() => this.handleJoinRoom()}>Join Room</li>
-                        <li onClick={() => IO.createRoom()}>Create Room</li>
+                        <li onClick={() => UIStore.store.modalStore.join = true}>Join Room</li>
+                        <li onClick={() => UIStore.store.modalStore.create = true}>Create Room</li>
                     </ul>
                 </nav>
             </div>

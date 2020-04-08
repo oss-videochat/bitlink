@@ -1,0 +1,52 @@
+.dialog-modal {
+    background: #f9f9f9;
+    color: #353535;
+    padding: 25px;
+    border-radius: 10px;
+    width: 500px;
+    max-width: 100%;
+    margin: 30px;
+}
+
+.modal--title {
+    font-size: 30px;
+    font-weight: 700;
+    text-align: center;
+}
+
+.modal--input {
+    border: 1px solid #d8d8d8;
+    margin: 10px 0;
+    width: 100%;
+    border-radius: 6px;
+    padding: 5px 10px;
+}
+
+.modal--input.invalid {
+    border: 1px solid #d8896f;
+}
+
+.modal--button-container {
+    display: flex;
+    justify-content: space-between;
+    margin: 20px 0 10px;
+}
+
+.modal--button {
+    font-weight: 700;
+    background: #3a3a3a;
+    border-radius: 15px;
+    padding: 6px 15px;
+    font-size: 16px;
+    color: #f1f1f1;
+}
+
+.modal--button:not(:disabled):hover {
+    background: #2b2b2b;
+    color: #f8f8f8;
+}
+
+.modal--button:disabled {
+    background: #bebebe;
+    color: #fbfbfb;
+}

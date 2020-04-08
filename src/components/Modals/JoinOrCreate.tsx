@@ -22,9 +22,10 @@ export class JoinOrCreate extends React.Component<any, any> {
     render() {
         return (
             <div className={"dialog-modal join-or-create"}>
-                <input onClick={() => this.handleClick("create")} type={"button"} value={"Create A Room"}
+                <h2 className={"modal--title"}>Join or Create a Room</h2>
+                <input onClick={() => this.handleClick("join")} type={"button"} value={"Join Room"}
                        className={"modal--button join-or-create-button"}/>
-                <input onClick={() => this.handleClick("join")} type={"button"} value={"Join A Room"}
+                <input onClick={() => this.handleClick("create")} type={"button"} value={"Create Room"}
                        className={"modal--button join-or-create-button"}/>
             </div>
         );

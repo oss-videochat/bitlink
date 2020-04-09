@@ -7,9 +7,13 @@ import {MessageComponent} from "./MessageComponent";
 import './MessageContainer.css'
 import IO from "../../../controllers/IO";
 import ParticipantsStore from "../../../stores/ParticipantsStore";
+import {SystemMessage} from "./SystemMessage";
 
 @observer
 export class MessagesContainer extends React.Component<any, any> {
+    private list: any = React.createRef();
+    private shouldScroll: boolean = true;
+
     constructor(props: any) {
         super(props);
         this.state = {
@@ -32,16 +36,35 @@ export class MessagesContainer extends React.Component<any, any> {
         }
     }
 
+    componentDidMount() {
+        this.scrollToBottom();
+        const el: HTMLElement = this.list.current;
+        el.addEventListener("scroll", e => {
+            this.shouldScroll = el.scrollHeight - (el.scrollTop + el.clientHeight) <= 15;
+        });
+    }
+
+    componentDidUpdate() {
+        this.scrollToBottom()
+    }
+
+    scrollToBottom() {
+        if (this.shouldScroll) {
+            const el: HTMLElement = this.list.current;
+            el.scrollTop = el.scrollHeight;
+        }
+    }
+
     render() {
         let lastParticipant = "";
         let lastTime = 0;
         return (
             <div className={"message-container"}>
-                <div className={"message-list"}>
+                <div ref={this.list} className={"message-list"}>
                     {ChatStore.chatStore[this.props.selectedUser]?.map((message: Message) => {
                             let el;
                             if (message.from.id === ParticipantsStore.system.id) {
-                                el = <MessageComponent isSystemMessage={true} message={message}/>
+                                el = <SystemMessage message={message}/>
                             } else {
                                 el = <MessageComponent
                                     startGroup={lastParticipant !== message.from.id || message.created - lastTime > 1000 * 60 * 5}
@@ -49,6 +72,8 @@ export class MessagesContainer extends React.Component<any, any> {
                                     fromMe={message.from.id === MyInfo.info!.id}
                                     message={message}/>;
                             }
+                            lastTime = message.created;
+                            lastParticipant = message.from.id;
                             return el;
                         }
                     )}

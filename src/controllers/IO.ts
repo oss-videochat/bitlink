@@ -89,12 +89,14 @@ class IO extends Event.EventEmitter {
     _handleNewParticipant(participantSummary: ParticipantInformation) {
         ParticipantsStore.participants.push(participantSummary);
         this.emit("new-participant", participantSummary);
+        ChatStore.participantJoined(participantSummary);
     }
 
     _handleParticipantLeft(participantId: string) {
-        const participant = ParticipantsStore.getById(participantId);
+        const participant: ParticipantInformation | undefined = ParticipantsStore.getById(participantId);
         if (participant) {
             participant.isAlive = false;
+            ChatStore.participantLeft(participant);
         }
     }
 

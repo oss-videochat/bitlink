@@ -16,7 +16,6 @@ export class MessageComponent extends React.Component<any, any> {
                 "message "
                 + (this.props.startGroup ? "group-start " : "")
                 + (this.props.fromMe ? "from-me " : "from-them ")
-                + (this.props.isSystemMessage ? "system-message " : "")
             }>
                 {this.props.startGroup ?
                     <div className={"message--meta"}>
@@ -29,13 +28,9 @@ export class MessageComponent extends React.Component<any, any> {
                 }
                 <div className={"message--content-container"}>
                     <span className={"message--content"}>{this.props.message.content}</span>
-                    {this.props.isSystemMessage ?
-                        null :
-                        <div className={"message--reaction-wrapper"}>
-                            <ReactionsDisplayer reactions={this.props.message.reactions}/>
-                        </div>
-                    }
-
+                    <div className={"message--reaction-wrapper"}>
+                        <ReactionsDisplayer reactions={this.props.message.reactions}/>
+                    </div>
                 </div>
             </div>
         );

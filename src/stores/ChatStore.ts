@@ -20,7 +20,7 @@ class ChatStore {
     @observable public chatStore: ChatStoreObj = {};
     private messageStore: MessageStore = {};
 
-    reset(){
+    reset() {
         this.chatStore = {};
         this.messageStore = {};
     }
@@ -35,14 +35,35 @@ class ChatStore {
         });
     }
 
+    participantLeft(participant: ParticipantInformation) {
+        this.addMessage({
+            content: `${participant.name} left`,
+            created: Date.now(),
+            from: ParticipantsStore.system,
+            id: Math.random().toString(),
+            reactions: [],
+            to: ParticipantsStore.everyone
+        });
+    }
+
+    participantJoined(participant: ParticipantInformation) {
+        this.addMessage({
+            content: `${participant.name} joined`,
+            created: Date.now(),
+            from: ParticipantsStore.system,
+            id: Math.random().toString(),
+            reactions: [],
+            to: ParticipantsStore.everyone
+        });
+    }
+
     @action
     addMessage(...messages: Array<Message>) {
         messages.forEach((message: Message) => {
-            console.log(JSON.stringify(message));
             const externalParticipant = ChatStore.getExternalParticipant(message);
             let key: string = externalParticipant.id;
 
-            if(message.to.id === ParticipantsStore.everyone.id){
+            if (message.to.id === ParticipantsStore.everyone.id) {
                 key = "everyone";
             }
 

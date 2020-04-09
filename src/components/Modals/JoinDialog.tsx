@@ -9,13 +9,16 @@ export class JoinDialog extends React.Component<any, any> {
     constructor(props: any) {
         super(props);
         this.state = {
-            roomId: "",
+            roomId: UIStore.store.preFillJoinValue || "",
             userName: "",
             RoomIdValidationEnabled: false,
             UserNameValidationEnabled: false,
         };
+
+
         this.handleJoinRoom = this.handleJoinRoom.bind(this);
         this.handleCancel = this.handleCancel.bind(this);
+        this.handlePaste = this.handlePaste.bind(this);
     }
 
     hasValidInput(): boolean {
@@ -49,17 +52,33 @@ export class JoinDialog extends React.Component<any, any> {
         }
     }
 
+    handlePaste(e: any) {
+        const text = e.clipboardData.getData('text');
+        const nums = text.match(/\/join\/(.+)$/);
+        console.log(nums);
+        if(nums && nums[1]){
+            e.preventDefault();
+            this.setState({
+                roomId: nums[1]
+            })
+        }
+
+    }
+
     render() {
         return (
             <div className={"dialog-modal"}>
                 <h2 className={"modal--title"}>Join Room</h2>
                 <input onBlur={() => this.setState({RoomIdValidationEnabled: true})}
+                       value={this.state.roomId}
                        className={"modal--input " + ((!this.state.RoomIdValidationEnabled || this.roomIdIsValid()) ? "" : "invalid")}
-                       onChange={(e) => this.setState({roomId: e.target.value})}
-                       placeholder={"Room ID or Link"}/>
+                       onChange={(e) => this.setState({roomId: e.target.value, RoomIdValidationEnabled: true})}
+                       onPaste={this.handlePaste}
+                       placeholder={"Room ID or Paste Link"}/>
                 <input onBlur={() => this.setState({UserNameValidationEnabled: true})}
+                       value={this.state.userName}
                        className={"modal--input " + ((!this.state.UserNameValidationEnabled || this.userNameIsValid()) ? "" : "invalid")}
-                       onChange={(e) => this.setState({userName: e.target.value})}
+                       onChange={(e) => this.setState({userName: e.target.value,UserNameValidationEnabled: true })}
                        placeholder={"Your Name"}/>
                 <div className={"modal--button-container"}>
                     <input onClick={this.handleCancel} type={"button"} value={"Cancel"}

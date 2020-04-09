@@ -52,6 +52,7 @@ export class ChatParticipantList extends React.Component<any, any> {
                                     null
                             }
                             {ParticipantsStore.participants
+                                .slice(2) // get rid of the system and everyone users
                                 .filter(participant => {
                                     return participant.id !== MyInfo.info?.id
                                 })
@@ -63,6 +64,9 @@ export class ChatParticipantList extends React.Component<any, any> {
                                 })
                                 .map(participant => {
                                     const lastMessage = this.getLastMessage(participant.id);
+                                    if(!participant.isAlive && !lastMessage){
+                                        return null;
+                                    }
                                     return <ChatParticipant onChosen={this.props.onUserSelect}
                                                             selected={this.props.selectedUser === participant.id}
                                                             key={"chat-" + participant.id} lastMessage={lastMessage}

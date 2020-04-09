@@ -33,7 +33,7 @@ export class JoinDialog extends React.Component<any, any> {
     handleJoinRoom() {
         UIStore.store.modalStore.join = false;
         MyInfo.chosenName = this.state.userName;
-        IO.joinRoom(this.state.roomId, this.state.roomName);
+        IO.joinRoom(this.state.roomId, this.state.userName);
         this.setState({
             roomId: "",
             userName: "",
@@ -54,8 +54,8 @@ export class JoinDialog extends React.Component<any, any> {
             <div className={"dialog-modal"}>
                 <h2 className={"modal--title"}>Join Room</h2>
                 <input onBlur={() => this.setState({RoomIdValidationEnabled: true})}
-                       className={"modal--input " + ((!this.state.RoomNameValidationEnabled || this.roomIdIsValid()) ? "" : "invalid")}
-                       onChange={(e) => this.setState({roomName: e.target.value})}
+                       className={"modal--input " + ((!this.state.RoomIdValidationEnabled || this.roomIdIsValid()) ? "" : "invalid")}
+                       onChange={(e) => this.setState({roomId: e.target.value})}
                        placeholder={"Room ID or Link"}/>
                 <input onBlur={() => this.setState({UserNameValidationEnabled: true})}
                        className={"modal--input " + ((!this.state.UserNameValidationEnabled || this.userNameIsValid()) ? "" : "invalid")}

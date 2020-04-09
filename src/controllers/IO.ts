@@ -25,8 +25,11 @@ class IO extends Event.EventEmitter {
 
         this.io.on("join-room", this._handleJoinRoom.bind(this));
         this.io.on("room-summary", this._handleRoomSummary.bind(this));
-        this.io.on("new-participant", this._handleNewParticipant.bind(this));
         this.io.on("destroy", this._handleRoomClosure.bind(this));
+
+        this.io.on("new-participant", this._handleNewParticipant.bind(this));
+        this.io.on("participant-left", this._handleParticipantLeft.bind(this));
+
 
         this.io.on("new-room-message", this._handleNewMessage.bind(this));
         this.io.on("new-direct-message", this._handleNewMessage.bind(this));
@@ -53,7 +56,7 @@ class IO extends Event.EventEmitter {
 
     @action
     _handleRoomSummary(roomSummary: RoomSummary) {
-        ParticipantsStore.participants.replace(roomSummary.participants);
+        ParticipantsStore.replace(roomSummary.participants);
         ChatStore.addParticipant(...roomSummary.participants);
 
         roomSummary.participants.forEach((participant: ParticipantInformation | CurrentUserInformation) => {
@@ -75,9 +78,7 @@ class IO extends Event.EventEmitter {
     convertMessageSummaryToMessage(message: MessageSummary): Message {
         const replacementObj: any = {};
         replacementObj.from = ParticipantsStore.getById(message.from) || null;
-        if (message.to !== "everyone") {
-            replacementObj.to = ParticipantsStore.getById(message.to) || null;
-        }
+        replacementObj.to = ParticipantsStore.getById(message.to) || null;
         replacementObj.reactions = JSON.parse(JSON.stringify(message.reactions));
         replacementObj.reactions.forEach((reaction: any) => {
             reaction.participant = ParticipantsStore.getById(reaction.participant);
@@ -90,21 +91,28 @@ class IO extends Event.EventEmitter {
         this.emit("new-participant", participantSummary);
     }
 
+    _handleParticipantLeft(participantId: string) {
+        const participant = ParticipantsStore.getById(participantId);
+        if (participant) {
+            participant.isAlive = false;
+        }
+    }
+
     _handleRoomClosure() {
         this.emit("room-closure");
     }
 
-    _handleNewMessage(messageSummary: MessageSummary){
+    _handleNewMessage(messageSummary: MessageSummary) {
         const realMessage = this.convertMessageSummaryToMessage(messageSummary);
         ChatStore.addMessage(realMessage);
     }
 
-    _handleEditMessage(messageSummary: MessageSummary){
+    _handleEditMessage(messageSummary: MessageSummary) {
         const realMessage = this.convertMessageSummaryToMessage(messageSummary);
         ChatStore.editMessage(realMessage);
     }
 
-    _handleDeleteMessage(messageSummary: MessageSummary){
+    _handleDeleteMessage(messageSummary: MessageSummary) {
         ChatStore.removeMessage(messageSummary.id);
     }
 
@@ -120,12 +128,12 @@ class IO extends Event.EventEmitter {
             content
         });
         if (!response.success) {
-            throw response.error;
+            throw response.error; // TODO UI error
         }
         ChatStore.addMessage({
             id: response.data.id,
             from: MyInfo.info!,
-            to:  ParticipantsStore.getById(toId)!,
+            to: ParticipantsStore.getById(toId)!,
             content: content,
             reactions: [],
             created: response.data.created
@@ -149,7 +157,7 @@ class IO extends Event.EventEmitter {
         ChatStore.addMessage({
             id: response.data.id,
             from: MyInfo.info!,
-            to: "everyone",
+            to: ParticipantsStore.everyone,
             content: content,
             reactions: [],
             created: response.data.created

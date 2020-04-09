@@ -1,9 +1,13 @@
 .message {
     width: 100%;
-    padding: 4px 10px;
     position: relative;
+    padding: 2px  10px;
+}
+.message:hover {
+    background: #dfdfdf;
 }
 
+/*
 .message .message--content-container:after {
     content: " ";
     display: block;
@@ -23,9 +27,8 @@
     left: calc(100% - 1px);
     border-width: 10px 0 11px 10px;
     border-color: transparent transparent transparent  #a1c6f0;
-
 }
-
+*/
 
 .message--meta {
     display: flex;
@@ -39,6 +42,7 @@
     text-overflow: ellipsis;
     display: block;
     flex: 1;
+    font-size: 16px;
 }
 .message--date {
     margin-left: 10px;
@@ -47,14 +51,13 @@
 }
 
 .message--content-container {
-    background: #94ffc3;
-    padding: 10px;
+  /*  background: #94ffc3;*/
     border-radius: 15px;
     position: relative;
 }
 
 .message.from-me .message--content-container {
-    background: #a1c6f0;
+   /* background: #a1c6f0;*/
 }
 
 .message--content {
@@ -62,4 +65,5 @@
     width: 100%;
     display: block;
     word-break: break-word;
+    line-height: 18px;
 }

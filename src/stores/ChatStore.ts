@@ -1,4 +1,4 @@
-import {ParticipantInformation} from "./ParticipantsStore";
+import ParticipantsStore, {ParticipantInformation} from "./ParticipantsStore";
 import {observable, action} from "mobx";
 import {Message} from "./MessagesStore";
 import MyInfo from "./MyInfo";
@@ -38,20 +38,19 @@ class ChatStore {
     @action
     addMessage(...messages: Array<Message>) {
         messages.forEach((message: Message) => {
+            console.log(JSON.stringify(message));
             const externalParticipant = ChatStore.getExternalParticipant(message);
-            let key: string;
-            if (typeof externalParticipant === "string") {
-                key = externalParticipant;
-            } else {
-                key = externalParticipant.id;
-            }
-            if(message.to === "everyone"){
+            let key: string = externalParticipant.id;
+
+            if(message.to.id === ParticipantsStore.everyone.id){
                 key = "everyone";
             }
+
             this.messageStore[message.id] = {
                 message: message,
                 chatStoreKey: key
             };
+
             if (this.chatStore.hasOwnProperty(key)) {
                 this.chatStore[key].push(message);
             } else {
@@ -60,8 +59,8 @@ class ChatStore {
         });
     }
 
-    static getExternalParticipant(message: Message): ParticipantInformation | "everyone" {
-        if (message.from.id === MyInfo.info?.id) {
+    static getExternalParticipant(message: Message): ParticipantInformation {
+        if (message.from.id === MyInfo.info!.id) {
             return message.to;
         } else {
             return message.from;

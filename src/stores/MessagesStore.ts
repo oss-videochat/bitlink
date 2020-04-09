@@ -10,7 +10,7 @@ export interface Reaction {
 export interface Message {
     id: string,
     from: ParticipantInformation,
-    to: ParticipantInformation | "everyone",
+    to: ParticipantInformation,
     content: string,
     reactions: Array<Reaction>,
     created: number,
@@ -29,27 +29,3 @@ export interface MessageSummary {
     reactions: Array<ReactionSummary>,
     created: number,
 }
-
-interface MessageLike {
-
-}
-
-class MessagesStore {
-    @observable
-    public messages = observable<Message>([]);
-
-    reset(){
-        this.messages.clear();
-    }
-
-    getMessageById(id: string): Message | undefined {
-        return this.messages.find((message: Message) =>  message.id = id);
-    }
-
-    getIndexMessageById(id: string): number | undefined {
-        return this.messages.findIndex((message: Message) =>  message.id = id);
-    }
-}
-
-
-export default MessagesStore;

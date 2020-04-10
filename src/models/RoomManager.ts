@@ -41,8 +41,8 @@ class RoomManager {
         return unique;
     }
 
-    handleCreateRoom(socket) {
-        const room = new Room();
+    handleCreateRoom(socket, name) {
+        const room = new Room(name);
         this.addRoom(room);
         socket.emit("join-room", room.id);
     }
@@ -51,7 +51,7 @@ class RoomManager {
         const participant = new Participant(name, socket);
         const room = this.rooms[roomId];
         if (!room) {
-            return socket.emit("error", "join", "The room doesn't exist", 'J404');
+            return socket.emit("error-event", "join", "The room doesn't exist", 'J404');
         }
         room.addParticipant(participant);
     }

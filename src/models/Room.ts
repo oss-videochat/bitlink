@@ -9,15 +9,18 @@ interface ParticipantAuthObj {
 
 class Room extends Event.EventEmitter {
 
-    public id;
-    public idHash;
+    public id: string;
+    public name: string;
+    public idHash: string;
     private readonly participants: Array<Participant> = [];
     private readonly messages: Array<Message> = []; // TODO mongodb
     private configuration;
     public readonly created;
 
-    constructor() {
+    constructor(name: string = "Untitled Room") {
         super();
+
+        this.name = name;
         this.created = new Date();
         setTimeout(() => {
             if (this.participants.length === 0) {
@@ -35,19 +38,16 @@ class Room extends Event.EventEmitter {
 
         this.participants.push(participant);
 
+        participant.socket.emit("room-summary", this.getSummary(participant));
+
         this.emit("new-participant", participant);
-        this.broadcast("new-participant", [participant],
-            {
-                id: participant.id,
-                name: participant.name,
-                settings: participant.settings
-            }
-        );
+        this.broadcast("new-participant", [participant], participant.toSummary());
     }
 
     leaveParticipant(participant: Participant) {
-        this.participants.splice(this.participants.indexOf(participant), 1);
-        this.broadcast("participant-left", participant.id);
+        participant.kill();
+        console.log("left");
+        this.broadcast("participant-left", [], participant.id);
     }
 
     addHostListeners(participant: Participant) {
@@ -69,27 +69,24 @@ class Room extends Event.EventEmitter {
                 }
             );
         });
-
-        participant.socket.emit("room-summary", this.getSummary(participant));
-
-       /* participant.socket.on("video-data", data => {
-            //      console.log("Receive server: " + data.length + " - " + participant.id);
-            this.broadcast("video-data", [participant], data);
-        });
-        */
+        /* participant.socket.on("video-data", data => {
+             //      console.log("Receive server: " + data.length + " - " + participant.id);
+             this.broadcast("video-data", [participant], data);
+         });
+         */
     }
 
     broadcast(event: string, ignoreParticipants: Array<Participant> = [], ...args: any[]) {
         this.participants.forEach(participant => {
-            if (ignoreParticipants.includes(participant)) {
+            if (ignoreParticipants.includes(participant) || !participant.isAlive) {
                 return;
             }
-            console.log("sent to participant");
             participant.socket.emit(event, ...args);
         });
     }
 
     destroy() {
+        console.log("Destroyed");
         this.broadcast("destroy");
         this.emit("destroy");
     }
@@ -118,12 +115,12 @@ class Room extends Event.EventEmitter {
         message.on("edit", () => this.alertRelevantParticipantsAboutMessage(message, "edit"));
         message.on("delete", () => this.alertRelevantParticipantsAboutMessage(message, "delete"));
 
-        return {success: true, error: null, data: message.toJSON(), status: 200};
+        return {success: true, error: null, data: message.toSummary(), status: 200};
     }
 
     alertRelevantParticipantsAboutMessage(message: Message, eventType: "new" | "edit" | "delete") {
         if (message.isToEveryone) {
-            return this.broadcast(eventType + "-room-message", [message.from], JSON.stringify(message.toSummary()));
+            return this.broadcast(eventType + "-room-message", [message.from], message.toSummary());
         }
         return message.to.directMessage(message, eventType);
     }
@@ -156,15 +153,25 @@ class Room extends Event.EventEmitter {
         return this.messages.find(message => message.id === messageId);
     }
 
-    getSummary(participant?: Participant) {
+    getSummary(currentParticipant?: Participant) {
         return {
             id: this.id,
             idHash: this.idHash,
-            participants: this.participants.map(participant => participant.toSummary()),
+            name: this.name,
+            participants: this.participants.map(participantInRoom => {
+                const obj: any = {
+                    isMe: participantInRoom.id === currentParticipant.id,
+                    ...participantInRoom.toSummary()
+                };
+                if (obj.isMe) {
+                    obj.key = participantInRoom.key
+                }
+                return obj;
+            }),
             messages: this.messages.filter(message => message.isToEveryone
-                || (participant
-                    && message.from.id === participant.id
-                    || message.to.id === participant.id
+                || (currentParticipant
+                    && message.from.id === currentParticipant.id
+                    || message.to.id === currentParticipant.id
                 )
             ).map(message => message.toSummary())
         }

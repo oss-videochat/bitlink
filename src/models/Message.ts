@@ -13,11 +13,13 @@ interface ReactionSummary {
 }
 
 interface MessageJSONSummary {
-    from: string // id of participant
+    id: string, // message id for editing, deleting, and reactions
+    from: string, // id of participant
     to: string, // id of participant
     message: string, // id of message
     content: string,
-    reactions: Array<ReactionSummary>
+    reactions: Array<ReactionSummary>,
+    created: number
 }
 
 class Message extends Event.EventEmitter {
@@ -66,11 +68,13 @@ class Message extends Event.EventEmitter {
 
     toSummary(): MessageJSONSummary {
         return {
+            id: this.id,
             from: this.from.id,
             to: this.isToEveryone ? "everyone" : this.to.id,
             message: this.id,
             content: this.content,
-            reactions: this.summarizeReactions()
+            reactions: this.summarizeReactions(),
+            created: this.created.getTime()
         }
     }
 

@@ -11,6 +11,7 @@ class UIStore {
         modalStore: {
             joinOrCreate: false,
             join: false,
+            joiningRoom: false,
             create: false,
         },
         preFillJoinValue: null,

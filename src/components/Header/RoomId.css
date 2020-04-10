@@ -1,0 +1,23 @@
+.room-info--id-wrapper {
+    display: inline-block;
+    margin-left: 10px;
+    padding: 6px 10px;
+    background: #2a3365;
+    border-radius: 15px;
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.room-info--id-wrapper:hover {
+    background: #232449;
+}
+
+.room-info--id {
+    display: inline-block;
+    margin-right: 10px;
+}
+.room-info--share-icon {
+    vertical-align: top;
+    font-size: 12px;
+}

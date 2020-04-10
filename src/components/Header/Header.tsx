@@ -6,6 +6,7 @@ import IO from "../../controllers/IO";
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
 import {faUsers, faComments} from '@fortawesome/free-solid-svg-icons'
 import UIStore from "../../stores/UIStore";
+import {RoomId} from "./RoomId";
 
 @observer
 export class Header extends React.Component<any, any> {
@@ -21,12 +22,12 @@ export class Header extends React.Component<any, any> {
 
     render() {
         return (
-            <div className={"header"}>
+            <header className={"header"}>
                 <div className={"header--room-info"}>
                     { RoomStore.room ?
                         <React.Fragment>
                             <span className={"room-info--name"}>{RoomStore.room.name}</span>
-                            <span className={"room-info--id"}>{RoomStore.room.id}</span>
+                            <RoomId/>
                         </React.Fragment>
                         : null
                     }
@@ -42,7 +43,7 @@ export class Header extends React.Component<any, any> {
                         <li onClick={() => UIStore.store.modalStore.create = true}>Create Room</li>
                     </ul>
                 </nav>
-            </div>
+            </header>
         );
     }
 }

@@ -1,6 +1,4 @@
 import React from 'react';
-import {observer} from "mobx-react"
-import {observable} from "mobx"
 
 import {VideoContainer} from "./VideoContainer";
 import {Header} from './Header/Header';
@@ -8,6 +6,7 @@ import './App.css';
 import {ChatContainer} from "./Chat/ChatContainer";
 import {Modal} from "./Modals/Modal";
 import UIStore from "../stores/UIStore";
+import {NotificationViewer} from "./NotificationViewer";
 
 export class App extends React.Component<any, any> {
     constructor(props: any) {
@@ -37,10 +36,9 @@ export class App extends React.Component<any, any> {
     render() {
         return (
             <div className={"app"}>
+                <NotificationViewer/>
                 <Modal/>
-                <header className={"header"}>
-                    <Header/>
-                </header>
+                <Header/>
                 <div className={"main-container"}>
                     <ChatContainer/>
                     <VideoContainer/>

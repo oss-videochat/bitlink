@@ -8,6 +8,9 @@ import RoomStore, {RoomSummary} from "../stores/RoomStore";
 import MyInfo from "../stores/MyInfo";
 import ChatStore from "../stores/ChatStore";
 import {Message, MessageSummary} from "../stores/MessagesStore";
+import NotificationStore, {NotificationType, UINotification} from "../stores/NotificationStore";
+import UIStore from "../stores/UIStore";
+import {ResetStores} from "../util/ResetStores";
 
 
 interface APIResponse {
@@ -26,6 +29,7 @@ class IO extends Event.EventEmitter {
         this.io.on("join-room", this._handleJoinRoom.bind(this));
         this.io.on("room-summary", this._handleRoomSummary.bind(this));
         this.io.on("destroy", this._handleRoomClosure.bind(this));
+        this.io.on("error-event", this._handleError.bind(this));
 
         this.io.on("new-participant", this._handleNewParticipant.bind(this));
         this.io.on("participant-left", this._handleParticipantLeft.bind(this));
@@ -52,6 +56,18 @@ class IO extends Event.EventEmitter {
 
     _handleJoinRoom(id: string) {
         this.joinRoom(id, MyInfo.chosenName);
+    }
+
+    _handleError(type: string, content: string, code: string) {
+        switch (code) {
+            case 'J404': {
+                if (!RoomStore.room) {
+                    UIStore.store.modalStore.join = true;
+                    NotificationStore.add(new UINotification(`Join Error: ${content}`, NotificationType.Error));
+                }
+                break;
+            }
+        }
     }
 
     @action
@@ -88,6 +104,7 @@ class IO extends Event.EventEmitter {
 
     _handleNewParticipant(participantSummary: ParticipantInformation) {
         ParticipantsStore.participants.push(participantSummary);
+        NotificationStore.add(new UINotification(`${participantSummary.name} joined!`, NotificationType.Alert));
         this.emit("new-participant", participantSummary);
         ChatStore.participantJoined(participantSummary);
     }
@@ -97,10 +114,14 @@ class IO extends Event.EventEmitter {
         if (participant) {
             participant.isAlive = false;
             ChatStore.participantLeft(participant);
+            NotificationStore.add(new UINotification(`${participant.name} left!`, NotificationType.Alert));
         }
     }
 
     _handleRoomClosure() {
+        NotificationStore.add(new UINotification(`Room was closed!`, NotificationType.Warning));
+        ResetStores();
+        UIStore.store.modalStore.joinOrCreate = true;
         this.emit("room-closure");
     }
 
@@ -130,7 +151,9 @@ class IO extends Event.EventEmitter {
             content
         });
         if (!response.success) {
-            throw response.error; // TODO UI error
+            NotificationStore.add(new UINotification(`An error occurred sending the message: "${response.error}"`, NotificationType.Error));
+            console.error("Sending Error: " + response.error);
+            return;
         }
         ChatStore.addMessage({
             id: response.data.id,
@@ -154,7 +177,9 @@ class IO extends Event.EventEmitter {
             content
         });
         if (!response.success) {
-            throw response.error;
+            NotificationStore.add(new UINotification(`An error occurred sending the message: "${response.error}"`, NotificationType.Error));
+            console.error("Sending Error: " + response.error);
+            return;
         }
         ChatStore.addMessage({
             id: response.data.id,
@@ -178,7 +203,9 @@ class IO extends Event.EventEmitter {
             content
         });
         if (!response.success) {
-            throw response.error;
+            NotificationStore.add(new UINotification(`An error occurred editing the message: "${response.error}"`, NotificationType.Error));
+            console.error("Editing Error: " + response.error);
+            return;
         }
         const message = ChatStore.getMessageById(id);
         if (!message) {
@@ -198,7 +225,9 @@ class IO extends Event.EventEmitter {
             messageId: id,
         });
         if (!response.success) {
-            throw response.error;
+            NotificationStore.add(new UINotification(`An error occurred deleting the message: "${response.error}"`, NotificationType.Error));
+            console.error("Deleting Error: " + response.error);
+            return;
         }
         ChatStore.removeMessage(id);
         return true;

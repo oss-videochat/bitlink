@@ -37,7 +37,6 @@ class ParticipantsStore {
         }
     };
 
-    @observable
     public participants = observable<ParticipantInformation>([this.system, this.everyone]);
 
     reset() {

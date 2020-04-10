@@ -26,11 +26,7 @@ export class MessagesContainer extends React.Component<any, any> {
         if (e.key === "Enter" && !e.shiftKey) {
             e.preventDefault();
             if (this.state.inputValue.trim().length > 0) {
-                if (this.props.selectedUser === "everyone") {
-                    IO.sendToRoom(this.state.inputValue);
-                } else {
-                    IO.sendDirect(this.props.selectedUser, this.state.inputValue);
-                }
+                IO.send(this.props.selectedUser, this.state.inputValue);
                 this.setState({inputValue: ""});
             }
         }

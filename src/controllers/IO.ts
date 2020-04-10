@@ -16,7 +16,8 @@ import {ResetStores} from "../util/ResetStores";
 interface APIResponse {
     success: boolean,
     error: string | null,
-    data?: any
+    data?: any,
+    status: number
 }
 
 class IO extends Event.EventEmitter {
@@ -27,9 +28,7 @@ class IO extends Event.EventEmitter {
         this.io = io(ioAddress);
 
         this.io.on("join-room", this._handleJoinRoom.bind(this));
-        this.io.on("room-summary", this._handleRoomSummary.bind(this));
         this.io.on("destroy", this._handleRoomClosure.bind(this));
-        this.io.on("error-event", this._handleError.bind(this));
 
         this.io.on("new-participant", this._handleNewParticipant.bind(this));
         this.io.on("participant-left", this._handleParticipantLeft.bind(this));
@@ -51,24 +50,20 @@ class IO extends Event.EventEmitter {
     }
 
     joinRoom(id: string, name?: string) {
-        this.io.emit("join-room", id, name);
+        this.io.emit("join-room", id, name, (response: APIResponse) => {
+            if(!response.success){
+                UIStore.store.modalStore.join = true;
+                NotificationStore.add(new UINotification(`Join Error: ${response.error}`, NotificationType.Error));
+                return;
+            }
+            this._handleRoomSummary(response.data);
+        });
     }
 
     _handleJoinRoom(id: string) {
         this.joinRoom(id, MyInfo.chosenName);
     }
 
-    _handleError(type: string, content: string, code: string) {
-        switch (code) {
-            case 'J404': {
-                if (!RoomStore.room) {
-                    UIStore.store.modalStore.join = true;
-                    NotificationStore.add(new UINotification(`Join Error: ${content}`, NotificationType.Error));
-                }
-                break;
-            }
-        }
-    }
 
     @action
     _handleRoomSummary(roomSummary: RoomSummary) {
@@ -140,16 +135,8 @@ class IO extends Event.EventEmitter {
     }
 
     @action
-    async sendDirect(to: ParticipantInformation | string, content: string) {
-        const toId = typeof to === "string" ? to : to.id;
-        const response = await this.apiRequest("send", {
-            from: {
-                id: CurrentUserInformationStore.info?.id,
-                key: CurrentUserInformationStore.info?.key
-            },
-            to: toId,
-            content
-        });
+    async send(toId: string, content: string) {
+        const response = await this.socketRequest("send-message", toId, content);
         if (!response.success) {
             NotificationStore.add(new UINotification(`An error occurred sending the message: "${response.error}"`, NotificationType.Error));
             console.error("Sending Error: " + response.error);
@@ -167,83 +154,42 @@ class IO extends Event.EventEmitter {
     }
 
     @action
-    async sendToRoom(content: string) {
-        const response = await this.apiRequest("send", {
-            from: {
-                id: CurrentUserInformationStore.info?.id,
-                key: CurrentUserInformationStore.info?.key
-            },
-            to: "everyone",
-            content
-        });
-        if (!response.success) {
-            NotificationStore.add(new UINotification(`An error occurred sending the message: "${response.error}"`, NotificationType.Error));
-            console.error("Sending Error: " + response.error);
-            return;
-        }
-        ChatStore.addMessage({
-            id: response.data.id,
-            from: MyInfo.info!,
-            to: ParticipantsStore.everyone,
-            content: content,
-            reactions: [],
-            created: response.data.created
-        });
-        return true;
-    }
+    async edit(toId: string, content: string) {
+        const response = await this.socketRequest("edit-message", toId, content);
 
-    @action
-    async edit(id: string, content: string) {
-        const response = await this.apiRequest("edit", {
-            from: {
-                id: CurrentUserInformationStore.info?.id,
-                key: CurrentUserInformationStore.info?.key
-            },
-            messageId: id,
-            content
-        });
         if (!response.success) {
             NotificationStore.add(new UINotification(`An error occurred editing the message: "${response.error}"`, NotificationType.Error));
             console.error("Editing Error: " + response.error);
             return;
         }
-        const message = ChatStore.getMessageById(id);
+        const message = ChatStore.getMessageById(toId);
+
         if (!message) {
             return true;
         }
+
         message.content = content;
         return true;
     }
 
     @action
-    async delete(id: string, content: string) {
-        const response = await this.apiRequest("delete", {
-            from: {
-                id: CurrentUserInformationStore.info?.id,
-                key: CurrentUserInformationStore.info?.key
-            },
-            messageId: id,
-        });
+    async delete(toId: string) {
+        const response = await this.socketRequest("delete-message", toId);
+
         if (!response.success) {
             NotificationStore.add(new UINotification(`An error occurred deleting the message: "${response.error}"`, NotificationType.Error));
             console.error("Deleting Error: " + response.error);
             return;
         }
-        ChatStore.removeMessage(id);
+        ChatStore.removeMessage(toId);
         return true;
     }
 
-    apiRequest(url: string, body: Object): Promise<APIResponse> {
+    socketRequest(event: string, ...args: any[]): Promise<APIResponse> {
         return new Promise(async (resolve, reject) => {
-            const resp = await fetch(`http://${window.location.hostname}:3001/api/${RoomStore.room?.idHash}/${url}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(body)
+            this.io.emit(event, ...args, (json: APIResponse) => {
+                resolve(json);
             });
-            const data = await resp.json();
-            resolve(data);
         });
     }
 

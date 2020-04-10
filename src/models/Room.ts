@@ -1,6 +1,7 @@
 import * as Event from 'events'
 import Participant from "./Participant";
 import Message from "./Message";
+import {APIResponse, APIResponseCallback} from "./APIResponse";
 
 interface ParticipantAuthObj {
     id: string,
@@ -29,16 +30,15 @@ class Room extends Event.EventEmitter {
         }, 10000); // user has 10 seconds to join the room they created before it will be destroyed
     }
 
-    addParticipant(participant: Participant) {
+    addParticipant(participant: Participant, cb: APIResponseCallback) {
         this.addListeners(participant);
 
         if (this.participants.length === 0) {
             this.addHostListeners(participant);
         }
-
         this.participants.push(participant);
 
-        participant.socket.emit("room-summary", this.getSummary(participant));
+        cb({success: true, error: null, status: 200, data: this.getSummary(participant)});
 
         this.emit("new-participant", participant);
         this.broadcast("new-participant", [participant], participant.toSummary());
@@ -69,6 +69,23 @@ class Room extends Event.EventEmitter {
                 }
             );
         });
+
+        participant.socket.on("send-message", (to: string, content: string, cb) => {
+            const response: APIResponse = this.sendMessage(participant, to, content);
+            cb(response);
+        });
+
+        participant.socket.on("edit-message", (messageId: string, content: string, cb) => {
+            const response: APIResponse = this.editMessage(participant, messageId, content);
+            cb(response);
+        });
+
+        participant.socket.on("delete-message", (messageId: string, cb) => {
+            const response: APIResponse = this.deleteMessage(participant, messageId);
+            cb(response);
+        });
+
+
         /* participant.socket.on("video-data", data => {
              //      console.log("Receive server: " + data.length + " - " + participant.id);
              this.broadcast("video-data", [participant], data);
@@ -91,23 +108,16 @@ class Room extends Event.EventEmitter {
         this.emit("destroy");
     }
 
-    sendMessage(from: ParticipantAuthObj, toId: string, content) {
-        const fromParticipant: Participant = this.participants.find(participant => participant.id === from.id);
-        if (!fromParticipant) {
-            return {success: false, error: "Could not find from participant", status: 404}
-        }
-        if (fromParticipant.key !== from.key) { // TODO this isn't timing safe. Using crypto module's timing safe equals method
-            return {success: false, error: "The key did not match", status: 403}
-        }
+    sendMessage(from: Participant, toId: string, content): APIResponse {
         let message;
         if (toId === "everyone") {
-            message = new Message(fromParticipant, toId, content);
+            message = new Message(from, toId, content);
         } else {
             const toParticipant: Participant = this.participants.find(participant => participant.id === toId);
             if (!toParticipant) {
                 return {success: false, error: "Could not find to participant", status: 404}
             }
-            message = new Message(fromParticipant, toParticipant, content);
+            message = new Message(from, toParticipant, content);
         }
         this.messages.push(message);
         this.alertRelevantParticipantsAboutMessage(message, "new");
@@ -125,24 +135,24 @@ class Room extends Event.EventEmitter {
         return message.to.directMessage(message, eventType);
     }
 
-    editMessage(from: ParticipantAuthObj, messageId: string, content: string) {
+    editMessage(from: Participant, messageId: string, content: string): APIResponse {
         const message = this.getMessage(messageId);
         if (!message) {
             return {success: false, error: "Could not find message", status: 404}
         }
-        if (message.from.id !== from.id || message.from.key !== from.key) {
+        if (message.from.id !== from.id) {
             return {success: false, error: "You are not authorized to preform this action", status: 403}
         }
         message.edit(content);
         return {success: true, error: null, status: 200};
     }
 
-    deleteMessage(from: ParticipantAuthObj, messageId: string) {
+    deleteMessage(from: Participant, messageId: string): APIResponse {
         const message = this.getMessage(messageId);
         if (!message) {
             return {success: false, error: "Could not find message", status: 404}
         }
-        if (message.from.id !== from.id || message.from.key !== from.key) {
+        if (message.from.id !== from.id) {
             return {success: false, error: "You are not authorized to preform this action", status: 403}
         }
         message.delete();

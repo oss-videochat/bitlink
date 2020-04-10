@@ -5,6 +5,7 @@ import {SocketWrapper} from "./SocketWrapper";
 
 import * as cryptoRandomString from 'crypto-random-string';
 import * as crypto from 'crypto';
+import {APIResponseCallback} from "./APIResponse";
 
 interface roomObject {
     [id: string]: Room,
@@ -19,7 +20,6 @@ class RoomManager {
         this.socketWrapper = socketWrapper;
         this.socketWrapper.allSockets.on("create-room", this.handleCreateRoom.bind(this));
         this.socketWrapper.allSockets.on("join-room", this.handleJoinRoom.bind(this));
-        this.setUpRouter();
     }
 
     getRoom(name: string) {
@@ -47,52 +47,13 @@ class RoomManager {
         socket.emit("join-room", room.id);
     }
 
-    handleJoinRoom(socket, roomId: string, name: string) {
+    handleJoinRoom(socket, roomId: string, name: string, cb: APIResponseCallback) {
         const participant = new Participant(name, socket);
         const room = this.rooms[roomId];
         if (!room) {
-            return socket.emit("error-event", "join", "The room doesn't exist", 'J404');
+           return  cb({success: false, error: "The room doesn't exist", status: 404});
         }
-        room.addParticipant(participant);
-    }
-
-    setUpRouter(){
-        const router = this.router;
-
-        const roomHashAndJSONValidator = (req: Request, res: Response, next: NextFunction) => {
-            if(!req.is("application/json")){
-                return res.status(400).json({success: false, error: "Request must be 'Content-Type: application/json'"})
-            }
-            const room: Room | undefined = Object.values(this.rooms).find((room: Room) => room.idHash === req.params.roomIdHash);
-            if(!room){
-                return res.status(404).json({success: false, error: "Could not find room"})
-            }
-            req.room = room;
-            return next();
-        };
-
-        router.post("/:roomIdHash/send", roomHashAndJSONValidator,  (req, res, next) => {
-            const resp = req.room.sendMessage(req.body.from, req.body.to, req.body.content);
-            res.status(resp.status);
-            delete resp.status;
-            res.json(resp);
-        });
-
-
-        router.post("/:roomIdHash/edit", roomHashAndJSONValidator,  (req, res, next) => {
-            const resp = req.room.editMessage(req.body.from, req.body.message, req.body.content);
-            res.status(resp.status);
-            delete resp.status;
-            res.json(resp);
-        });
-
-
-        router.post("/:roomIdHash/delete", roomHashAndJSONValidator,  (req, res, next) => {
-            const resp = req.room.deleteMessage(req.body.from, req.body.message);
-            res.status(resp.status);
-            delete resp.status;
-            res.json(resp);
-        });
+        room.addParticipant(participant, cb);
     }
 
 }

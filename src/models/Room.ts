@@ -79,11 +79,11 @@ class Room extends Event.EventEmitter {
                 this.destroy();
             }
         });
-        participant.on("update-settings", () => {
-            this.broadcast("participant-updated-settings", [participant],
+        participant.on("media-state-update", () => {
+            this.broadcast("participant-updated-media-state", [participant],
                 {
                     id: participant.id,
-                    settings: participant.settings
+                    mediaState: participant.mediaState
                 }
             );
         });
@@ -199,7 +199,7 @@ class Room extends Event.EventEmitter {
                     rtpParameters
                 });
                 participant.mediasoupPeer.addProducer(producer, kind);
-                this._handleNewProducer(participant, producer);
+                this._handleNewProducer(participant, kind);
                 cb({
                     success: true,
                     error: null,
@@ -216,19 +216,15 @@ class Room extends Event.EventEmitter {
                 });
             }
         });
-
-        /* participant.socket.on("video-data", data => {
-             //      console.log("Receive server: " + data.length + " - " + participant.id);
-             this.broadcast("video-data", [participant], data);
-         });
-         */
     }
 
-    _handleNewProducer(participant, producer) {
-        /* this.broadcast("new-consumer", [participant], {
-             id: participant.id,
-
-         });*/
+    _handleNewProducer(theParticipant, kind: "video" | "audio") {
+        this.participants.forEach(aParticpant => {
+           if(aParticpant.id === theParticipant.id) {
+               return;
+           }
+           this.createConsumerAndNotify(theParticipant, aParticpant, kind)
+        });
     }
 
     broadcast(event: string, ignoreParticipants: Array<Participant> = [], ...args: any[]) {
@@ -327,13 +323,12 @@ class Room extends Event.EventEmitter {
 
     async createConsumerAndNotify(producerPeer: Participant, consumerPeer: Participant, kind: "video" | "audio") {
         const producer = producerPeer.mediasoupPeer.getProducersByKind(kind);
-
         if (
             !consumerPeer.mediasoupPeer.rtcCapabilities
             || !this._router.canConsume({
-                producerId: producer.id,
-                rtpCapabilities: consumerPeer.mediasoupPeer.rtcCapabilities
-            })
+            producerId: producer.id,
+            rtpCapabilities: consumerPeer.mediasoupPeer.rtcCapabilities
+        })
         ) {
             return;
         }

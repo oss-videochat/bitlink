@@ -1,5 +1,6 @@
 import {types} from "mediasoup";
 import {APIResponse} from "./APIResponse";
+import * as Events from "events";
 
 interface ProducerObj {
     video: types.Producer,
@@ -11,7 +12,7 @@ interface TransportObj {
     receiving: types.Transport,
 }
 
-export default class MediasoupPeer {
+export default class MediasoupPeer extends Events.EventEmitter{
     public transports: TransportObj = {
         sending: null,
         receiving: null,
@@ -24,6 +25,7 @@ export default class MediasoupPeer {
     public rtcCapabilities;
 
     constructor(socket) {
+        super();
         socket.on("producer-action", (type, action, cb: (response: APIResponse) => void) => {
             const producer: types.Producer = this.producers[type];
             if (!producer) {
@@ -36,15 +38,16 @@ export default class MediasoupPeer {
             }
             switch (action) {
                 case "pause":
-                    producer.pause();
+                    producer.pause().then(() => this.emit(type + '-toggle', false));
                     cb({success: true, status: 200, error: null});
                     break;
                 case "resume":
-                    producer.resume();
+                    producer.resume().then(() => this.emit(type + '-toggle', true));
                     cb({success: true, status: 200, error: null});
                     break;
                 case "close":
                     producer.close();
+                    this.emit(type + '-toggle', false);
                     producer[type] = null;
                     cb({success: true, status: 200, error: null});
                     break;

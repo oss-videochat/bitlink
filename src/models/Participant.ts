@@ -5,7 +5,7 @@ import Message from "./Message";
 import  * as mediasoup from "mediasoup";
 import MediasoupPeer from "./MediasoupPeer";
 
-interface UserSettings {
+interface MediaState {
     cameraEnabled?: boolean,
     microphoneEnabled?: boolean,
 }
@@ -13,7 +13,7 @@ interface UserSettings {
 interface ParticipantSummary {
     id: string,
     name: string,
-    settings: UserSettings,
+    mediaState: MediaState,
     isHost: boolean,
     isAlive: boolean,
 }
@@ -23,8 +23,8 @@ class Participant extends Event.EventEmitter {
         return this._isAlive;
     }
 
-    get settings(): UserSettings {
-        return this._settings;
+    get mediaState(): MediaState {
+        return this._mediaState;
     }
 
     get id() {
@@ -48,7 +48,7 @@ class Participant extends Event.EventEmitter {
     public readonly key = cryptoRandomString({length: 12});
     public readonly mediasoupPeer: MediasoupPeer;
 
-    private _settings: UserSettings = {
+    private _mediaState: MediaState = {
         cameraEnabled: false,
         microphoneEnabled: false
     };
@@ -64,17 +64,26 @@ class Participant extends Event.EventEmitter {
         this.socket.on("update-name", (name) => {
             this.name = name;
         });
-        this.socket.on("update-settings", (name) => {
-            this.updateUserSettings(name);
+        this.socket.on("update-settings", (settingsUpdate) => {
+            this.updateUserSettings(settingsUpdate);
         });
 
-        this.mediasoupPeer = new MediasoupPeer(this.socket)
+        this.mediasoupPeer = new MediasoupPeer(this.socket);
+
+        this.mediasoupPeer.on("audio-toggle", (state: boolean) => {
+            this.mediaState.microphoneEnabled = state;
+            this.emit("media-state-update");
+        });
+
+        this.mediasoupPeer.on("video-toggle", (state: boolean) => {
+            this.mediaState.cameraEnabled = state;
+            this.emit("media-state-update");
+        });
     }
 
 
-    updateUserSettings(object: UserSettings) {
-        Object.assign(this._settings, object);
-        this.emit("update-settings");
+    updateUserSettings(object) {
+
     }
 
     directMessage(message: Message, eventType: "new" | "edit" | "delete") {
@@ -95,7 +104,7 @@ class Participant extends Event.EventEmitter {
         return {
             id: this.id,
             name: this.name,
-            settings: this.settings,
+            mediaState: this.mediaState,
             isHost: this.isHost,
             isAlive: this._isAlive,
         }

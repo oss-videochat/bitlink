@@ -3,6 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
+    "debug": "ts-node ./bin/www",
     "start": "node ./build/bin/www",
     "build": "tsc && npm run copy-assets",
     "copy-assets": "cp -R ./bin ./build;"

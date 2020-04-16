@@ -25,7 +25,7 @@ io.emit('event-string', 'arg1', 'arg2')
 
 - `create-room()` - Create a room. Client should receive a `join-room` event soon.
 - `join-room(idOfRoom [, nameOfParticipant])` - Join a room. Client should receive a `room-summary` event if joining was successful. Otherwise, they will receive an `error` event.
-- `update-settings(userSettings)` -  Update user settings.
+- `update-mediaState(userSettings)` -  Update user mediaState.
 
 ```typescript
 interface UserSettings {
@@ -47,7 +47,7 @@ interface UserSettings {
 interface ParticipantInformation {
     id: string,
     name: string,
-    settings: UserSettings
+    mediaState: UserSettings
  }
 ```
 

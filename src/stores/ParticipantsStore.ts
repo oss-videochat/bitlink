@@ -1,7 +1,7 @@
 import {observable} from "mobx"
 import {types} from "mediasoup-client";
 
-interface UserSettings {
+export interface MediaState {
     cameraEnabled: boolean,
     microphoneEnabled: boolean,
 }
@@ -9,7 +9,7 @@ interface UserSettings {
 export interface ParticipantInformation {
     id: string,
     name: string,
-    settings: UserSettings,
+    mediaState: MediaState,
     isHost: boolean,
     isMe: boolean,
     isAlive: boolean,
@@ -27,7 +27,7 @@ class ParticipantsStore {
         id: "system",
         isAlive: true,
         isHost: false, isMe: false, name: "System",
-        settings: {
+        mediaState: {
             cameraEnabled: false,
             microphoneEnabled: false
         }
@@ -37,7 +37,7 @@ class ParticipantsStore {
         id: "everyone",
         isAlive: true,
         isHost: false, isMe: false, name: "everyone",
-        settings: {
+        mediaState: {
             cameraEnabled: false,
             microphoneEnabled: false
         }

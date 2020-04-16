@@ -4,9 +4,10 @@ import './Header.css';
 import RoomStore from "../../stores/RoomStore";
 import IO from "../../controllers/IO";
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
-import {faUsers, faComments, faMicrophone, faVideo} from '@fortawesome/free-solid-svg-icons'
+import {faUsers, faComments, faMicrophone, faMicrophoneSlash, faVideo, faVideoSlash} from '@fortawesome/free-solid-svg-icons'
 import UIStore from "../../stores/UIStore";
 import {RoomId} from "./RoomId";
+import MyInfo from "../../stores/MyInfo";
 
 @observer
 export class Header extends React.Component<any, any> {
@@ -36,8 +37,24 @@ export class Header extends React.Component<any, any> {
                     <ul>
                         <li onClick={() => UIStore.toggle('participantPanel')}><FontAwesomeIcon icon={faUsers}/></li>
                         <li onClick={() => UIStore.toggle('chatPanel')}><FontAwesomeIcon icon={faComments}/></li>
-                        <li onClick={() => IO.toggleAudio()}><FontAwesomeIcon icon={faMicrophone}/></li>
-                        <li onClick={() => IO.toggleVideo()}><FontAwesomeIcon icon={faVideo}/></li>
+                        {
+                            MyInfo.info ?
+                                <React.Fragment>
+                                    <li onClick={() => IO.toggleAudio()}>
+                                        {MyInfo.info.mediaState.microphoneEnabled ?
+                                            <FontAwesomeIcon icon={faMicrophone}/> :
+                                            <FontAwesomeIcon icon={faMicrophoneSlash}/>
+                                        }
+                                    </li>
+                                    <li onClick={() => IO.toggleVideo()}>
+                                        {MyInfo.info.mediaState.cameraEnabled ?
+                                            <FontAwesomeIcon icon={faVideo}/> :
+                                            <FontAwesomeIcon icon={faVideoSlash}/>
+                                        }
+                                    </li>
+                                </React.Fragment>
+                                : null
+                        }
                     </ul>
                     <span className={"divider"}/>
                     <ul>

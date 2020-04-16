@@ -57,10 +57,10 @@ export class MessagesContainer extends React.Component<any, any> {
         return (
             <div className={"message-container"}>
                 <div ref={this.list} className={"message-list"}>
-                    {ChatStore.chatStore[this.props.selectedUser]?.map((message: Message) => {
+                    {ChatStore.chatStore[this.props.selectedUser]?.map((message: Message, index) => {
                             let el;
                             if (message.from.id === ParticipantsStore.system.id) {
-                                el = <SystemMessage message={message}/>
+                                el = <SystemMessage key={index} message={message}/>
                             } else {
                                 el = <MessageComponent
                                     startGroup={lastParticipant !== message.from.id || message.created - lastTime > 1000 * 60 * 5}

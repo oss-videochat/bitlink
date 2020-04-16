@@ -21,6 +21,7 @@ interface MediasoupObj {
 class CurrentUserInformationStore {
     @observable
     public info?: CurrentUserInformation;
+
     public chosenName?: string;
     public mediasoup: MediasoupObj = {
         transports: {
@@ -37,6 +38,24 @@ class CurrentUserInformationStore {
     reset() {
         this.chosenName = undefined;
         this.info = undefined;
+    }
+
+    pause(kind: "video" | "audio"){
+        this.mediasoup.producers[kind]?.pause();
+        if(kind === "video"){
+            this.info!.mediaState.cameraEnabled = false;
+        } else {
+            this.info!.mediaState.microphoneEnabled = false;
+        }
+    }
+
+    resume(kind: "video" | "audio"){
+        this.mediasoup.producers[kind]?.resume();
+        if(kind === "video"){
+            this.info!.mediaState.cameraEnabled = true;
+        } else {
+            this.info!.mediaState.microphoneEnabled = true;
+        }
     }
 
     async getVideoStream() {

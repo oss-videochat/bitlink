@@ -1,5 +1,5 @@
 import io from 'socket.io-client';
-import ParticipantsStore, {ParticipantInformation} from "../stores/ParticipantsStore";
+import ParticipantsStore, {MediaState, ParticipantInformation} from "../stores/ParticipantsStore";
 import {action} from 'mobx';
 import * as Event from 'events';
 
@@ -22,7 +22,6 @@ interface APIResponse {
 
 class IO extends Event.EventEmitter {
     private io: SocketIOClient.Socket;
-    private device: mediasoupclient.types.Device = new mediasoupclient.Device();
 
     constructor(ioAddress: string) {
         super();
@@ -32,6 +31,7 @@ class IO extends Event.EventEmitter {
         this.io.on("destroy", this._handleRoomClosure.bind(this));
 
         this.io.on("new-participant", this._handleNewParticipant.bind(this));
+        this.io.on("participant-updated-media-state", this._handleMediaStateUpdate.bind(this));
         this.io.on("participant-left", this._handleParticipantLeft.bind(this));
 
 
@@ -64,10 +64,11 @@ class IO extends Event.EventEmitter {
                     NotificationStore.add(new UINotification(`Join Error: ${response.error}`, NotificationType.Error));
                     throw response.error;
                 }
-                return this.device.load({routerRtpCapabilities: response.data});
+                RoomStore.device = new mediasoupclient.Device();
+                return RoomStore.device.load({routerRtpCapabilities: response.data});
             })
             .then(() => {
-                this.io.emit("join-room", id, name, this.device.rtpCapabilities, (response: APIResponse) => {
+                this.io.emit("join-room", id, name, RoomStore.device!.rtpCapabilities, (response: APIResponse) => {
                     if (!response.success) {
                         console.error(response.error);
                         UIStore.store.modalStore.join = true;
@@ -99,11 +100,12 @@ class IO extends Event.EventEmitter {
                 transport.on("produce", async ({kind, rtpParameters, appData}, callback, errback) => {
                     try {
                         const response: APIResponse = await this.socketRequest("create-producer", transport.id, kind, rtpParameters);
-                        if(!response.success){
+                        if (!response.success) {
                             errback(response.error);
                             errback(response.error);
                             return;
                         }
+                        this.socketRequest("producer-action", kind, "resume");
                         callback({id: response.data.id});
                     } catch (error) {
                         errback(error);
@@ -114,11 +116,11 @@ class IO extends Event.EventEmitter {
 
         return Promise.all([
             this.socketRequest("create-transport", "webrtc", "receiving").then((response: APIResponse) => {
-                MyInfo.mediasoup.transports.receiving = this.device.createRecvTransport(response.data.transportInfo);
+                MyInfo.mediasoup.transports.receiving = RoomStore.device!.createRecvTransport(response.data.transportInfo);
                 return addTransportListeners(MyInfo.mediasoup.transports.receiving);
             }),
             this.socketRequest("create-transport", "webrtc", "sending").then((response: APIResponse) => {
-                MyInfo.mediasoup.transports.sending = this.device.createSendTransport(response.data.transportInfo);
+                MyInfo.mediasoup.transports.sending = RoomStore.device!.createSendTransport(response.data.transportInfo);
                 return addTransportListeners(MyInfo.mediasoup.transports.sending);
             })
         ]);
@@ -166,10 +168,24 @@ class IO extends Event.EventEmitter {
     }
 
     _handleNewParticipant(participantSummary: ParticipantInformation) {
+        participantSummary.mediasoup = {
+            consumer: {
+                video: null,
+                audio: null
+            }
+        };
         ParticipantsStore.participants.push(participantSummary);
         NotificationStore.add(new UINotification(`${participantSummary.name} joined!`, NotificationType.Alert));
         this.emit("new-participant", participantSummary);
         ChatStore.participantJoined(participantSummary);
+    }
+
+    _handleMediaStateUpdate(update: any) {
+        const participant = ParticipantsStore.getById(update.id);
+        if (!participant) {
+            return;
+        }
+        participant.mediaState = update.mediaState;
     }
 
     _handleParticipantLeft(participantId: string) {
@@ -222,11 +238,11 @@ class IO extends Event.EventEmitter {
     async toggleVideo() {
         if (MyInfo.mediasoup.producers.video) {
             if (MyInfo.mediasoup.producers.video.paused) {
-                MyInfo.mediasoup.producers.video.resume();
-                this.io.emit("resume-video");
+                MyInfo.resume("video");
+                this.socketRequest("producer-action", "video", "resume");
             } else {
-                MyInfo.mediasoup.producers.video.pause();
-                this.io.emit("pause-video");
+                MyInfo.pause("video");
+                this.socketRequest("producer-action", "video", "pause");
             }
             return;
         }
@@ -235,17 +251,18 @@ class IO extends Event.EventEmitter {
             NotificationStore.add(new UINotification(`An error occurred accessing the webcam`, NotificationType.Error));
             return;
         }
-        MyInfo.mediasoup.transports.sending!.produce({track});
+        MyInfo.mediasoup.producers.video = await MyInfo.mediasoup.transports.sending!.produce({track});
+        MyInfo.resume("video");
     }
 
     async toggleAudio() {
         if (MyInfo.mediasoup.producers.audio) {
             if (MyInfo.mediasoup.producers.audio.paused) {
-                MyInfo.mediasoup.producers.audio.resume();
-                this.io.emit("resume-audio");
+                MyInfo.resume("audio");
+                this.socketRequest("producer-action", "audio", "resume");
             } else {
-                MyInfo.mediasoup.producers.audio.pause();
-                this.io.emit("pause-audio");
+                MyInfo.pause("audio");
+                this.socketRequest("producer-action", "audio", "pause");
             }
             return;
         }
@@ -254,8 +271,8 @@ class IO extends Event.EventEmitter {
             NotificationStore.add(new UINotification(`An error occurred accessing the microphone`, NotificationType.Error));
             return;
         }
-        MyInfo.mediasoup.transports.sending!.produce({track});
-
+        MyInfo.mediasoup.producers.audio = await MyInfo.mediasoup.transports.sending!.produce({track});
+        MyInfo.resume("audio");
     }
 
     @action

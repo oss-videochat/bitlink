@@ -1,6 +1,7 @@
 import {ParticipantInformation} from "./ParticipantsStore";
 import {observable} from "mobx";
 import {MessageSummary} from "./MessagesStore";
+import * as mediasoupclient from 'mediasoup-client';
 
 export interface RoomSummary {
     id: string,
@@ -12,6 +13,8 @@ export interface RoomSummary {
 
 class RoomStore {
     @observable public room?: RoomSummary;
+
+    public device?: mediasoupclient.types.Device = new mediasoupclient.Device();
 
     public mediasoup =  {
         rtcCapabilities: null,

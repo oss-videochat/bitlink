@@ -19,15 +19,15 @@ export class ChatParticipant extends React.Component<any, any> {
                 <div className={"chat-participant-name-container"}>
                     <span className={"chat-participant--name"}>{this.props.name || this.props.participant.name}</span>
                     {this.props.participant.id !== ParticipantsStore.everyone.id && this.props.participant.isAlive ?
-                        <div className={"chat-participant---settings"}>
+                        <div className={"chat-participant---media-state"}>
                              <span className={"participant--icon"}>
-                                 {this.props.participant.settings.microphoneEnabled ?
+                                 {this.props.participant.mediaState.microphoneEnabled ?
                                      null :
                                      <FontAwesomeIcon icon={faMicrophoneSlash}/>
                                  }
                              </span>
                             <span className={"participant--icon"}>
-                                {this.props.participant.settings.cameraEnabled ?
+                                {this.props.participant.mediaState.cameraEnabled ?
                                     null :
                                     <FontAwesomeIcon icon={faVideoSlash}/>
                                 }

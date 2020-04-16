@@ -11,7 +11,7 @@ import {Message, MessageSummary} from "../stores/MessagesStore";
 import NotificationStore, {NotificationType, UINotification} from "../stores/NotificationStore";
 import UIStore from "../stores/UIStore";
 import {ResetStores} from "../util/ResetStores";
-
+import * as mediasoupclient from 'mediasoup-client';
 
 interface APIResponse {
     success: boolean,
@@ -22,6 +22,7 @@ interface APIResponse {
 
 class IO extends Event.EventEmitter {
     private io: SocketIOClient.Socket;
+    private device: mediasoupclient.types.Device = new mediasoupclient.Device();
 
     constructor(ioAddress: string) {
         super();
@@ -42,6 +43,13 @@ class IO extends Event.EventEmitter {
 
         this.io.on("delete-room-message", this._handleDeleteMessage.bind(this));
         this.io.on("delete-direct-message", this._handleDeleteMessage.bind(this));
+
+        // ##################
+        // ## WebRTC stuff ## ASCII Art, Yey! :D
+        // ##################
+
+        this.io.on("new-consumer", this._handleNewConsumer.bind(this));
+
     }
 
     createRoom(name: string) {
@@ -50,14 +58,71 @@ class IO extends Event.EventEmitter {
     }
 
     joinRoom(id: string, name?: string) {
-        this.io.emit("join-room", id, name, (response: APIResponse) => {
-            if(!response.success){
-                UIStore.store.modalStore.join = true;
-                NotificationStore.add(new UINotification(`Join Error: ${response.error}`, NotificationType.Error));
-                return;
-            }
-            this._handleRoomSummary(response.data);
-        });
+        this.socketRequest("get-rtp-capabilities", id)
+            .then((response: APIResponse) => {
+                if (!response.success) {
+                    NotificationStore.add(new UINotification(`Join Error: ${response.error}`, NotificationType.Error));
+                    throw response.error;
+                }
+                return this.device.load({routerRtpCapabilities: response.data});
+            })
+            .then(() => {
+                this.io.emit("join-room", id, name, this.device.rtpCapabilities, (response: APIResponse) => {
+                    if (!response.success) {
+                        console.error(response.error);
+                        UIStore.store.modalStore.join = true;
+                        NotificationStore.add(new UINotification(`Join Error: ${response.error}`, NotificationType.Error));
+                        return;
+                    }
+                    this._handleRoomSummary(response.data);
+                    this.createTransports()
+                        .then(() => this.io.emit("transports-ready"));
+                });
+            });
+    }
+
+    createTransports() {
+        const addTransportListeners = (transport: mediasoupclient.types.Transport) => {
+            return new Promise(resolve => {
+                transport.on("connect", async ({dtlsParameters}, callback, errback) => {
+                    const response = await this.socketRequest("connect-transport", transport.id, dtlsParameters);
+                    if (!response.success) {
+                        NotificationStore.add(new UINotification(`An error occurred connecting to the transport: ${response.error}`, NotificationType.Error));
+                        errback();
+                        resolve();
+                        return;
+                    }
+                    callback();
+                    resolve();
+                });
+
+                transport.on("produce", async ({kind, rtpParameters, appData}, callback, errback) => {
+                    try {
+                        const response: APIResponse = await this.socketRequest("create-producer", transport.id, kind, rtpParameters);
+                        if(!response.success){
+                            errback(response.error);
+                            errback(response.error);
+                            return;
+                        }
+                        callback({id: response.data.id});
+                    } catch (error) {
+                        errback(error);
+                    }
+                });
+            });
+        };
+
+        return Promise.all([
+            this.socketRequest("create-transport", "webrtc", "receiving").then((response: APIResponse) => {
+                MyInfo.mediasoup.transports.receiving = this.device.createRecvTransport(response.data.transportInfo);
+                return addTransportListeners(MyInfo.mediasoup.transports.receiving);
+            }),
+            this.socketRequest("create-transport", "webrtc", "sending").then((response: APIResponse) => {
+                MyInfo.mediasoup.transports.sending = this.device.createSendTransport(response.data.transportInfo);
+                return addTransportListeners(MyInfo.mediasoup.transports.sending);
+            })
+        ]);
+
     }
 
     _handleJoinRoom(id: string) {
@@ -66,7 +131,9 @@ class IO extends Event.EventEmitter {
 
 
     @action
-    _handleRoomSummary(roomSummary: RoomSummary) {
+    _handleRoomSummary(data: { summary: RoomSummary, rtcCapabilities: any }) {
+        const roomSummary: RoomSummary = data.summary;
+
         ParticipantsStore.replace(roomSummary.participants);
         ChatStore.addParticipant(...roomSummary.participants);
 
@@ -82,6 +149,7 @@ class IO extends Event.EventEmitter {
         });
 
         RoomStore.room = roomSummary;
+        RoomStore.mediasoup.rtcCapabilities = data.rtcCapabilities;
 
         this.emit("room-summary", roomSummary);
     }
@@ -132,6 +200,62 @@ class IO extends Event.EventEmitter {
 
     _handleDeleteMessage(messageSummary: MessageSummary) {
         ChatStore.removeMessage(messageSummary.id);
+    }
+
+    async _handleNewConsumer(kind: "video" | "audio", participantId: string, data: any) {
+        const participant = ParticipantsStore.getById(participantId);
+        if (!participant) {
+            throw 'Could not find participant';
+        }
+        participant.mediasoup!.consumer[kind] = await MyInfo.mediasoup.transports.receiving!.consume({
+            id: data.consumerId,
+            producerId: data.producerId,
+            kind,
+            rtpParameters: data.rtpParameters
+        });
+
+        participant.mediasoup!.consumer[kind]?.on("transportclose", () => {
+            participant.mediasoup!.consumer[kind] = null;
+        })
+    }
+
+    async toggleVideo() {
+        if (MyInfo.mediasoup.producers.video) {
+            if (MyInfo.mediasoup.producers.video.paused) {
+                MyInfo.mediasoup.producers.video.resume();
+                this.io.emit("resume-video");
+            } else {
+                MyInfo.mediasoup.producers.video.pause();
+                this.io.emit("pause-video");
+            }
+            return;
+        }
+        const track = await MyInfo.getVideoStream();
+        if (!track) {
+            NotificationStore.add(new UINotification(`An error occurred accessing the webcam`, NotificationType.Error));
+            return;
+        }
+        MyInfo.mediasoup.transports.sending!.produce({track});
+    }
+
+    async toggleAudio() {
+        if (MyInfo.mediasoup.producers.audio) {
+            if (MyInfo.mediasoup.producers.audio.paused) {
+                MyInfo.mediasoup.producers.audio.resume();
+                this.io.emit("resume-audio");
+            } else {
+                MyInfo.mediasoup.producers.audio.pause();
+                this.io.emit("pause-audio");
+            }
+            return;
+        }
+        const track = await MyInfo.getAudioStream();
+        if (!track) {
+            NotificationStore.add(new UINotification(`An error occurred accessing the microphone`, NotificationType.Error));
+            return;
+        }
+        MyInfo.mediasoup.transports.sending!.produce({track});
+
     }
 
     @action

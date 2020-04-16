@@ -1,5 +1,5 @@
 import {observable} from "mobx"
-import {Message} from "./MessagesStore";
+import {types} from "mediasoup-client";
 
 interface UserSettings {
     cameraEnabled: boolean,
@@ -13,6 +13,12 @@ export interface ParticipantInformation {
     isHost: boolean,
     isMe: boolean,
     isAlive: boolean,
+    mediasoup?: {
+        consumer: {
+            video: types.Consumer | null,
+            audio: types.Consumer | null
+        }
+    }
 }
 
 class ParticipantsStore {

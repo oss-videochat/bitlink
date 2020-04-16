@@ -7,11 +7,15 @@ export interface RoomSummary {
     idHash: string,
     name: string,
     participants: Array<ParticipantInformation>,
-    messages: Array<MessageSummary>
+    messages: Array<MessageSummary>,
 }
 
 class RoomStore {
     @observable public room?: RoomSummary;
+
+    public mediasoup =  {
+        rtcCapabilities: null,
+    };
 
     reset(){
         this.room = undefined;

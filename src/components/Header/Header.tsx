@@ -4,7 +4,7 @@ import './Header.css';
 import RoomStore from "../../stores/RoomStore";
 import IO from "../../controllers/IO";
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
-import {faUsers, faComments} from '@fortawesome/free-solid-svg-icons'
+import {faUsers, faComments, faMicrophone, faVideo} from '@fortawesome/free-solid-svg-icons'
 import UIStore from "../../stores/UIStore";
 import {RoomId} from "./RoomId";
 
@@ -36,6 +36,8 @@ export class Header extends React.Component<any, any> {
                     <ul>
                         <li onClick={() => UIStore.toggle('participantPanel')}><FontAwesomeIcon icon={faUsers}/></li>
                         <li onClick={() => UIStore.toggle('chatPanel')}><FontAwesomeIcon icon={faComments}/></li>
+                        <li onClick={() => IO.toggleAudio()}><FontAwesomeIcon icon={faMicrophone}/></li>
+                        <li onClick={() => IO.toggleVideo()}><FontAwesomeIcon icon={faVideo}/></li>
                     </ul>
                     <span className={"divider"}/>
                     <ul>

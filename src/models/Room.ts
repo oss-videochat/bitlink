@@ -2,6 +2,8 @@ import * as Event from 'events'
 import Participant from "./Participant";
 import Message from "./Message";
 import {APIResponse, APIResponseCallback} from "./APIResponse";
+import * as mediasoup from 'mediasoup';
+import {config} from "../../config";
 
 interface ParticipantAuthObj {
     id: string,
@@ -9,6 +11,9 @@ interface ParticipantAuthObj {
 }
 
 class Room extends Event.EventEmitter {
+    get router(): mediasoup.types.Router {
+        return this._router;
+    }
 
     public id: string;
     public name: string;
@@ -17,14 +22,17 @@ class Room extends Event.EventEmitter {
     private readonly messages: Array<Message> = []; // TODO mongodb
     private configuration;
     public readonly created;
+    private _router: mediasoup.types.Router;
+    private liveProducers: Array<mediasoup.types.Producer> = [];
 
-    constructor(name: string = "Untitled Room") {
+    constructor(name: string = "Untitled Room", router: mediasoup.types.Router) {
         super();
-
         this.name = name;
         this.created = new Date();
+        this._router = router;
+
         setTimeout(() => {
-            if (this.participants.length === 0) {
+            if (this.getActiveParticipants().length === 0) {
                 this.destroy();
             }
         }, 10000); // user has 10 seconds to join the room they created before it will be destroyed
@@ -33,12 +41,18 @@ class Room extends Event.EventEmitter {
     addParticipant(participant: Participant, cb: APIResponseCallback) {
         this.addListeners(participant);
 
-        if (this.participants.length === 0) {
+        if (this.getActiveParticipants().length === 0) {
             this.addHostListeners(participant);
         }
+
         this.participants.push(participant);
 
-        cb({success: true, error: null, status: 200, data: this.getSummary(participant)});
+        cb({
+            success: true, error: null, status: 200, data: {
+                summary: this.getSummary(participant),
+                rtcCapabilities: this._router.rtpCapabilities
+            }
+        });
 
         this.emit("new-participant", participant);
         this.broadcast("new-participant", [participant], participant.toSummary());
@@ -54,10 +68,14 @@ class Room extends Event.EventEmitter {
         participant.isHost = true;
     }
 
+    getActiveParticipants() {
+        return this.participants.filter(participant => participant.isAlive);
+    }
+
     addListeners(participant: Participant) {
         participant.on("leave", () => {
             this.leaveParticipant(participant);
-            if (this.participants.length === 0 || participant.isHost) {
+            if (this.getActiveParticipants().length === 0 || participant.isHost) {
                 this.destroy();
             }
         });
@@ -69,6 +87,8 @@ class Room extends Event.EventEmitter {
                 }
             );
         });
+
+
 
         participant.socket.on("send-message", (to: string, content: string, cb) => {
             const response: APIResponse = this.sendMessage(participant, to, content);
@@ -86,11 +106,129 @@ class Room extends Event.EventEmitter {
         });
 
 
+        // ##################
+        // ## WebRTC stuff ## ASCII Art, Yey! :D
+        // ##################
+
+
+        participant.socket.on("create-transport", async (type, kind, cb: (response: APIResponse) => void) => {
+            let transport;
+            switch (type) {
+                case "webrtc":
+                    transport = await this._router.createWebRtcTransport(config.mediasoup.webRtcTransportOptions);
+                    break;
+                case "plain":
+                    transport = await this._router.createPlainTransport(config.mediasoup.plainTransportOptions);
+                    break;
+                default:
+                    cb({
+                        success: false,
+                        error: "Unknown type",
+                        status: 400
+                    });
+                    return;
+            }
+            participant.mediasoupPeer.addTransport(transport, kind);
+            cb({
+                success: true,
+                error: null,
+                status: 200,
+                data: {
+                    transportInfo: {
+                        id: transport.id,
+                        iceParameters: transport.iceParameters,
+                        iceCandidates: transport.iceCandidates,
+                        dtlsParameters: transport.dtlsParameters,
+                    },
+                    transportType: type,
+                }
+            });
+        });
+
+
+        participant.socket.on("connect-transport", async (transportId, dtlsParameters, cb: (response: APIResponse) => void) => {
+            const transport = participant.mediasoupPeer.getTransport(transportId);
+            if (!transport) {
+                cb({
+                    success: false,
+                    error: "Could not find a transport with that id",
+                    status: 404
+                });
+                return;
+            }
+            await transport.connect({dtlsParameters});
+            cb({
+                success: true,
+                error: null,
+                status: 200,
+            });
+        });
+
+        participant.socket.once("transports-ready", () => {
+            this.participants.forEach(participantJoined => {
+                if (participantJoined.id === participant.id) {
+                    return;
+                }
+                Object.keys(participantJoined.mediasoupPeer.producers).forEach(type => {
+                    this.createConsumerAndNotify(participantJoined, participant, type as "video" | "audio");
+                });
+            });
+        });
+
+        participant.socket.on("create-producer", async (transportId, kind, rtpParameters, cb: (response: APIResponse) => void) => {
+            const transport = participant.mediasoupPeer.getTransport(transportId);
+            if (!transport) {
+                cb({
+                    success: false,
+                    error: "Could not find a transport with that id",
+                    status: 404
+                });
+                return;
+            }
+            if (kind !== "video" && kind !== "audio") {
+                cb({
+                    success: false,
+                    error: "Some error occurred. Probably your crappy input.",
+                    status: 400
+                });
+                return;
+            }
+            try {
+                const producer: mediasoup.types.Producer = await transport.produce({
+                    kind,
+                    rtpParameters
+                });
+                participant.mediasoupPeer.addProducer(producer, kind);
+                this._handleNewProducer(participant, producer);
+                cb({
+                    success: true,
+                    error: null,
+                    data: {
+                        id: producer.id
+                    },
+                    status: 200,
+                });
+            } catch (e) {
+                cb({
+                    success: false,
+                    error: "Some error occurred. Probably your crappy input.",
+                    status: 400
+                });
+            }
+        });
+
         /* participant.socket.on("video-data", data => {
              //      console.log("Receive server: " + data.length + " - " + participant.id);
              this.broadcast("video-data", [participant], data);
          });
          */
+    }
+
+    _handleNewProducer(participant, producer) {
+        /* this.broadcast("new-consumer", [participant], {
+             id: participant.id,
+
+         });*/
     }
 
     broadcast(event: string, ignoreParticipants: Array<Participant> = [], ...args: any[]) {
@@ -163,7 +301,7 @@ class Room extends Event.EventEmitter {
         return this.messages.find(message => message.id === messageId);
     }
 
-    getSummary(currentParticipant?: Participant) {
+    getSummary(currentParticipant: Participant) {
         return {
             id: this.id,
             idHash: this.idHash,
@@ -185,6 +323,40 @@ class Room extends Event.EventEmitter {
                 )
             ).map(message => message.toSummary())
         }
+    }
+
+    async createConsumerAndNotify(producerPeer: Participant, consumerPeer: Participant, kind: "video" | "audio") {
+        const producer = producerPeer.mediasoupPeer.getProducersByKind(kind);
+
+        if (
+            !consumerPeer.mediasoupPeer.rtcCapabilities
+            || !this._router.canConsume({
+                producerId: producer.id,
+                rtpCapabilities: consumerPeer.mediasoupPeer.rtcCapabilities
+            })
+        ) {
+            return;
+        }
+        const transport = await producerPeer.mediasoupPeer.transports.receiving;
+
+        if (!transport) {
+            return;
+        }
+
+        const consumer = await transport.consume({
+            producerId: producer.id,
+            rtpCapabilities: consumerPeer.mediasoupPeer.rtcCapabilities,
+            paused: true,
+        });
+
+        consumerPeer.mediasoupPeer.addConsumer(consumer);
+
+        consumerPeer.socket.emit("new-consumer", kind,  producerPeer.id, {
+            producerId: producer.id,
+            consumerId: consumer.id,
+            rtpParameters: consumer.rtpParameters,
+            producerPaused: consumer.producerPaused,
+        });
     }
 
 }

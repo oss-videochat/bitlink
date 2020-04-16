@@ -2,6 +2,8 @@ import * as Event from 'events'
 import {v4 as uuidv4} from 'uuid';
 import * as cryptoRandomString from 'crypto-random-string';
 import Message from "./Message";
+import  * as mediasoup from "mediasoup";
+import MediasoupPeer from "./MediasoupPeer";
 
 interface UserSettings {
     cameraEnabled?: boolean,
@@ -29,12 +31,22 @@ class Participant extends Event.EventEmitter {
         return this._id;
     }
 
+    get name() {
+        return this._name;
+    }
+
+    set name(value) {
+        this._name = value;
+        this.emit("update-name");
+    }
+
     private _name;
     private readonly _id;
     public readonly socket;
     private _isAlive = true;
     public isHost = false;
     public readonly key = cryptoRandomString({length: 12});
+    public readonly mediasoupPeer: MediasoupPeer;
 
     private _settings: UserSettings = {
         cameraEnabled: false,
@@ -55,16 +67,10 @@ class Participant extends Event.EventEmitter {
         this.socket.on("update-settings", (name) => {
             this.updateUserSettings(name);
         });
+
+        this.mediasoupPeer = new MediasoupPeer(this.socket)
     }
 
-    get name() {
-        return this._name;
-    }
-
-    set name(value) {
-        this._name = value;
-        this.emit("update-name");
-    }
 
     updateUserSettings(object: UserSettings) {
         Object.assign(this._settings, object);

@@ -1,4 +1,3 @@
-import {observable} from "mobx"
 import {Reactions} from "../enum/Reactions";
 import {ParticipantInformation} from "./ParticipantsStore";
 

@@ -5,7 +5,6 @@ import {autorun} from 'mobx';
 import RoomStore from "./stores/RoomStore";
 import UIStore from "./stores/UIStore";
 
-
 ReactDOM.render(
     <React.StrictMode>
         <App/>

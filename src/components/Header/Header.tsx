@@ -11,10 +11,6 @@ import MyInfo from "../../stores/MyInfo";
 
 @observer
 export class Header extends React.Component<any, any> {
-    constructor(props: any) {
-        super(props);
-    }
-
     handleJoinRoom(){
         const chosenId = prompt("Enter a Room ID") || "";
         const chosenName = prompt("Enter a Name") || undefined;

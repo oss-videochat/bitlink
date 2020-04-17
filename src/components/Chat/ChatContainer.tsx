@@ -3,7 +3,6 @@ import {observer} from "mobx-react"
 import {ChatParticipantList} from "./ParticipantList/ChatParticipantList";
 import {MessagesContainer} from "./Messages/MessagesContainer";
 import './ChatContainer.css';
-import {SearchBar} from "./ParticipantList/SearchBar";
 import UIStore from "../../stores/UIStore";
 
 @observer

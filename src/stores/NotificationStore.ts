@@ -1,5 +1,4 @@
 import {observable} from "mobx";
-import {ParticipantInformation} from "./ParticipantsStore";
 
 export enum NotificationType {
     Alert= "alert",

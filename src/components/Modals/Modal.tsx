@@ -8,10 +8,6 @@ import {JoinOrCreate} from "./JoinOrCreate";
 
 @observer
 export class Modal extends React.Component<any, any> {
-    constructor(props: any) {
-        super(props);
-    }
-
     getModalElements(): ReactNode | null {
         const modalStore = UIStore.store.modalStore;
         if (modalStore.joinOrCreate) {

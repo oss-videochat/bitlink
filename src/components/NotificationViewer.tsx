@@ -1,7 +1,7 @@
 import React from 'react';
 import {observer} from "mobx-react"
 import './NotificationViewer.css'
-import NotificationStore, {NotificationType, UINotification} from "../stores/NotificationStore";
+import NotificationStore, {UINotification} from "../stores/NotificationStore";
 
 @observer
 export class NotificationViewer extends React.Component<any, any> {

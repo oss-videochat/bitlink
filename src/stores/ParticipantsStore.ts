@@ -9,11 +9,11 @@ export interface MediaState {
 export interface ParticipantInformation {
     id: string,
     name: string,
-    mediaState: MediaState,
     isHost: boolean,
     isMe: boolean,
     isAlive: boolean,
-    mediasoup?: {
+    mediaState: MediaState,
+    mediasoup: {
         consumer: {
             video: types.Consumer | null,
             audio: types.Consumer | null
@@ -26,7 +26,12 @@ class ParticipantsStore {
     public system: ParticipantInformation = {
         id: "system",
         isAlive: true,
-        isHost: false, isMe: false, name: "System",
+        isHost: false,
+        isMe: false,
+        name: "System",
+        mediasoup: {
+          consumer: {video: null, audio: null}
+        },
         mediaState: {
             cameraEnabled: false,
             microphoneEnabled: false
@@ -37,6 +42,9 @@ class ParticipantsStore {
         id: "everyone",
         isAlive: true,
         isHost: false, isMe: false, name: "everyone",
+        mediasoup: {
+            consumer: {video: null, audio: null}
+        },
         mediaState: {
             cameraEnabled: false,
             microphoneEnabled: false

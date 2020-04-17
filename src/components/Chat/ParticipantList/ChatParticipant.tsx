@@ -2,7 +2,7 @@ import React from 'react';
 import {observer} from "mobx-react"
 import './ChatParticipant.css'
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
-import {faMicrophone, faMicrophoneSlash, faVideo, faVideoSlash, faComments} from '@fortawesome/free-solid-svg-icons'
+import {faMicrophoneSlash, faVideoSlash} from '@fortawesome/free-solid-svg-icons'
 import ParticipantsStore from "../../../stores/ParticipantsStore";
 
 

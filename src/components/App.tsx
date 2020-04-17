@@ -1,6 +1,6 @@
 import React from 'react';
 
-import {VideoContainer} from "./VideoContainer";
+import {VideoContainer} from "./Video/VideoContainer";
 import {Header} from './Header/Header';
 import './App.css';
 import {ChatContainer} from "./Chat/ChatContainer";

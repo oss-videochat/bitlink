@@ -1,6 +1,4 @@
 import React from 'react';
-import {observer} from "mobx-react"
-import {Reaction} from "../../../stores/MessagesStore";
 import {ReactionsDisplayer} from "./ReactionsDisplayer";
 import './MessageComponent.css';
 

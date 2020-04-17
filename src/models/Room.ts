@@ -238,6 +238,7 @@ class Room extends Event.EventEmitter {
 
     destroy() {
         console.log("Destroyed");
+        this.router.close();
         this.broadcast("destroy");
         this.emit("destroy");
     }
@@ -302,7 +303,7 @@ class Room extends Event.EventEmitter {
             id: this.id,
             idHash: this.idHash,
             name: this.name,
-            participants: this.participants.map(participantInRoom => {
+            participants: this.getActiveParticipants().map(participantInRoom => {
                 const obj: any = {
                     isMe: participantInRoom.id === currentParticipant.id,
                     ...participantInRoom.toSummary()
@@ -324,7 +325,8 @@ class Room extends Event.EventEmitter {
     async createConsumerAndNotify(producerPeer: Participant, consumerPeer: Participant, kind: "video" | "audio") {
         const producer = producerPeer.mediasoupPeer.getProducersByKind(kind);
         if (
-            !consumerPeer.mediasoupPeer.rtcCapabilities
+            !producer
+            || !consumerPeer.mediasoupPeer.rtcCapabilities
             || !this._router.canConsume({
             producerId: producer.id,
             rtpCapabilities: consumerPeer.mediasoupPeer.rtcCapabilities
@@ -343,8 +345,6 @@ class Room extends Event.EventEmitter {
             rtpCapabilities: consumerPeer.mediasoupPeer.rtcCapabilities,
             paused: true,
         });
-
-        setInterval(() => consumer.getStats().then(console.log), 10000);
 
         consumerPeer.mediasoupPeer.addConsumer(consumer);
 

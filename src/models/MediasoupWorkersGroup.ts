@@ -26,11 +26,11 @@ export class MediasoupWorkersGroup extends Events.EventEmitter {
 
             this.msWorkers.push(worker);
 
-            // Log worker resource usage every X seconds.
+            /*// Log worker resource usage every X seconds.
             setInterval(async () => {
                 const usage = await worker.getResourceUsage();
                 console.info('mediasoup Worker resource usage [pid:%d]: %o', worker.pid, usage);
-            }, 120000);
+            }, 120000);*/
         }
     }
 

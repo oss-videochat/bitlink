@@ -23,7 +23,6 @@ class Room extends Event.EventEmitter {
     private configuration;
     public readonly created;
     private _router: mediasoup.types.Router;
-    private liveProducers: Array<mediasoup.types.Producer> = [];
 
     constructor(name: string = "Untitled Room", router: mediasoup.types.Router) {
         super();
@@ -79,11 +78,12 @@ class Room extends Event.EventEmitter {
                 this.destroy();
             }
         });
-        participant.on("media-state-update", () => {
+        participant.on("media-state-update", (kind, action) => {
             this.broadcast("participant-updated-media-state", [participant],
                 {
                     id: participant.id,
-                    mediaState: participant.mediaState
+                    kind,
+                    action
                 }
             );
         });
@@ -332,7 +332,7 @@ class Room extends Event.EventEmitter {
         ) {
             return;
         }
-        const transport = await producerPeer.mediasoupPeer.transports.receiving;
+        const transport = await consumerPeer.mediasoupPeer.transports.receiving;
 
         if (!transport) {
             return;
@@ -344,6 +344,8 @@ class Room extends Event.EventEmitter {
             paused: true,
         });
 
+        setInterval(() => consumer.getStats().then(console.log), 10000);
+
         consumerPeer.mediasoupPeer.addConsumer(consumer);
 
         consumerPeer.socket.emit("new-consumer", kind,  producerPeer.id, {
@@ -351,6 +353,11 @@ class Room extends Event.EventEmitter {
             consumerId: consumer.id,
             rtpParameters: consumer.rtpParameters,
             producerPaused: consumer.producerPaused,
+        }, (success) => {
+            if(success){
+                console.log("resuming");
+                consumer.resume();
+            }
         });
     }
 

@@ -1,0 +1,18 @@
+.video-participant--video {
+    width: 100%;
+    object-fit: contain;
+    height: 100%;
+}
+.video-participant--name {
+    position: absolute;
+    bottom: 0;
+    background: rgba(0,0,0,0.8);
+    font-size: 15px;
+    width: 100%;
+    text-align: center;
+    overflow: hidden;
+    color: white;
+    padding: 5px;
+    left: 0;
+    text-overflow: ellipsis;
+}

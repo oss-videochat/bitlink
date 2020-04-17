@@ -90,17 +90,14 @@ class IO extends Event.EventEmitter {
 
     createTransports() {
         const addTransportListeners = (transport: mediasoupclient.types.Transport) => {
-            return new Promise(resolve => {
                 transport.on("connect", async ({dtlsParameters}, callback, errback) => {
                     const response = await this.socketRequest("connect-transport", transport.id, dtlsParameters);
                     if (!response.success) {
                         NotificationStore.add(new UINotification(`An error occurred connecting to the transport: ${response.error}`, NotificationType.Error));
                         errback();
-                        resolve();
                         return;
                     }
                     callback();
-                    resolve();
                 });
 
                 transport.on("produce", async ({kind, rtpParameters, appData}, callback, errback) => {
@@ -117,7 +114,6 @@ class IO extends Event.EventEmitter {
                         errback(error);
                     }
                 });
-            });
         };
 
         return Promise.all([

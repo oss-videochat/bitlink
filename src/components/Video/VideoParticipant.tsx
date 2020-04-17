@@ -17,12 +17,19 @@ export class VideoParticipant extends React.Component<any, any> {
         this.audioRef.current!.addEventListener("canplay", () => {
             this.audioRef.current!.play();
         });
+        this.updateMedia();
+    }
 
+    updateMedia(){
         this.videoRef.current!.srcObject = new MediaStream([this.props.participant.mediasoup.consumer.video.track]);
 
         if (this.props.participant.mediaState.microphoneEnabled) {
             this.audioRef.current!.srcObject = new MediaStream([this.props.participant.mediasoup.consumer.audio.track]);
         }
+    }
+
+    componentDidUpdate(): void {
+        this.updateMedia();
     }
 
 

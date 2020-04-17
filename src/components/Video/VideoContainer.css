@@ -1,0 +1,38 @@
+.video-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: black;
+    position: relative;
+    overflow: hidden;
+}
+
+.video-participant-wrapper {
+    flex-basis: 100%;
+    position: relative;
+    max-height: 100%;
+    margin: 10px;
+}
+
+.preview-video {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    margin: 20px;
+    margin-bottom: 0;
+    height: 200px;
+    width: 200px;
+    z-index: 100;
+}
+
+.preview-video video {
+    height: 100%;
+    width: 100%;
+    object-fit: contain;
+}
+
+.videos-list-wrapper {
+    max-height: 100%;
+    max-width: 100%;
+    display: flex;
+}

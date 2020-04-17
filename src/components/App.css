@@ -37,6 +37,7 @@ input, textarea {
 .main-container {
     display: flex;
     flex: 1;
+    overflow: hidden;
 }
 
 .video-participant-container {

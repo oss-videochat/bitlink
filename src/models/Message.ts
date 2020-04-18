@@ -28,7 +28,6 @@ class Message extends Event.EventEmitter {
     public readonly from;
     public readonly created = new Date();
     public content;
-    public isDeleted = false;
     public readonly isToEveryone;
     private readonly reactions: Array<Reaction> = [];
 
@@ -62,8 +61,7 @@ class Message extends Event.EventEmitter {
     }
 
     delete() {
-        this.isDeleted = true;
-        this.emit("deleted");
+        this.emit("delete");
     }
 
     toSummary(): MessageJSONSummary {

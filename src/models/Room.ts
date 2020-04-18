@@ -258,12 +258,19 @@ class Room extends Event.EventEmitter {
         this.alertRelevantParticipantsAboutMessage(message, "new");
 
         message.on("edit", () => this.alertRelevantParticipantsAboutMessage(message, "edit"));
-        message.on("delete", () => this.alertRelevantParticipantsAboutMessage(message, "delete"));
+        message.on("delete", () => {
+            const index = this.getMessageIndex(message.id);
+            if(index){
+                this.messages.splice(index, 1);
+            }
+            this.alertRelevantParticipantsAboutMessage(message, "delete")
+        });
 
         return {success: true, error: null, data: message.toSummary(), status: 200};
     }
 
     alertRelevantParticipantsAboutMessage(message: Message, eventType: "new" | "edit" | "delete") {
+        console.log(eventType);
         if (message.isToEveryone) {
             return this.broadcast(eventType + "-room-message", [message.from], message.toSummary());
         }
@@ -283,7 +290,7 @@ class Room extends Event.EventEmitter {
     }
 
     deleteMessage(from: Participant, messageId: string): APIResponse {
-        const message = this.getMessage(messageId);
+        const message: Message = this.getMessage(messageId);
         if (!message) {
             return {success: false, error: "Could not find message", status: 404}
         }
@@ -296,6 +303,10 @@ class Room extends Event.EventEmitter {
 
     getMessage(messageId: string) {
         return this.messages.find(message => message.id === messageId);
+    }
+
+    getMessageIndex(messageId: string) {
+        return this.messages.findIndex(message => message.id === messageId);
     }
 
     getSummary(currentParticipant: Participant) {
@@ -355,7 +366,6 @@ class Room extends Event.EventEmitter {
             producerPaused: consumer.producerPaused,
         }, (success) => {
             if(success){
-                console.log("resuming");
                 consumer.resume();
             }
         });

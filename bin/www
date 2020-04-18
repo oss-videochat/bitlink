@@ -5,20 +5,26 @@
  */
 const app = require('../app').default;
 const debug = require('debug')('untitled2:server');
+const https = require('https');
 const http = require('http');
+
 const socket = require('../src/models/SocketWrapper').default;
 const RoomManager = require('../src/models/RoomManager').default;
-
+const fs = require('fs');
 /**
  * Get port from environment and store in Express.
  */
-const port = normalizePort(process.env.PORT || '3000');
+const port = normalizePort(process.env.PORT || '3001');
 app.set('port', port);
 
 /**
  * Create HTTP server.
  */
-const server = http.createServer(app);
+const server = http.createServer(); /*https.createServer({
+  key: fs.readFileSync(__dirname + '/../keystore/server.key'),
+  cert: fs.readFileSync(__dirname + '/../keystore/server.cert')
+}, app);*/
+
 const io = require('socket.io')(server);
 socket.socket = io;
 

@@ -67,7 +67,6 @@ class IO extends Event.EventEmitter {
         this.socketRequest("get-rtp-capabilities", id)
             .then((response: APIResponse) => {
                 if (!response.success) {
-                    NotificationStore.add(new UINotification(`Join Error: ${response.error}`, NotificationType.Error));
                     throw response.error;
                 }
                 RoomStore.device = new mediasoupclient.Device();
@@ -76,15 +75,18 @@ class IO extends Event.EventEmitter {
             .then(() => {
                 this.io.emit("join-room", id, name, RoomStore.device!.rtpCapabilities, (response: APIResponse) => {
                     if (!response.success) {
-                        console.error(response.error);
-                        UIStore.store.modalStore.join = true;
-                        NotificationStore.add(new UINotification(`Join Error: ${response.error}`, NotificationType.Error));
-                        return;
+                        throw response.error;
                     }
                     this._handleRoomSummary(response.data);
                     this.createTransports()
                         .then(() => this.io.emit("transports-ready"));
                 });
+            })
+            .catch(error => {
+                console.error(error);
+                UIStore.store.modalStore.join = true;
+                NotificationStore.add(new UINotification(`Join Error: ${error}`, NotificationType.Error));
+                return;
             });
     }
 
@@ -249,8 +251,7 @@ class IO extends Event.EventEmitter {
     }
 
     _handleEditMessage(messageSummary: MessageSummary) {
-        const realMessage = this.convertMessageSummaryToMessage(messageSummary);
-        ChatStore.editMessage(realMessage);
+        ChatStore.editMessage(messageSummary.id, messageSummary.content);
     }
 
     _handleDeleteMessage(messageSummary: MessageSummary) {
@@ -331,7 +332,7 @@ class IO extends Event.EventEmitter {
         if (!response.success) {
             NotificationStore.add(new UINotification(`An error occurred sending the message: "${response.error}"`, NotificationType.Error));
             console.error("Sending Error: " + response.error);
-            return;
+            return false;
         }
         ChatStore.addMessage({
             id: response.data.id,
@@ -351,15 +352,10 @@ class IO extends Event.EventEmitter {
         if (!response.success) {
             NotificationStore.add(new UINotification(`An error occurred editing the message: "${response.error}"`, NotificationType.Error));
             console.error("Editing Error: " + response.error);
-            return;
-        }
-        const message = ChatStore.getMessageById(toId);
-
-        if (!message) {
-            return true;
+            return false;
         }
 
-        message.content = content;
+        ChatStore.editMessage(toId, content);
         return true;
     }
 
@@ -370,7 +366,7 @@ class IO extends Event.EventEmitter {
         if (!response.success) {
             NotificationStore.add(new UINotification(`An error occurred deleting the message: "${response.error}"`, NotificationType.Error));
             console.error("Deleting Error: " + response.error);
-            return;
+            return false;
         }
         ChatStore.removeMessage(toId);
         return true;

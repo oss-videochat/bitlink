@@ -43,8 +43,8 @@ export class VideoContainer extends React.Component<any, any> {
 
                 <div className={"videos-list-wrapper"}>
                     {
-                        ParticipantsStore.participants.length > 3 ?
-                            ParticipantsStore.participants
+                        ParticipantsStore.getLiving().length > 3 ?
+                            ParticipantsStore.getLiving()
                                 .filter(participant => participant.mediaState.microphoneEnabled || participant.mediaState.cameraEnabled)
                                 .map((participant, i, arr) => {
                                     if (participant.mediaState.cameraEnabled) {

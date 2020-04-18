@@ -19,7 +19,6 @@ export class MessagesContainer extends React.Component<any, any> {
         this.state = {
             inputValue: ""
         };
-        this.enterHandle.bind(this);
     }
 
     enterHandle(e: any) {
@@ -65,6 +64,7 @@ export class MessagesContainer extends React.Component<any, any> {
                                 el = <MessageComponent
                                     startGroup={lastParticipant !== message.from.id || message.created - lastTime > 1000 * 60 * 5}
                                     key={message.id}
+                                    messageId={message.id}
                                     fromMe={message.from.id === MyInfo.info!.id}
                                     message={message}/>;
                             }

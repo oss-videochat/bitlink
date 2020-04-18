@@ -9,7 +9,7 @@ export class VideoPlaceholder extends React.Component<any, any> {
     render() {
         return (
             <div className={"video-placeholder"}>
-                <span className={"video-placeholder--message"}>Invite People</span>
+                <span className={"video-placeholder--message"}></span>
             </div>
         );
     }

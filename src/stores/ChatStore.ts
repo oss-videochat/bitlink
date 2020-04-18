@@ -12,17 +12,16 @@ interface MessageStore {
 }
 
 interface MessageStoreObject {
-    message: Message,
     chatStoreKey: string,
 }
 
 class ChatStore {
     @observable public chatStore: ChatStoreObj = {};
-    private messageStore: MessageStore = {};
+    private messageMap: MessageStore = {};
 
     reset() {
         this.chatStore = {};
-        this.messageStore = {};
+        this.messageMap = {};
     }
 
     @action
@@ -67,8 +66,7 @@ class ChatStore {
                 key = "everyone";
             }
 
-            this.messageStore[message.id] = {
-                message: message,
+            this.messageMap[message.id] = {
                 chatStoreKey: key
             };
 
@@ -88,22 +86,27 @@ class ChatStore {
         }
     }
 
+    getMessageFromStore(store: Message[], messageId: string): Message{
+        return store.find(message => message.id === messageId) as Message;
+    }
+
     getMessageById(id: string): Message {
-        return this.messageStore[id].message;
+        const chatStoreKey = this.messageMap[id].chatStoreKey;
+        return this.getMessageFromStore(this.chatStore[chatStoreKey], id);
     }
 
     @action
     removeMessage(id: string) {
-        const message = this.messageStore[id];
+        const message = this.messageMap[id];
         const store = this.chatStore[message.chatStoreKey];
-        store.splice(store.indexOf(message.message), 1);
-        delete this.messageStore[id];
+        store.splice(store.findIndex(storeMessage => storeMessage.id === id), 1);
+        delete this.messageMap[id];
     }
 
     @action
-    editMessage(message: Message) {
-        const oldMessage = this.getMessageById(message.id);
-        oldMessage.content = message.content;
+    editMessage(id: string, content: string) {
+        const oldMessage = this.getMessageById(id);
+        oldMessage.content = content;
     }
 }
 

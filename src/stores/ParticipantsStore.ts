@@ -53,6 +53,10 @@ class ParticipantsStore {
 
     public participants = observable<ParticipantInformation>([this.system, this.everyone]);
 
+    getLiving(){
+        return this.participants.filter(participant => participant.isAlive);
+    }
+
     reset() {
         this.participants.replace([this.system, this.everyone]);
     }

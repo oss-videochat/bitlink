@@ -50,3 +50,15 @@
     background: #bebebe;
     color: #fbfbfb;
 }
+
+.spinner-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 20px;
+}
+
+.dialog-centered-text {
+    display: block;
+    text-align: center;
+}

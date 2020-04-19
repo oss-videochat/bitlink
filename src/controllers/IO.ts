@@ -34,6 +34,11 @@ class IO extends Event.EventEmitter {
         this.io = io(ioAddress);
 
         this.io.on("join-room", this._handleJoinRoom.bind(this));
+
+        this.io.on("waiting-room-accept", this._handleRoomSummary.bind(this));
+        this.io.on("new-waiting-room-participant", this._handleWaitingRoomNewParticipant.bind(this));
+        this.io.on("waiting-room-rejection", this._handleWaitingRoomRejection.bind(this));
+
         this.io.on("destroy", this._handleRoomClosure.bind(this));
 
         this.io.on("new-participant", this._handleNewParticipant.bind(this));
@@ -58,12 +63,19 @@ class IO extends Event.EventEmitter {
 
     }
 
+    leave(){
+        this.io.emit("leave");
+        UIStore.store.modalStore.joinOrCreate = true;
+        ResetStores();
+    }
+
     createRoom(name: string) {
         console.log("Creating room...");
         this.io.emit("create-room", name);
     }
 
     joinRoom(id: string, name?: string) {
+        UIStore.store.modalStore.joiningRoom = true;
         this.socketRequest("get-rtp-capabilities", id)
             .then((response: APIResponse) => {
                 if (!response.success) {
@@ -75,15 +87,23 @@ class IO extends Event.EventEmitter {
             .then(() => {
                 this.io.emit("join-room", id, name, RoomStore.device!.rtpCapabilities, (response: APIResponse) => {
                     if (!response.success) {
-                        throw response.error;
+                        if(response.status !== 403){
+                            throw response.error;
+                        }
+                        this._handleWaitingRoomInformation(response.data);
+                        return;
                     }
-                    this._handleRoomSummary(response.data);
-                    this.createTransports()
-                        .then(() => this.io.emit("transports-ready"));
+                    setTimeout(() => { // https://www.theatlantic.com/technology/archive/2017/02/why-some-apps-use-fake-progress-bars/517233/
+                        this._handleRoomSummary(response.data);
+                        this.createTransports()
+                            .then(() => this.io.emit("transports-ready"));
+                    }, 2000);
+
                 });
             })
             .catch(error => {
                 console.error(error);
+                UIStore.store.modalStore.joiningRoom = false;
                 UIStore.store.modalStore.join = true;
                 NotificationStore.add(new UINotification(`Join Error: ${error}`, NotificationType.Error));
                 return;
@@ -138,6 +158,9 @@ class IO extends Event.EventEmitter {
 
     @action
     _handleRoomSummary(data: { summary: RoomSummary, rtcCapabilities: any }) {
+        UIStore.store.modalStore.joiningRoom = false;
+        UIStore.store.modalStore.waitingRoom = false;
+
         const roomSummary: RoomSummary = data.summary;
 
 
@@ -174,6 +197,8 @@ class IO extends Event.EventEmitter {
         this.emit("room-summary", roomSummary);
     }
 
+
+
     convertMessageSummaryToMessage(message: MessageSummary): Message {
         const replacementObj: any = {};
         replacementObj.from = ParticipantsStore.getById(message.from) || null;
@@ -186,6 +211,8 @@ class IO extends Event.EventEmitter {
     }
 
     _handleNewParticipant(participantSummary: ParticipantInformation) {
+        ParticipantsStore.removeFromWaitingRoom(participantSummary.id);
+
         participantSummary.mediaState = {
             cameraEnabled: false,
             microphoneEnabled: false
@@ -201,6 +228,11 @@ class IO extends Event.EventEmitter {
         NotificationStore.add(new UINotification(`${participantSummary.name} joined!`, NotificationType.Alert));
         this.emit("new-participant", participantSummary);
         ChatStore.participantJoined(participantSummary);
+    }
+
+    @action
+    _handleWaitingRoomNewParticipant(data: {participant: ParticipantInformation}){
+        ParticipantsStore.waitingRoom.push(data.participant);
     }
 
     _handleMediaStateUpdate(update: MediaStateUpdate) {
@@ -236,6 +268,8 @@ class IO extends Event.EventEmitter {
             ChatStore.participantLeft(participant);
             NotificationStore.add(new UINotification(`${participant.name} left!`, NotificationType.Alert));
         }
+        console.log("remove form room");
+        ParticipantsStore.removeFromWaitingRoom(participantId);
     }
 
     _handleRoomClosure() {
@@ -276,8 +310,6 @@ class IO extends Event.EventEmitter {
             rtpParameters: data.rtpParameters
         });
 
-//       setInterval(() => participant.mediasoup!.consumer[kind]?.getStats().then(stat => console.log(Array.from(stat.entries()))), 10000)
-
         participant.mediasoup!.consumer[kind]?.on("transportclose", () => {
             participant.mediasoup!.consumer[kind] = null;
         });
@@ -290,6 +322,18 @@ class IO extends Event.EventEmitter {
 
         cb(true);
         participant.mediasoup!.consumer[kind]?.resume();
+    }
+
+    _handleWaitingRoomInformation(info: any){
+        UIStore.store.modalStore.joiningRoom = false;
+        UIStore.store.modalStore.waitingRoom = true;
+    }
+
+    _handleWaitingRoomRejection(reason: any){
+        NotificationStore.add(new UINotification(reason, NotificationType.Error), true);
+        UIStore.store.modalStore.waitingRoom = false;
+        UIStore.store.modalStore.joiningRoom = false;
+        UIStore.store.modalStore.join = true;
     }
 
     async toggleVideo() {
@@ -378,6 +422,18 @@ class IO extends Event.EventEmitter {
         return true;
     }
 
+
+    async waitingRoomDecision(id: string, accept: boolean) {
+        const response = await this.socketRequest("waiting-room-decision", id, accept ? "accept" : "reject");
+
+        if (!response.success) {
+            NotificationStore.add(new UINotification(`An error occurred while deciding on waiting room member: "${response.error}"`, NotificationType.Error));
+            console.error("Waiting Room Error: " + response.error);
+            return false;
+        }
+        return true;
+    }
+
     socketRequest(event: string, ...args: any[]): Promise<APIResponse> {
         return new Promise(async (resolve, reject) => {
             this.io.emit(event, ...args, (json: APIResponse) => {
@@ -385,6 +441,8 @@ class IO extends Event.EventEmitter {
             });
         });
     }
+
+
 
 }
 

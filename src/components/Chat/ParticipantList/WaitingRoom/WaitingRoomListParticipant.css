@@ -1,0 +1,63 @@
+.waiting-room-participant {
+    display: flex;
+    align-items: center;
+    justify-content: end;
+    font-size: 15px;
+    height: 50px;
+    user-select: none;
+    -webkit-user-select: none;
+    cursor: pointer;
+    border-bottom: #e4e4e4 2px solid;
+    padding: 10px 0 10px 10px;
+}
+
+
+
+.waiting-room-participant--name {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.waiting-room-participant--name:hover {
+    overflow: visible;
+    background: #f9f9f9;
+    position: absolute;
+    left: 0;
+}
+
+.waiting-room-participant--decision-container {
+    display: flex;
+    flex-direction: column;
+}
+
+.waiting-room-participant--decision-button {
+    background: #4c5eec;
+    color: #fbfbfb;
+    margin: 2px 5px;
+    font-size: 10px;
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+    border-radius: 15px;
+    padding: 2px 10px;
+}
+
+.waiting-room-participant--decision-button:hover {
+    background: #6375ff;
+}
+
+.waiting-room-participant--decision-button.reject {
+    background: #ff5f4a;
+}
+
+.waiting-room-participant--decision-button.reject:hover {
+    background: #ff8a72;
+}
+
+.waiting-room-participant--decision-button option {
+    background: unset;
+}
+
+

@@ -5,6 +5,8 @@ import {CreateDialog} from "./CreateDialog";
 import UIStore from "../../stores/UIStore";
 import {JoinDialog} from "./JoinDialog";
 import {JoinOrCreate} from "./JoinOrCreate";
+import {Joining} from "./Joining";
+import {WaitingRoom} from "./WaitingRoom";
 
 @observer
 export class Modal extends React.Component<any, any> {
@@ -15,6 +17,12 @@ export class Modal extends React.Component<any, any> {
         }
         if (modalStore.join) {
             return <JoinDialog/>
+        }
+        if (modalStore.joiningRoom) {
+            return <Joining/>
+        }
+        if (modalStore.waitingRoom) {
+            return <WaitingRoom/>
         }
         if (modalStore.create) {
             return <CreateDialog/>

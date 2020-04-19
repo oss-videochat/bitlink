@@ -12,6 +12,7 @@ class UIStore {
             joinOrCreate: false,
             join: false,
             joiningRoom: false,
+            waitingRoom: false,
             create: false,
         },
         preFillJoinValue: null,

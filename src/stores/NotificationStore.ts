@@ -46,7 +46,7 @@ class NotificationStore {
     }
 
     systemNotify(notification: UINotification){
-        if(Notification.permission !== "granted"){
+        if(Notification.permission !== "granted" || document.hasFocus()){
             return;
         }
         const title: any = notification.options.title || "BitLink";

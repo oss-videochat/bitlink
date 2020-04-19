@@ -53,6 +53,9 @@ class ParticipantsStore {
 
     public participants = observable<ParticipantInformation>([this.system, this.everyone]);
 
+    public waitingRoom = observable<ParticipantInformation>([]);
+
+
     getLiving(){
         return this.participants.filter(participant => participant.isAlive);
     }
@@ -71,6 +74,13 @@ class ParticipantsStore {
 
     getIndexById(id: string): number | undefined {
         return this.participants?.findIndex((participant: ParticipantInformation) => participant.id === id);
+    }
+
+    removeFromWaitingRoom(id: string){
+        const waitingRoomIndex: number = this.waitingRoom.findIndex(patientParticipant => patientParticipant.id === id);
+        if(waitingRoomIndex >= 0){
+            this.waitingRoom.splice(waitingRoomIndex, 1)
+        }
     }
 
 }

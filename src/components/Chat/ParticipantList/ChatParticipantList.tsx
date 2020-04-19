@@ -8,6 +8,7 @@ import ChatStore from "../../../stores/ChatStore";
 import {SearchBar} from "./SearchBar";
 import './ChatParticipantList.css';
 import UIStore from "../../../stores/UIStore";
+import {WaitingRoomList} from "./WaitingRoom/WaitingRoomList";
 
 @observer
 export class ChatParticipantList extends React.Component<any, any> {
@@ -43,6 +44,11 @@ export class ChatParticipantList extends React.Component<any, any> {
                     <SearchBar onChange={this.handleSearchChange}/>
                     {RoomStore.room ?
                         <div className={"chat-participant-list"}>
+                            {ParticipantsStore.waitingRoom.length > 0 ?
+                                <WaitingRoomList/>
+                                : null
+                            }
+
                             {
                                 (!this.state.searchText || RoomStore.room.name.toLowerCase().includes(this.state.searchText.toLowerCase())) ?
                                     <ChatParticipant onChosen={this.props.onUserSelect} key={"chat-everyone"}

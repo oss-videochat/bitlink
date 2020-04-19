@@ -10,17 +10,27 @@ interface ParticipantAuthObj {
     key: string
 }
 
+interface RoomSettings {
+    waitingRoom: boolean
+}
+
 class Room extends Event.EventEmitter {
     get router(): mediasoup.types.Router {
         return this._router;
     }
 
+    private static defaultSettings: RoomSettings = {
+        waitingRoom: true,
+    };
+
     public id: string;
     public name: string;
     public idHash: string;
     private readonly participants: Array<Participant> = [];
+    private readonly waitingRoom: Array<Participant> = [];
+
     private readonly messages: Array<Message> = []; // TODO mongodb
-    private configuration;
+    private settings: RoomSettings = {...Room.defaultSettings};
     public readonly created;
     private _router: mediasoup.types.Router;
 
@@ -31,20 +41,46 @@ class Room extends Event.EventEmitter {
         this._router = router;
 
         setTimeout(() => {
-            if (this.getActiveParticipants().length === 0) {
+            if (this.getConnectedParticipants().length === 0) {
                 this.destroy();
             }
         }, 10000); // user has 10 seconds to join the room they created before it will be destroyed
     }
 
     addParticipant(participant: Participant, cb: APIResponseCallback) {
-        this.addListeners(participant);
+        participant.socket.on("leave", () => {
+            this.leaveParticipant(participant);
+            if (this.getConnectedParticipants().length === 0 || this.getHosts().length === 0) {
+                this.destroy();
+            }
+        });
+        participant.on("disconnect", () => { // TODO this should be different from above
+            this.leaveParticipant(participant);
+            if (this.getConnectedParticipants().length === 0 || this.getHosts().length === 0) {
+                this.destroy();
+            }
+        });
 
-        if (this.getActiveParticipants().length === 0) {
-            this.addHostListeners(participant);
+        if (this.getConnectedParticipants().length === 0) {
+            participant.isHost = true;
         }
 
-        this.participants.push(participant);
+        if(this.settings.waitingRoom && !participant.isHost){
+            this.waitingRoom.push(participant);
+            cb({
+                success: false, error: "In waiting room", status: 403, data: {
+                    name: this.name
+                }
+            });
+
+            this.broadcastHosts("new-waiting-room-participant", {
+                participant: participant.toSummary()
+            });
+
+            return;
+        }
+
+        this._addParticipant(participant);
 
         cb({
             success: true, error: null, status: 200, data: {
@@ -53,31 +89,52 @@ class Room extends Event.EventEmitter {
             }
         });
 
+    }
+
+    _addParticipant(participant: Participant) {
+        this.addListeners(participant);
+
+        if (this.getConnectedParticipants().length === 0) {
+            participant.isHost = true;
+        }
+
+        this.participants.push(participant);
+
         this.emit("new-participant", participant);
         this.broadcast("new-participant", [participant], participant.toSummary());
     }
 
+
+
+    removeParticipant(participant: Participant){
+        const participantsIndex = this.participants.findIndex(joinedParticipant => joinedParticipant.id === participant.id);
+        const waitingRoomIndex = this.waitingRoom.findIndex(patentParticipant => patentParticipant.id === participant.id);
+
+        if(participantsIndex >= 0){
+            this.participants.splice(participantsIndex, 1);
+        }
+
+        if(waitingRoomIndex >= 0){
+            this.waitingRoom.splice(waitingRoomIndex, 1);
+        }
+    }
+
     leaveParticipant(participant: Participant) {
-        participant.kill();
+        participant.leave();
+        this.removeParticipant(participant);
         console.log("left");
         this.broadcast("participant-left", [], participant.id);
     }
 
-    addHostListeners(participant: Participant) {
-        participant.isHost = true;
+    getConnectedParticipants(): Participant[] {
+        return this.participants.filter(participant => participant.isConnected);
     }
 
-    getActiveParticipants() {
-        return this.participants.filter(participant => participant.isAlive);
+    getHosts(): Participant[] {
+        return this.participants.filter(participant => participant.isHost && participant.isConnected);
     }
 
     addListeners(participant: Participant) {
-        participant.on("leave", () => {
-            this.leaveParticipant(participant);
-            if (this.getActiveParticipants().length === 0 || participant.isHost) {
-                this.destroy();
-            }
-        });
         participant.on("media-state-update", (kind, action) => {
             this.broadcast("participant-updated-media-state", [participant],
                 {
@@ -86,6 +143,58 @@ class Room extends Event.EventEmitter {
                     action
                 }
             );
+        });
+
+        participant.socket.on("waiting-room-decision", (id, decision: "accept" | "reject", cb: APIResponseCallback) => {
+            if(!participant.isHost){
+                cb({
+                    success: false,
+                    error: "You aren't important enough. You aren't a host.",
+                    status: 403
+                });
+                return;
+            }
+            const waitingRoomIndex = this.waitingRoom.findIndex(patientParticipant => patientParticipant.id === id);
+            if(waitingRoomIndex < 0) {
+                cb({
+                    success: false,
+                    error: "Could not find participant in the waiting room with that id.",
+                    status: 404
+                });
+                return;
+            }
+            const patientParticipant = this.waitingRoom[waitingRoomIndex];
+            this.waitingRoom.splice(waitingRoomIndex, 1);
+
+            switch (decision) {
+                case "accept":
+                    this._addParticipant(patientParticipant);
+                    patientParticipant.socket.emit("waiting-room-accept",  {
+                            summary: this.getSummary(participant),
+                            rtcCapabilities: this._router.rtpCapabilities
+                    });
+                    cb({
+                        success: true,
+                        error: null,
+                        status: 200
+                    });
+                    break;
+                case "reject":
+                    patientParticipant.socket.emit("waiting-room-rejection", "The host rejected you.");
+                    this.leaveParticipant(patientParticipant);
+                    cb({
+                        success: true,
+                        error: null,
+                        status: 200
+                    });
+                    break;
+                default:
+                    cb({
+                        success: false,
+                        error: "Bad decision. Please decide better.",
+                        status: 400
+                    });
+            }
         });
 
 
@@ -227,13 +336,18 @@ class Room extends Event.EventEmitter {
         });
     }
 
-    broadcast(event: string, ignoreParticipants: Array<Participant> = [], ...args: any[]) {
-        this.participants.forEach(participant => {
-            if (ignoreParticipants.includes(participant) || !participant.isAlive) {
+    broadcast(event: string, ignoreParticipants: Participant[] = [], ...args: any[]) {
+        this.getConnectedParticipants().forEach(participant => {
+            if (ignoreParticipants.includes(participant)) {
                 return;
             }
             participant.socket.emit(event, ...args);
         });
+    }
+
+    broadcastHosts(events: string, ...args: any[]){
+        const nonHosts: Participant[] = this.getConnectedParticipants().filter((participant: Participant) => !participant.isHost);
+        this.broadcast(events, nonHosts, ...args); // broadcast ignoring non hosts
     }
 
     destroy() {
@@ -314,7 +428,7 @@ class Room extends Event.EventEmitter {
             id: this.id,
             idHash: this.idHash,
             name: this.name,
-            participants: this.getActiveParticipants().map(participantInRoom => {
+            participants: this.getConnectedParticipants().map(participantInRoom => {
                 const obj: any = {
                     isMe: participantInRoom.id === currentParticipant.id,
                     ...participantInRoom.toSummary()

@@ -72,6 +72,11 @@ class RoomManager extends Events.EventEmitter {
            return  cb({success: false, error: "The room doesn't exist", status: 404});
         }
         room.addParticipant(participant, cb);
+
+        participant.on("leave", () =>{ // TODO is this necessary? i'm not sure
+            socket.removeAllListeners();
+            this.socketWrapper.addSocket(socket);
+        });
     }
 
 }

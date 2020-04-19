@@ -13,8 +13,8 @@ interface ParticipantSummary {
 }
 
 class Participant extends Event.EventEmitter {
-    get isAlive(): boolean {
-        return this._isAlive;
+    get isConnected(): boolean {
+        return this._isConnected;
     }
 
     get id() {
@@ -33,7 +33,7 @@ class Participant extends Event.EventEmitter {
     private _name;
     private readonly _id;
     public readonly socket;
-    private _isAlive = true;
+    private _isConnected = true;
     public isHost = false;
     public readonly key = cryptoRandomString({length: 12});
     public readonly mediasoupPeer: MediasoupPeer;
@@ -44,7 +44,13 @@ class Participant extends Event.EventEmitter {
         this.socket = socket;
         this.name = name || this.id;
         this.socket.on("disconnect", () => {
-            this.emit("leave");
+            this._isConnected = false;
+            this.emit("disconnect");
+            setTimeout(() => {
+                if(!this.isConnected){
+                    this.socket.removeAllListeners();
+                }
+            }, 0);
         });
         this.socket.on("update-name", (name) => {
             this.name = name;
@@ -64,6 +70,11 @@ class Participant extends Event.EventEmitter {
         });
     }
 
+    leave(){
+        this.mediasoupPeer.destroy();
+        this.emit("leave");
+    }
+
 
     updateUserSettings(object) {
 
@@ -72,23 +83,23 @@ class Participant extends Event.EventEmitter {
     directMessage(message: Message, eventType: "new" | "edit" | "delete") {
         this.socket.emit(eventType + "-direct-message", message.toSummary());
     }
-
+/*
     kill(){
-        this._isAlive = false;
+        this._isConnected = false;
         this.emit("dead");
     }
 
     revive(){
-        this._isAlive = true;
+        this._isConnected = true;
         this.emit("revive");
     }
-
+*/
     toSummary(): ParticipantSummary {
         return {
             id: this.id,
             name: this.name,
             isHost: this.isHost,
-            isAlive: this._isAlive,
+            isAlive: this._isConnected,
         }
     }
 }

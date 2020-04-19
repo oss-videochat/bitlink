@@ -89,4 +89,8 @@ export default class MediasoupPeer extends Events.EventEmitter{
         return this.consumers.filter((consumer => consumer.kind === kind));
     }
 
+    destroy(){
+        this.transports.receiving.close();
+        this.transports.sending.close();
+    }
 }

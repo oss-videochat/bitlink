@@ -15,6 +15,7 @@ class UIStore {
             create: false,
         },
         preFillJoinValue: null,
+        messageIdEditControl: null
     };
 
     reset(){

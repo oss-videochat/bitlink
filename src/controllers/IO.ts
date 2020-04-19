@@ -247,6 +247,12 @@ class IO extends Event.EventEmitter {
 
     _handleNewMessage(messageSummary: MessageSummary) {
         const realMessage = this.convertMessageSummaryToMessage(messageSummary);
+        const notification = new UINotification(realMessage.content, NotificationType.Alert, {title: realMessage.from.name});
+        if(!document.hasFocus()){
+            NotificationStore.systemNotify(notification);
+        } else if(!UIStore.store.chatPanel){
+            NotificationStore.add(notification);
+        }
         ChatStore.addMessage(realMessage);
     }
 

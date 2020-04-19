@@ -1,7 +1,8 @@
 import ParticipantsStore, {ParticipantInformation} from "./ParticipantsStore";
-import {observable, action} from "mobx";
+import {action, observable} from "mobx";
 import {Message} from "./MessagesStore";
 import MyInfo from "./MyInfo";
+import UIStore from "./UIStore";
 
 export interface ChatStoreObj {
     [key: string]: Array<Message>
@@ -90,6 +91,10 @@ class ChatStore {
         return store.find(message => message.id === messageId) as Message;
     }
 
+    getMessageIndexFromStore(store: Message[], messageId: string): number {
+        return store.findIndex(message => message.id === messageId);
+    }
+
     getMessageById(id: string): Message {
         const chatStoreKey = this.messageMap[id].chatStoreKey;
         return this.getMessageFromStore(this.chatStore[chatStoreKey], id);
@@ -107,6 +112,32 @@ class ChatStore {
     editMessage(id: string, content: string) {
         const oldMessage = this.getMessageById(id);
         oldMessage.content = content;
+    }
+
+    editNextMessage(options: {messageId?: string, selectedUser?: string}){
+        if(!options.messageId && !options.selectedUser){
+            throw "Can't edit next message"
+        }
+        if(options.messageId){
+            const message = this.messageMap[options.messageId];
+            const store = this.chatStore[message.chatStoreKey];
+            const index = this.getMessageIndexFromStore(store, options.messageId);
+            const newIndex = Math.max(0, index - 1);
+            UIStore.store.messageIdEditControl = store[newIndex].id;
+        } else {
+            const store = this.chatStore[options.selectedUser!];
+            if(store && store[0]){
+                UIStore.store.messageIdEditControl = store[store.length - 1].id;
+            }
+        }
+    }
+
+    editPreviewMessage(messageId: string){
+        const message = this.messageMap[messageId];
+        const store = this.chatStore[message.chatStoreKey];
+        const index = this.getMessageIndexFromStore(store, messageId);
+        const newIndex = Math.min(store.length - 1, index + 1);
+        UIStore.store.messageIdEditControl = store[newIndex].id;
     }
 }
 

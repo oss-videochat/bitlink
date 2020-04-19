@@ -7,20 +7,27 @@ export enum NotificationType {
     Success = "success",
 }
 
+export interface UINotificationOptions {
+    timeout: number,
+    title?: String
+}
+
 export class UINotification {
     public readonly created = new Date();
     private static defaultTime: number = 5000;
-    public timeout = UINotification.defaultTime;
     public message: string;
     public type: NotificationType;
     public timer?: any;
 
-    constructor(message: string, type: NotificationType, timeout?: number) {
+    public options: UINotificationOptions = {
+        timeout: UINotification.defaultTime,
+    };
+
+    constructor(message: string, type: NotificationType, options: UINotificationOptions | {} = {}) {
         this.message = message;
         this.type = type;
-        if (timeout) {
-            this.timeout = timeout;
-        }
+
+       Object.assign(this.options, options);
     }
 }
 
@@ -28,15 +35,35 @@ export class UINotification {
 class NotificationStore {
     @observable public store = observable<UINotification>([]);
 
-    add(notification: UINotification) {
+    add(notification: UINotification, systemNotification = false) {
         notification.timer = setTimeout(() => {
             this.store.remove(notification);
-        }, (notification.created.getTime() + notification.timeout) - Date.now());
+        }, (notification.created.getTime() + notification.options.timeout) - Date.now());
         this.store.push(notification);
+        if(systemNotification){
+            this.systemNotify(notification);
+        }
+    }
+
+    systemNotify(notification: UINotification){
+        if(Notification.permission !== "granted"){
+            return;
+        }
+        const title: any = notification.options.title || "BitLink";
+
+        new Notification(title, {
+            body: notification.message
+        });
     }
 
     reset() {
         this.store.clear();
+    }
+
+    requestPermission(){
+        if(Notification.permission !== "granted"){
+            Notification.requestPermission();
+        }
     }
 }
 

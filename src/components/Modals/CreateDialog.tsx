@@ -4,6 +4,7 @@ import IO from "../../controllers/IO";
 import MyInfo from "../../stores/MyInfo";
 import UIStore from "../../stores/UIStore";
 import RoomStore from "../../stores/RoomStore";
+import NotificationStore from "../../stores/NotificationStore";
 
 export class CreateDialog extends React.Component<any, any> {
     constructor(props: any) {
@@ -31,6 +32,7 @@ export class CreateDialog extends React.Component<any, any> {
     }
 
     handleCreateRoom() {
+        NotificationStore.requestPermission();
         UIStore.store.modalStore.create = false;
         MyInfo.chosenName = this.state.userName;
         IO.createRoom(this.state.roomName);

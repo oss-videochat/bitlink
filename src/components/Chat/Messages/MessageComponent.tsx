@@ -5,13 +5,17 @@ import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
 import {faTrashAlt, faPencilAlt} from '@fortawesome/free-solid-svg-icons'
 import IO from "../../../controllers/IO";
 import {observer} from "mobx-react"
+import {computed} from 'mobx';
+import UIStore from "../../../stores/UIStore";
+import ChatStore from "../../../stores/ChatStore";
 
 @observer
 export class MessageComponent extends React.Component<any, any> {
+    private userIsTyping = false;
+
     constructor(props: any) {
         super(props);
         this.state = {
-            isEditing: false,
             editValue: "",
         };
 
@@ -20,18 +24,41 @@ export class MessageComponent extends React.Component<any, any> {
         this.cancelEdit = this.cancelEdit.bind(this);
     }
 
-    handleEditButton() {
-        this.setState({isEditing: true, editValue: this.props.message.content});
+    @computed
+    get textareaValue(): string {
+        return this.state.editValue || this.props.message.content;
     }
 
-    enterHandle(e: any) {
+    handleEditButton() {
+        UIStore.store.messageIdEditControl = this.props.messageId;
+    }
+
+    handleKeyDown(e: any) {
         if (e.key === "Enter" && !e.shiftKey) {
             e.preventDefault();
             if (this.state.editValue.trim().length > 0) {
-                this.setState({isEditing: false, editValue: ""});
+                this.setState({editValue: ""});
+                this.userIsTyping = false;
+                UIStore.store.messageIdEditControl = null;
                 IO.edit(this.props.messageId, this.state.editValue);
             }
         }
+        if (e.key === "ArrowUp" && !this.userIsTyping) {
+            ChatStore.editNextMessage({messageId: this.props.messageId});
+            return;
+        }
+
+        if (e.key === "ArrowDown" && !this.userIsTyping) {
+            ChatStore.editPreviewMessage(this.props.messageId);
+            return;
+        }
+
+        if (e.key === "Escape") {
+            this.cancelEdit();
+            return;
+        }
+
+        this.userIsTyping = true;
     }
 
     handleTrash() {
@@ -39,8 +66,10 @@ export class MessageComponent extends React.Component<any, any> {
         IO.delete(this.props.messageId);
     }
 
-    cancelEdit(){
-        this.setState({isEditing: false});
+    cancelEdit() {
+        UIStore.store.messageIdEditControl = null;
+        this.userIsTyping = false;
+        this.setState({editValue: ""});
     }
 
     render() {
@@ -60,7 +89,7 @@ export class MessageComponent extends React.Component<any, any> {
                     null
                 }
                 {
-                    this.props.fromMe && !this.state.isEditing ?
+                    this.props.fromMe && UIStore.store.messageIdEditControl !== this.props.messageId ?
                         <div className={"message--options-container"}>
                             <span onClick={this.handleEditButton} className={"message--option"}><FontAwesomeIcon
                                 icon={faPencilAlt}/></span>
@@ -71,14 +100,15 @@ export class MessageComponent extends React.Component<any, any> {
                 }
                 <div className={"message--content-container"}>
                     {
-                        !this.state.isEditing ?
+                        UIStore.store.messageIdEditControl !== this.props.messageId ?
                             <span className={"message--content"}>{this.props.message.content}</span>
                             :
                             <React.Fragment>
-                                  <textarea autoFocus={true} onKeyDown={e => this.enterHandle(e)} placeholder={"Say something..."}
-                                            className={"message--content--edit-input"} value={this.state.editValue}
-                                            onChange={(e) => this.setState({editValue: e.target.value})}/>
-                                            <span onClick={this.cancelEdit} className={"message--content-edit-cancel"}>cancel</span>
+                              <textarea autoFocus={true} onKeyDown={e => this.handleKeyDown(e)}
+                                        placeholder={"Say something..."}
+                                        className={"message--content--edit-input"} value={this.textareaValue}
+                                        onChange={(e) => this.setState({editValue: e.target.value})}/>
+                                <span onClick={this.cancelEdit} className={"message--content-edit-cancel"}>cancel</span>
                             </React.Fragment>
 
                     }

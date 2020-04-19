@@ -21,13 +21,16 @@ export class MessagesContainer extends React.Component<any, any> {
         };
     }
 
-    enterHandle(e: any) {
+    handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
         if (e.key === "Enter" && !e.shiftKey) {
             e.preventDefault();
             if (this.state.inputValue.trim().length > 0) {
                 IO.send(this.props.selectedUser, this.state.inputValue);
                 this.setState({inputValue: ""});
             }
+        }
+        if (e.key === "ArrowUp" && this.state.inputValue === "") {
+            ChatStore.editNextMessage({selectedUser: this.props.selectedUser});
         }
     }
 
@@ -66,7 +69,8 @@ export class MessagesContainer extends React.Component<any, any> {
                                     key={message.id}
                                     messageId={message.id}
                                     fromMe={message.from.id === MyInfo.info!.id}
-                                    message={message}/>;
+                                    message={message}
+                                />;
                             }
                             lastTime = message.created;
                             lastParticipant = message.from.id;
@@ -77,7 +81,7 @@ export class MessagesContainer extends React.Component<any, any> {
                 {ParticipantsStore.getById(this.props.selectedUser)?.isAlive || this.props.selectedUser === "everyone" ?
                     (
                         <div className={"chat--input-container"}>
-                    <textarea onKeyDown={e => this.enterHandle(e)} placeholder={"Say something..."}
+                    <textarea onKeyDown={e => this.handleKeyDown(e)} placeholder={"Say something..."}
                               className={"chat--input"} value={this.state.inputValue}
                               onChange={(e) => this.setState({inputValue: e.target.value})}/>
                         </div>

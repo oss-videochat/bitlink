@@ -1,7 +1,7 @@
 interface DeviceLayout {
     devices: number,
-    rows: number,
-    devices_per_row: number
+    columns: number,
+    devices_per_column: number
 
 }
 
@@ -13,25 +13,25 @@ export function LayoutFinder(numDevices: number): DeviceLayout {
 
     Some information:
 
-    - devices_per_row = ciel(devices/rows)
+    - devices_per_column = ciel(devices/columns)
 
      */
-    let rows = 1; // some constants, with one video we of course want one row of one device
-    let devices_per_row = 1;
+    let columns = 1; // some constants, with one video we of course want one column of one device
+    let devices_per_column = 1;
 
     for (let i = 2; i <= numDevices; i++) { // start with 2, we already did 1 as a constant
-        if (numDevices > rows * devices_per_row) { // if the current layout works then we don't need to do anything
-            if (rows === devices_per_row) { // this is just based on a pattern i found, not really sure why it works
-                devices_per_row++;
+        if (numDevices > columns * devices_per_column) { // if the current layout works then we don't need to do anything
+            if (columns === devices_per_column) { // this is just based on a pattern i found, not really sure why it works
+                devices_per_column++;
             } else {
-                rows++;
+                columns++;
             }
         }
     }
 
     return { // object instead of an array so theres not confusion on the order of output
         devices: numDevices,
-        rows: rows,
-        devices_per_row: devices_per_row
+        columns: columns,
+        devices_per_column: devices_per_column
     }
 }

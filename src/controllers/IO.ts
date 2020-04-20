@@ -35,7 +35,7 @@ class IO extends Event.EventEmitter {
 
         this.io.on("join-room", this._handleJoinRoom.bind(this));
 
-        this.io.on("waiting-room-accept", this._handleRoomSummary.bind(this));
+        this.io.on("waiting-room-accept", this._handleWaitingRoomAccept.bind(this));
         this.io.on("new-waiting-room-participant", this._handleWaitingRoomNewParticipant.bind(this));
         this.io.on("waiting-room-rejection", this._handleWaitingRoomRejection.bind(this));
 
@@ -268,7 +268,6 @@ class IO extends Event.EventEmitter {
             ChatStore.participantLeft(participant);
             NotificationStore.add(new UINotification(`${participant.name} left!`, NotificationType.Alert));
         }
-        console.log("remove form room");
         ParticipantsStore.removeFromWaitingRoom(participantId);
     }
 
@@ -327,6 +326,13 @@ class IO extends Event.EventEmitter {
     _handleWaitingRoomInformation(info: any){
         UIStore.store.modalStore.joiningRoom = false;
         UIStore.store.modalStore.waitingRoom = true;
+    }
+
+    _handleWaitingRoomAccept(data: any){
+        NotificationStore.add(new UINotification("You were accepted into the room!", NotificationType.Success), true);
+        this._handleRoomSummary(data);
+        this.createTransports()
+            .then(() => this.io.emit("transports-ready"));
     }
 
     _handleWaitingRoomRejection(reason: any){

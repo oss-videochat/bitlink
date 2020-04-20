@@ -1,7 +1,7 @@
 .waiting-room-participant {
     display: flex;
     align-items: center;
-    justify-content: end;
+    justify-content: flex-end;
     font-size: 15px;
     height: 50px;
     user-select: none;

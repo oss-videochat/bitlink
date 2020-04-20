@@ -63,7 +63,7 @@ class IO extends Event.EventEmitter {
 
     }
 
-    leave(){
+    leave() {
         this.io.emit("leave");
         UIStore.store.modalStore.joinOrCreate = true;
         ResetStores();
@@ -87,16 +87,17 @@ class IO extends Event.EventEmitter {
             .then(() => {
                 this.io.emit("join-room", id, name, RoomStore.device!.rtpCapabilities, (response: APIResponse) => {
                     if (!response.success) {
-                        if(response.status !== 403){
+                        if (response.status !== 403) {
                             throw response.error;
                         }
                         this._handleWaitingRoomInformation(response.data);
                         return;
                     }
+                    this._handleRoomSummary(response.data);
+                    this.createTransports()
+                        .then(() => this.io.emit("transports-ready"));
                     setTimeout(() => { // https://www.theatlantic.com/technology/archive/2017/02/why-some-apps-use-fake-progress-bars/517233/
-                        this._handleRoomSummary(response.data);
-                        this.createTransports()
-                            .then(() => this.io.emit("transports-ready"));
+                        UIStore.store.modalStore.joiningRoom = false;
                     }, 2000);
 
                 });
@@ -112,30 +113,30 @@ class IO extends Event.EventEmitter {
 
     createTransports() {
         const addTransportListeners = (transport: mediasoupclient.types.Transport) => {
-                transport.on("connect", async ({dtlsParameters}, callback, errback) => {
-                    const response = await this.socketRequest("connect-transport", transport.id, dtlsParameters);
+            transport.on("connect", async ({dtlsParameters}, callback, errback) => {
+                const response = await this.socketRequest("connect-transport", transport.id, dtlsParameters);
+                if (!response.success) {
+                    NotificationStore.add(new UINotification(`An error occurred connecting to the transport: ${response.error}`, NotificationType.Error));
+                    errback();
+                    return;
+                }
+                callback();
+            });
+
+            transport.on("produce", async ({kind, rtpParameters, appData}, callback, errback) => {
+                try {
+                    const response: APIResponse = await this.socketRequest("create-producer", transport.id, kind, rtpParameters);
                     if (!response.success) {
-                        NotificationStore.add(new UINotification(`An error occurred connecting to the transport: ${response.error}`, NotificationType.Error));
-                        errback();
+                        errback(response.error);
+                        errback(response.error);
                         return;
                     }
-                    callback();
-                });
-
-                transport.on("produce", async ({kind, rtpParameters, appData}, callback, errback) => {
-                    try {
-                        const response: APIResponse = await this.socketRequest("create-producer", transport.id, kind, rtpParameters);
-                        if (!response.success) {
-                            errback(response.error);
-                            errback(response.error);
-                            return;
-                        }
-                        this.socketRequest("producer-action", kind, "resume");
-                        callback({id: response.data.id});
-                    } catch (error) {
-                        errback(error);
-                    }
-                });
+                    this.socketRequest("producer-action", kind, "resume");
+                    callback({id: response.data.id});
+                } catch (error) {
+                    errback(error);
+                }
+            });
         };
 
         return Promise.all([
@@ -158,8 +159,6 @@ class IO extends Event.EventEmitter {
 
     @action
     _handleRoomSummary(data: { summary: RoomSummary, rtcCapabilities: any }) {
-        UIStore.store.modalStore.joiningRoom = false;
-        UIStore.store.modalStore.waitingRoom = false;
 
         const roomSummary: RoomSummary = data.summary;
 
@@ -167,8 +166,8 @@ class IO extends Event.EventEmitter {
         roomSummary.participants.forEach((participant: ParticipantInformation | CurrentUserInformation) => {
 
             participant.mediaState = {
-              cameraEnabled: false,
-              microphoneEnabled: false
+                cameraEnabled: false,
+                microphoneEnabled: false
             };
 
             participant.mediasoup = {
@@ -196,7 +195,6 @@ class IO extends Event.EventEmitter {
 
         this.emit("room-summary", roomSummary);
     }
-
 
 
     convertMessageSummaryToMessage(message: MessageSummary): Message {
@@ -231,7 +229,7 @@ class IO extends Event.EventEmitter {
     }
 
     @action
-    _handleWaitingRoomNewParticipant(data: {participant: ParticipantInformation}){
+    _handleWaitingRoomNewParticipant(data: { participant: ParticipantInformation }) {
         ParticipantsStore.waitingRoom.push(data.participant);
     }
 
@@ -281,9 +279,9 @@ class IO extends Event.EventEmitter {
     _handleNewMessage(messageSummary: MessageSummary) {
         const realMessage = this.convertMessageSummaryToMessage(messageSummary);
         const notification = new UINotification(realMessage.content, NotificationType.Alert, {title: realMessage.from.name});
-        if(!document.hasFocus()){
+        if (!document.hasFocus()) {
             NotificationStore.systemNotify(notification);
-        } else if(!UIStore.store.chatPanel){
+        } else if (!UIStore.store.chatPanel) {
             NotificationStore.add(notification);
         }
         ChatStore.addMessage(realMessage);
@@ -313,7 +311,7 @@ class IO extends Event.EventEmitter {
             participant.mediasoup!.consumer[kind] = null;
         });
 
-        if(kind === "video"){
+        if (kind === "video") {
             participant.mediaState.cameraEnabled = true;
         } else {
             participant.mediaState.microphoneEnabled = true;
@@ -323,19 +321,20 @@ class IO extends Event.EventEmitter {
         participant.mediasoup!.consumer[kind]?.resume();
     }
 
-    _handleWaitingRoomInformation(info: any){
+    _handleWaitingRoomInformation(info: any) {
         UIStore.store.modalStore.joiningRoom = false;
         UIStore.store.modalStore.waitingRoom = true;
     }
 
-    _handleWaitingRoomAccept(data: any){
+    _handleWaitingRoomAccept(data: any) {
         NotificationStore.add(new UINotification("You were accepted into the room!", NotificationType.Success), true);
+        UIStore.store.modalStore.waitingRoom = false;
         this._handleRoomSummary(data);
         this.createTransports()
             .then(() => this.io.emit("transports-ready"));
     }
 
-    _handleWaitingRoomRejection(reason: any){
+    _handleWaitingRoomRejection(reason: any) {
         NotificationStore.add(new UINotification(reason, NotificationType.Error), true);
         UIStore.store.modalStore.waitingRoom = false;
         UIStore.store.modalStore.joiningRoom = false;
@@ -447,7 +446,6 @@ class IO extends Event.EventEmitter {
             });
         });
     }
-
 
 
 }

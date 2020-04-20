@@ -9,6 +9,7 @@ import {VideoPlaceholder} from "./VideoPlaceholder";
 import MyInfo from "../../stores/MyInfo";
 import {LayoutFinder} from "../../util/LayoutFinder";
 import UIStore from "../../stores/UIStore";
+import {LayoutSizeCalculation} from "../../util/LayoutSizeCalculation";
 
 @observer
 export class VideoContainer extends React.Component<any, any> {
@@ -24,7 +25,8 @@ export class VideoContainer extends React.Component<any, any> {
     constructor(props: any) {
         super(props);
         this.state = {
-            basis: 0
+            basis: 0,
+            maxWidth: 0,
         };
     }
 
@@ -55,17 +57,9 @@ export class VideoContainer extends React.Component<any, any> {
             return;
         }
 
-        const layoutConfig = LayoutFinder(data.numParticipants);
-        const basis = 1 / layoutConfig.devices_per_column;
-        let calculatedWidth = basis * div.offsetWidth;
-        const thatWidthsHeight = calculatedWidth / (16 / 9);
-
-        if ((thatWidthsHeight * layoutConfig.columns) > div.offsetHeight) {
-            calculatedWidth = (div.offsetHeight * (16 / 9)) / layoutConfig.columns;
-        }
-
-
-        this.setState({basis: calculatedWidth + "px"})
+        const divWidth = UIStore.store.chatPanel ? div.offsetWidth : data.width; // there's an animation with the chat panel so we need to figure out how large the div will be post animation
+        const result = LayoutSizeCalculation(divWidth, div.offsetHeight, data.numParticipants);
+        this.setState({basis: result.basis, maxWidth: result.maxWidth});
     });
 
     componentDidMount(): void {
@@ -99,7 +93,8 @@ export class VideoContainer extends React.Component<any, any> {
                         participants
                             .map((participant, i, arr) => {
                                 if (participant.mediaState.cameraEnabled) {
-                                    return <VideoParticipant flexBasis={this.state.basis} key={participant.id}
+                                    return <VideoParticipant flexBasis={this.state.basis} maxWidth={this.state.maxWidth}
+                                                             key={participant.id}
                                                              participant={participant}/>
                                 } else {
                                     return <AudioParticipant flexBasis={this.state.basis} key={participant.id}

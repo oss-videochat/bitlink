@@ -90,7 +90,7 @@ export default class MediasoupPeer extends Events.EventEmitter{
     }
 
     destroy(){
-        this.transports.receiving.close();
-        this.transports.sending.close();
+        this.transports.receiving?.close();
+        this.transports.sending?.close();
     }
 }

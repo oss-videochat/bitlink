@@ -4,7 +4,7 @@ import './Header.css';
 import RoomStore from "../../stores/RoomStore";
 import IO from "../../controllers/IO";
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
-import {faUsers, faComments, faMicrophone, faMicrophoneSlash, faVideo, faVideoSlash} from '@fortawesome/free-solid-svg-icons'
+import {faUsers, faComments, faMicrophone, faMicrophoneSlash, faVideo, faVideoSlash, faCogs} from '@fortawesome/free-solid-svg-icons'
 import UIStore from "../../stores/UIStore";
 import {RoomId} from "./RoomId";
 import MyInfo from "../../stores/MyInfo";
@@ -36,6 +36,9 @@ export class Header extends React.Component<any, any> {
                         {
                             MyInfo.info ?
                                 <React.Fragment>
+                                    <li onClick={() => UIStore.store.modalStore.settings = true}>
+                                            <FontAwesomeIcon icon={faCogs}/>
+                                    </li>
                                     <li onClick={() => IO.toggleAudio()}>
                                         {MyInfo.info.mediaState.microphoneEnabled ?
                                             <FontAwesomeIcon icon={faMicrophone}/> :

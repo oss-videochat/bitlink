@@ -7,7 +7,6 @@ import {VideoParticipant} from "./VideoParticipant";
 import {AudioParticipant} from "./AudioParticipant";
 import {VideoPlaceholder} from "./VideoPlaceholder";
 import MyInfo from "../../stores/MyInfo";
-import {LayoutFinder} from "../../util/LayoutFinder";
 import UIStore from "../../stores/UIStore";
 import {LayoutSizeCalculation} from "../../util/LayoutSizeCalculation";
 

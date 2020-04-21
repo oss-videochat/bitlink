@@ -1,11 +1,11 @@
 import io from 'socket.io-client';
-import ParticipantsStore, {MediaState, ParticipantInformation} from "../stores/ParticipantsStore";
+import ParticipantsStore, {ParticipantInformation} from "../stores/ParticipantsStore";
 import {action} from 'mobx';
 import * as Event from 'events';
 
-import CurrentUserInformationStore, {CurrentUserInformation} from "../stores/MyInfo";
+import CurrentUserInformationStore from "../stores/MyInfo";
+import MyInfo, {CurrentUserInformation} from "../stores/MyInfo";
 import RoomStore, {RoomSummary} from "../stores/RoomStore";
-import MyInfo from "../stores/MyInfo";
 import ChatStore from "../stores/ChatStore";
 import {Message, MessageSummary} from "../stores/MessagesStore";
 import NotificationStore, {NotificationType, UINotification} from "../stores/NotificationStore";
@@ -26,6 +26,11 @@ interface MediaStateUpdate {
     action: "resume" | "pause";
 }
 
+export interface RoomSettingsObj {
+    name: string
+    waitingRoom: boolean,
+}
+
 class IO extends Event.EventEmitter {
     private io: SocketIOClient.Socket;
 
@@ -44,6 +49,10 @@ class IO extends Event.EventEmitter {
         this.io.on("new-participant", this._handleNewParticipant.bind(this));
         this.io.on("participant-updated-media-state", this._handleMediaStateUpdate.bind(this));
         this.io.on("participant-left", this._handleParticipantLeft.bind(this));
+        this.io.on("participant-changed-name", this._handleParticipantNameChange.bind(this));
+
+        this.io.on("update-room-settings", this._handleUpdatedRoomSettings.bind(this));
+        this.io.on("update-room-settings-host", this._handleUpdatedRoomSettings.bind(this));
 
 
         this.io.on("new-room-message", this._handleNewMessage.bind(this));
@@ -269,6 +278,13 @@ class IO extends Event.EventEmitter {
         ParticipantsStore.removeFromWaitingRoom(participantId);
     }
 
+    _handleParticipantNameChange(participantId: string, newName: string){
+        const participant = ParticipantsStore.getById(participantId);
+        if(participant){
+            participant.name = newName;
+        }
+    }
+
     _handleRoomClosure() {
         NotificationStore.add(new UINotification(`Room was closed!`, NotificationType.Warning));
         ResetStores();
@@ -339,6 +355,12 @@ class IO extends Event.EventEmitter {
         UIStore.store.modalStore.waitingRoom = false;
         UIStore.store.modalStore.joiningRoom = false;
         UIStore.store.modalStore.join = true;
+    }
+
+    _handleUpdatedRoomSettings(newSettings: RoomSettingsObj){
+        if(RoomStore.room?.name !== newSettings.name){
+            RoomStore.room!.name = newSettings.name;
+        }
     }
 
     async toggleVideo() {
@@ -437,6 +459,34 @@ class IO extends Event.EventEmitter {
             return false;
         }
         return true;
+    }
+
+    async changeName(newName: string) {
+        const response = await this.socketRequest("change-name", newName);
+        if(response.success){
+            console.log("switch my named");
+            MyInfo.info!.name = newName;
+        }
+    }
+
+
+    async getRoomSettings(): Promise<RoomSettingsObj> {
+        const response = await this.socketRequest("get-room-settings");
+        if (!response.success) {
+            NotificationStore.add(new UINotification("Error Getting Settings: " + response.error, NotificationType.Error))
+            throw response.error;
+        }
+        return response.data.settings;
+    }
+
+    async changeRoomSettings(newSettings: RoomSettingsObj): Promise<undefined> {
+        const response = await this.socketRequest("update-room-settings", newSettings);
+        if (!response.success) {
+            NotificationStore.add(new UINotification("Error Getting Settings: " + response.error, NotificationType.Error))
+            throw response.error;
+        }
+        RoomStore.room!.name = newSettings.name;
+        return;
     }
 
     socketRequest(event: string, ...args: any[]): Promise<APIResponse> {

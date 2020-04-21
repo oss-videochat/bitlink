@@ -6,6 +6,7 @@
     width: 500px;
     max-width: 100%;
     margin: 30px;
+    overflow: hidden;
 }
 
 .modal--title {
@@ -20,6 +21,12 @@
     width: 100%;
     border-radius: 6px;
     padding: 5px 10px;
+}
+
+.modal--input[type="checkbox"]{
+    display: inline-block;
+    width: auto;
+    margin-right: 10px;
 }
 
 .modal--input.invalid {

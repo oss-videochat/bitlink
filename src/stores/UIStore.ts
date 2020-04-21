@@ -14,6 +14,7 @@ class UIStore {
             joiningRoom: false,
             waitingRoom: false,
             create: false,
+            settings: false
         },
         preFillJoinValue: null,
         messageIdEditControl: null

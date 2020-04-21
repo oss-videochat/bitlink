@@ -7,6 +7,7 @@ import {JoinDialog} from "./JoinDialog";
 import {JoinOrCreate} from "./JoinOrCreate";
 import {Joining} from "./Joining";
 import {WaitingRoom} from "./WaitingRoom";
+import {SettingsModal} from "./Settings/SettingsModal";
 
 @observer
 export class Modal extends React.Component<any, any> {
@@ -26,6 +27,9 @@ export class Modal extends React.Component<any, any> {
         }
         if (modalStore.create) {
             return <CreateDialog/>
+        }
+        if (modalStore.settings) {
+            return <SettingsModal/>
         }
         return null;
     }

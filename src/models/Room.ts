@@ -4,6 +4,7 @@ import Message from "./Message";
 import {APIResponse, APIResponseCallback} from "./APIResponse";
 import * as mediasoup from 'mediasoup';
 import {config} from "../../config";
+import {UpdateRoomSettingsValidation} from "../helpers/validation/UpdateRoomSettings";
 
 interface ParticipantAuthObj {
     id: string,
@@ -11,7 +12,8 @@ interface ParticipantAuthObj {
 }
 
 interface RoomSettings {
-    waitingRoom: boolean
+    name: string
+    waitingRoom: boolean,
 }
 
 class Room extends Event.EventEmitter {
@@ -20,11 +22,11 @@ class Room extends Event.EventEmitter {
     }
 
     private static defaultSettings: RoomSettings = {
-        waitingRoom: true,
+        waitingRoom: false,
+        name: undefined
     };
 
     public id: string;
-    public name: string;
     public idHash: string;
     private readonly participants: Array<Participant> = [];
     private readonly waitingRoom: Array<Participant> = [];
@@ -36,7 +38,7 @@ class Room extends Event.EventEmitter {
 
     constructor(name: string = "Untitled Room", router: mediasoup.types.Router) {
         super();
-        this.name = name;
+        this.settings.name = name;
         this.created = new Date();
         this._router = router;
 
@@ -65,11 +67,11 @@ class Room extends Event.EventEmitter {
             participant.isHost = true;
         }
 
-        if(this.settings.waitingRoom && !participant.isHost){
+        if (this.settings.waitingRoom && !participant.isHost) {
             this.waitingRoom.push(participant);
             cb({
                 success: false, error: "In waiting room", status: 403, data: {
-                    name: this.name
+                    name: this.settings.name
                 }
             });
 
@@ -105,16 +107,15 @@ class Room extends Event.EventEmitter {
     }
 
 
-
-    removeParticipant(participant: Participant){
+    removeParticipant(participant: Participant) {
         const participantsIndex = this.participants.findIndex(joinedParticipant => joinedParticipant.id === participant.id);
         const waitingRoomIndex = this.waitingRoom.findIndex(patentParticipant => patentParticipant.id === participant.id);
 
-        if(participantsIndex >= 0){
+        if (participantsIndex >= 0) {
             this.participants.splice(participantsIndex, 1);
         }
 
-        if(waitingRoomIndex >= 0){
+        if (waitingRoomIndex >= 0) {
             this.waitingRoom.splice(waitingRoomIndex, 1);
         }
     }
@@ -146,7 +147,7 @@ class Room extends Event.EventEmitter {
         });
 
         participant.socket.on("waiting-room-decision", (id, decision: "accept" | "reject", cb: APIResponseCallback) => {
-            if(!participant.isHost){
+            if (!participant.isHost) {
                 cb({
                     success: false,
                     error: "You aren't important enough. You aren't a host.",
@@ -155,7 +156,7 @@ class Room extends Event.EventEmitter {
                 return;
             }
             const waitingRoomIndex = this.waitingRoom.findIndex(patientParticipant => patientParticipant.id === id);
-            if(waitingRoomIndex < 0) {
+            if (waitingRoomIndex < 0) {
                 cb({
                     success: false,
                     error: "Could not find participant in the waiting room with that id.",
@@ -169,9 +170,9 @@ class Room extends Event.EventEmitter {
             switch (decision) {
                 case "accept":
                     this._addParticipant(patientParticipant);
-                    patientParticipant.socket.emit("waiting-room-accept",  {
-                            summary: this.getSummary(participant),
-                            rtcCapabilities: this._router.rtpCapabilities
+                    patientParticipant.socket.emit("waiting-room-accept", {
+                        summary: this.getSummary(patientParticipant),
+                        rtcCapabilities: this._router.rtpCapabilities
                     });
                     cb({
                         success: true,
@@ -197,6 +198,67 @@ class Room extends Event.EventEmitter {
             }
         });
 
+        participant.socket.on("get-room-settings", (cb: APIResponseCallback) => {
+            if (!participant.isHost) {
+                cb({
+                    success: false,
+                    status: 403,
+                    error: "You are not a host"
+                });
+                return;
+            }
+            cb({
+                success: true,
+                status: 200,
+                error: null,
+                data: {
+                    settings: this.settings
+                }
+            });
+        });
+
+        participant.socket.on("change-name", (newName, cb: APIResponseCallback) => {
+            participant.name = newName;
+            this.broadcast("participant-changed-name", [participant],participant.id, participant.name);
+            cb({
+                success: true,
+                status: 200,
+                error: null,
+            });
+        });
+
+        participant.socket.on("update-room-settings", (newSettings, cb: APIResponseCallback) => {
+            if (!participant.isHost) {
+                cb({
+                    success: false,
+                    status: 403,
+                    error: "You are not a host"
+                });
+                return;
+            }
+            if(!UpdateRoomSettingsValidation(newSettings)){
+                cb({
+                    success: false,
+                    status: 400,
+                    error: "Bad input."
+                });
+                return;
+            }
+            if(newSettings.name !== this.settings.name){
+                this.broadcast("update-room-settings", this.participants.filter(participant1 => participant1.isHost), this.makeSettingsSafe(newSettings));
+                this.broadcast("update-room-settings-host", this.participants.filter(participant1 => participant1.isHost), newSettings);
+            }
+
+            this.settings = newSettings;
+            cb({
+                success: true,
+                status: 200,
+                error: null,
+                data: {
+                    settings: this.settings
+                }
+            });
+        });
 
 
         participant.socket.on("send-message", (to: string, content: string, cb) => {
@@ -213,7 +275,6 @@ class Room extends Event.EventEmitter {
             const response: APIResponse = this.deleteMessage(participant, messageId);
             cb(response);
         });
-
 
         // ##################
         // ## WebRTC stuff ## ASCII Art, Yey! :D
@@ -329,10 +390,10 @@ class Room extends Event.EventEmitter {
 
     _handleNewProducer(theParticipant, kind: "video" | "audio") {
         this.participants.forEach(aParticpant => {
-           if(aParticpant.id === theParticipant.id) {
-               return;
-           }
-           this.createConsumerAndNotify(theParticipant, aParticpant, kind)
+            if (aParticpant.id === theParticipant.id) {
+                return;
+            }
+            this.createConsumerAndNotify(theParticipant, aParticpant, kind)
         });
     }
 
@@ -345,7 +406,7 @@ class Room extends Event.EventEmitter {
         });
     }
 
-    broadcastHosts(events: string, ...args: any[]){
+    broadcastHosts(events: string, ...args: any[]) {
         const nonHosts: Participant[] = this.getConnectedParticipants().filter((participant: Participant) => !participant.isHost);
         this.broadcast(events, nonHosts, ...args); // broadcast ignoring non hosts
     }
@@ -374,7 +435,7 @@ class Room extends Event.EventEmitter {
         message.on("edit", () => this.alertRelevantParticipantsAboutMessage(message, "edit"));
         message.on("delete", () => {
             const index = this.getMessageIndex(message.id);
-            if(index){
+            if (index) {
                 this.messages.splice(index, 1);
             }
             this.alertRelevantParticipantsAboutMessage(message, "delete")
@@ -427,7 +488,7 @@ class Room extends Event.EventEmitter {
         return {
             id: this.id,
             idHash: this.idHash,
-            name: this.name,
+            name: this.settings.name,
             participants: this.getConnectedParticipants().map(participantInRoom => {
                 const obj: any = {
                     isMe: participantInRoom.id === currentParticipant.id,
@@ -447,15 +508,21 @@ class Room extends Event.EventEmitter {
         }
     }
 
+    makeSettingsSafe(settings: RoomSettings){
+        return {
+            name: settings.name
+        }
+    }
+
     async createConsumerAndNotify(producerPeer: Participant, consumerPeer: Participant, kind: "video" | "audio") {
         const producer = producerPeer.mediasoupPeer.getProducersByKind(kind);
         if (
             !producer
             || !consumerPeer.mediasoupPeer.rtcCapabilities
             || !this._router.canConsume({
-            producerId: producer.id,
-            rtpCapabilities: consumerPeer.mediasoupPeer.rtcCapabilities
-        })
+                producerId: producer.id,
+                rtpCapabilities: consumerPeer.mediasoupPeer.rtcCapabilities
+            })
         ) {
             return;
         }
@@ -473,13 +540,13 @@ class Room extends Event.EventEmitter {
 
         consumerPeer.mediasoupPeer.addConsumer(consumer);
 
-        consumerPeer.socket.emit("new-consumer", kind,  producerPeer.id, {
+        consumerPeer.socket.emit("new-consumer", kind, producerPeer.id, {
             producerId: producer.id,
             consumerId: consumer.id,
             rtpParameters: consumer.rtpParameters,
             producerPaused: consumer.producerPaused,
         }, (success) => {
-            if(success){
+            if (success) {
                 consumer.resume();
             }
         });

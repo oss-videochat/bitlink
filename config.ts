@@ -92,7 +92,7 @@ export const config = {
                     listenIps:
                         [
                             {
-                                ip: process.env.MEDIASOUP_LISTEN_IP || '192.168.1.197',
+                                ip: process.env.MEDIASOUP_LISTEN_IP,
                                 announcedIp: process.env.MEDIASOUP_ANNOUNCED_IP
                             }
                         ],

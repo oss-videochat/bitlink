@@ -500,4 +500,4 @@ class IO extends Event.EventEmitter {
 
 }
 
-export default new IO("http://" + window.location.hostname + ":3001");
+export default new IO("https://" + window.location.hostname);

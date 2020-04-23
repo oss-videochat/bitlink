@@ -4,6 +4,7 @@ import {SettingsPanels} from "../../../enum/SettingsPanels";
 import {MySettings} from "./SettingsViews/MySettings";
 import {RoomSettings} from "./SettingsViews/RoomSettings";
 import {ParticipantList} from "./SettingsViews/ParticipantList";
+import {Report} from "./SettingsViews/Report";
 
 export class SettingsViewer extends React.Component<any, any> {
     getView(){
@@ -14,6 +15,8 @@ export class SettingsViewer extends React.Component<any, any> {
                 return <RoomSettings handleChangesMade={this.props.handleChangesMade} changesMade={this.props.changesMade} events={this.props.events}/>;
             case SettingsPanels.Participants:
                 return <ParticipantList handleChangesMade={this.props.handleChangesMade} changesMade={this.props.changesMade} events={this.props.events}/>
+            case SettingsPanels.Report:
+                return <Report handleChangesMade={this.props.handleChangesMade} changesMade={this.props.changesMade} events={this.props.events}/>
         }
     }
 

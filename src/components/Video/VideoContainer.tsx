@@ -90,7 +90,7 @@ export class VideoContainer extends React.Component<any, any> {
 
                 <div className={"preview-video"} hidden={!MyInfo.info?.mediaState.cameraEnabled}>
                    <div className={"preview-video-wrapper"}>
-                       <video ref={this.previewRef}/>
+                       <video playsInline={true}  muted={true} autoPlay={true} ref={this.previewRef}/>
                    </div>
                 </div>
 

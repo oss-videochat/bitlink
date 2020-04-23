@@ -30,8 +30,13 @@ export class VideoContainer extends React.Component<any, any> {
     }
 
     async updateMedia() {
-        if (MyInfo.info?.mediaState.cameraEnabled) {
-            this.previewRef!.current!.srcObject = new MediaStream([await MyInfo.getVideoStream()]);
+        if(!MyInfo.info?.mediaState.cameraEnabled){
+            return;
+        }
+        const stream  = await MyInfo.getVideoStream();
+        const srcObject: MediaStream | undefined =   this.previewRef!.current!.srcObject as MediaStream | undefined;
+        if (srcObject?.getVideoTracks()[0].id !== stream.id ) {
+            this.previewRef!.current!.srcObject = new MediaStream([stream]);
         }
     }
 

@@ -51,7 +51,7 @@ export class VideoParticipant extends React.Component<any, any> {
 
     render() {
         return (
-            <div style={{flexBasis: this.props.flexBasis, maxWidth: this.props.maxWidth}}>
+            <div className={"video-pad"} style={{flexBasis: this.props.flexBasis, maxWidth: this.props.maxWidth}}>
                 <div className={"video-participant-wrapper"}>
                     <video autoPlay={true} ref={this.videoRef} className={"video-participant--video"}/>
                     <audio autoPlay={true} ref={this.audioRef} className={"video-participant--audio"}/>

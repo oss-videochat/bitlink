@@ -18,10 +18,11 @@ export class AudioParticipant extends React.Component<any, any> {
 
     render() {
         return (
-            <div className={"video-participant-wrapper audio"} style={{"flexBasis": this.props.flexBasis}}>
-                <div className={"audio-participant--spacer"}/>
+            <div className={"video-participant-wrapper audio video-pad"} style={{"flexBasis": this.props.flexBasis}}>
+                <div className={"audio-participant--spacer"}>
+                    <span className={"audio-participant--name"}>{this.props.participant.name}</span>
+                </div>
                 <audio ref={this.audioRef} className={"video-participant--audio"}/>
-                <span className={"audio-participant--name"}>{this.props.participant.name}</span>
             </div>
         );
     }

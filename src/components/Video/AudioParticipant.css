@@ -1,5 +1,4 @@
 .video-participant-wrapper.audio {
-    background: #2b2b2b;
     overflow: hidden;
     padding-bottom: 0;
     height: auto;
@@ -21,4 +20,5 @@
     padding-top: 56.25%;
     width: 100%;
     position: relative;
+    background: #2b2b2b;
 }

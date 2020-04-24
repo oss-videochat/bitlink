@@ -1,9 +1,9 @@
 import React, {RefObject} from 'react';
 import './VideoParticipant.css';
 import MyInfo from "../../stores/MyInfo";
+import {observer} from 'mobx-react';
 
-import {autorun} from 'mobx';
-
+@observer
 export class VideoParticipant extends React.Component<any, any> {
     private videoRef: RefObject<HTMLVideoElement> = React.createRef();
     private audioRef: RefObject<HTMLVideoElement> = React.createRef();

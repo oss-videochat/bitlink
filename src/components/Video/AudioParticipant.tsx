@@ -1,6 +1,9 @@
 import React from 'react';
 import './AudioParticipant.css';
 
+import {observer} from 'mobx-react';
+
+@observer
 export class AudioParticipant extends React.Component<any, any> {
     private audioRef: any = React.createRef();
 

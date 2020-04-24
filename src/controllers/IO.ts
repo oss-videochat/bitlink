@@ -171,7 +171,6 @@ class IO extends Event.EventEmitter {
 
         const roomSummary: RoomSummary = data.summary;
 
-
         roomSummary.participants.forEach((participant: ParticipantInformation | CurrentUserInformation) => {
 
             participant.mediaState = {

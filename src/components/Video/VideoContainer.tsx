@@ -1,6 +1,6 @@
 import React from 'react';
 import {observer} from "mobx-react"
-import {reaction, observable} from "mobx"
+import {observable, reaction} from "mobx"
 import './VideoContainer.css';
 import ParticipantsStore, {ParticipantInformation} from "../../stores/ParticipantsStore";
 import {VideoParticipant} from "./VideoParticipant";
@@ -31,12 +31,13 @@ export class VideoContainer extends React.Component<any, any> {
 
     async updateMedia() {
         if (MyInfo.info?.mediaState.cameraEnabled) {
-            this.previewRef!.current!.srcObject = new MediaStream([await MyInfo.getVideoStream()]);
+            this.previewRef!.current!.srcObject = await MyInfo.getVideoStream();
         }
     }
 
     componentWillUnmount(): void {
         this.updateBasis();
+        this.updatePreview();
     }
 
 
@@ -59,6 +60,19 @@ export class VideoContainer extends React.Component<any, any> {
         const divWidth = UIStore.store.chatPanel ? div.offsetWidth : data.width; // there's an animation with the chat panel so we need to figure out how large the div will be post animation
         const result = LayoutSizeCalculation(divWidth, div.offsetHeight, data.numParticipants);
         this.setState({basis: result.basis, maxWidth: result.maxWidth});
+    });
+
+    updatePreview = reaction(() => {
+        return MyInfo.preferredInputs.video;
+    }, (_) => {
+        if (
+            MyInfo.preferredInputs.video
+            && MyInfo.info?.mediaState.cameraEnabled
+            && this.previewRef.current
+            && (this.previewRef.current.srcObject as MediaStream).getVideoTracks()[0].getSettings().deviceId !== MyInfo.preferredInputs.video
+        ) {
+            this.updateMedia();
+        }
     });
 
     componentDidMount(): void {

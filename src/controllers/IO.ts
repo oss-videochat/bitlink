@@ -1,6 +1,6 @@
 import io from 'socket.io-client';
 import ParticipantsStore, {ParticipantInformation} from "../stores/ParticipantsStore";
-import {action} from 'mobx';
+import {action, reaction} from 'mobx';
 import * as Event from 'events';
 
 import CurrentUserInformationStore from "../stores/MyInfo";
@@ -69,6 +69,31 @@ class IO extends Event.EventEmitter {
         // ##################
 
         this.io.on("new-consumer", this._handleNewConsumer.bind(this));
+
+        reaction(() => {
+            return {
+                audio: MyInfo.preferredInputs.audio,
+                video: MyInfo.preferredInputs.video
+            }
+
+        }, (_) => {
+            if (
+                MyInfo.preferredInputs.audio
+                && MyInfo.mediasoup.producers.audio?.track?.getSettings().deviceId !== MyInfo.preferredInputs.audio
+            ) {
+                MyInfo.getAudioStream().then((stream) => {
+                    MyInfo.mediasoup.producers.audio?.replaceTrack({track: stream.getAudioTracks()[0]});
+                });
+            }
+            if (
+                MyInfo.preferredInputs.video
+                && MyInfo.mediasoup.producers.video?.track?.getSettings().deviceId !== MyInfo.preferredInputs.video
+            ) {
+                MyInfo.getVideoStream().then((stream) => {
+                    MyInfo.mediasoup.producers.video?.replaceTrack({track: stream.getVideoTracks()[0]});
+                });
+            }
+        });
 
     }
 
@@ -278,9 +303,9 @@ class IO extends Event.EventEmitter {
         ParticipantsStore.removeFromWaitingRoom(participantId);
     }
 
-    _handleParticipantNameChange(participantId: string, newName: string){
+    _handleParticipantNameChange(participantId: string, newName: string) {
         const participant = ParticipantsStore.getById(participantId);
-        if(participant){
+        if (participant) {
             participant.name = newName;
         }
     }
@@ -357,8 +382,8 @@ class IO extends Event.EventEmitter {
         UIStore.store.modalStore.join = true;
     }
 
-    _handleUpdatedRoomSettings(newSettings: RoomSettingsObj){
-        if(RoomStore.room?.name !== newSettings.name){
+    _handleUpdatedRoomSettings(newSettings: RoomSettingsObj) {
+        if (RoomStore.room?.name !== newSettings.name) {
             RoomStore.room!.name = newSettings.name;
         }
     }
@@ -374,12 +399,12 @@ class IO extends Event.EventEmitter {
             }
             return;
         }
-        const track = await MyInfo.getVideoStream();
-        if (!track) {
+        const stream = await MyInfo.getVideoStream();
+        if (!stream) {
             NotificationStore.add(new UINotification(`An error occurred accessing the webcam`, NotificationType.Error));
             return;
         }
-        MyInfo.mediasoup.producers.video = await MyInfo.mediasoup.transports.sending!.produce({track});
+        MyInfo.mediasoup.producers.video = await MyInfo.mediasoup.transports.sending!.produce({track: stream.getVideoTracks()[0]});
         MyInfo.resume("video");
     }
 
@@ -394,12 +419,12 @@ class IO extends Event.EventEmitter {
             }
             return;
         }
-        const track = await MyInfo.getAudioStream();
-        if (!track) {
+        const stream = await MyInfo.getAudioStream();
+        if (!stream) {
             NotificationStore.add(new UINotification(`An error occurred accessing the microphone`, NotificationType.Error));
             return;
         }
-        MyInfo.mediasoup.producers.audio = await MyInfo.mediasoup.transports.sending!.produce({track});
+        MyInfo.mediasoup.producers.audio = await MyInfo.mediasoup.transports.sending!.produce({track: stream.getAudioTracks()[0]});
         MyInfo.resume("audio");
     }
 
@@ -463,7 +488,7 @@ class IO extends Event.EventEmitter {
 
     async changeName(newName: string) {
         const response = await this.socketRequest("change-name", newName);
-        if(response.success){
+        if (response.success) {
             console.log("switch my named");
             MyInfo.info!.name = newName;
         }

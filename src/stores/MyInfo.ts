@@ -34,6 +34,12 @@ class CurrentUserInformationStore {
         },
     };
 
+    @observable
+    public preferredInputs = {
+        video: localStorage.getItem("preferred-video-input") ?? null,
+        audio: localStorage.getItem("preferred-audio-input") ?? null,
+    };
+
 
     reset() {
         this.chosenName = undefined;
@@ -58,14 +64,27 @@ class CurrentUserInformationStore {
         }
     }
 
-    async getVideoStream() {
-        const stream = await navigator.mediaDevices.getUserMedia({video: true});
-        return stream.getVideoTracks()[0]
+    setPreferredInput(kind: "video" | "audio", deviceId: string){
+        this.preferredInputs[kind] = deviceId;
+        localStorage.setItem(`preferred-${kind}-input`, deviceId)
     }
 
-    async getAudioStream() {
-        const stream = await navigator.mediaDevices.getUserMedia({audio: true});
-        return stream.getAudioTracks()[0]
+    async getVideoStream(): Promise<MediaStream> {
+        if(this.preferredInputs.video){
+            return await navigator.mediaDevices.getUserMedia({video: {deviceId: {exact: this.preferredInputs.video}}});
+        }
+        const stream: MediaStream = await navigator.mediaDevices.getUserMedia({video: {facingMode: {ideal: "user"}}});
+        this.setPreferredInput("video", stream.getVideoTracks()[0].getSettings().deviceId!);
+        return stream;
+    }
+
+    async getAudioStream(): Promise<MediaStream> {
+        if(this.preferredInputs.audio){
+            return await navigator.mediaDevices.getUserMedia({audio: {deviceId: {exact: this.preferredInputs.audio}}});
+        }
+        const stream: MediaStream = await navigator.mediaDevices.getUserMedia({audio: true});
+        this.setPreferredInput("video", stream.getAudioTracks()[0].getSettings().deviceId!);
+        return stream;
     }
 }
 

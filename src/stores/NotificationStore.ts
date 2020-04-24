@@ -46,6 +46,9 @@ class NotificationStore {
     }
 
     systemNotify(notification: UINotification){
+        if(!("Notification" in window)){
+            return;
+        }
         if(Notification.permission !== "granted" || document.hasFocus()){
             return;
         }
@@ -61,6 +64,9 @@ class NotificationStore {
     }
 
     requestPermission(){
+        if(!("Notification" in window)){
+            return;
+        }
         if(Notification.permission !== "granted"){
             Notification.requestPermission();
         }

@@ -1,23 +1,24 @@
 .video-participant-wrapper.audio {
-    flex-basis: 100%;
-    background: #2b2b2b;
     overflow: hidden;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    padding-bottom: 0;
+    height: auto;
 }
 .audio-participant--name {
     font-size: 20px;
     color: white;
     overflow: hidden;
-    max-width: 100%;
-    display: block;
     text-align: center;
     text-overflow: ellipsis;
-    padding: 5px;
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%,-50%);
+    left: 50%;
 }
 
 .audio-participant--spacer {
     height: 0;
     padding-top: 56.25%;
+    width: 100%;
+    position: relative;
+    background: #2b2b2b;
 }

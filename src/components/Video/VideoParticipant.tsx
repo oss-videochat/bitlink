@@ -1,9 +1,9 @@
 import React, {RefObject} from 'react';
 import './VideoParticipant.css';
 import MyInfo from "../../stores/MyInfo";
+import {observer} from 'mobx-react';
 
-import {autorun} from 'mobx';
-
+@observer
 export class VideoParticipant extends React.Component<any, any> {
     private videoRef: RefObject<HTMLVideoElement> = React.createRef();
     private audioRef: RefObject<HTMLVideoElement> = React.createRef();
@@ -51,9 +51,9 @@ export class VideoParticipant extends React.Component<any, any> {
 
     render() {
         return (
-            <div style={{flexBasis: this.props.flexBasis, maxWidth: this.props.maxWidth}}>
+            <div className={"video-pad"} style={{flexBasis: this.props.flexBasis, maxWidth: this.props.maxWidth}}>
                 <div className={"video-participant-wrapper"}>
-                    <video autoPlay={true} ref={this.videoRef} className={"video-participant--video"}/>
+                    <video autoPlay={true} playsInline={true}  muted={true} ref={this.videoRef} className={"video-participant--video"}/>
                     <audio autoPlay={true} ref={this.audioRef} className={"video-participant--audio"}/>
                     <span className={"video-participant--name"}>{this.props.participant.name}</span>
                 </div>

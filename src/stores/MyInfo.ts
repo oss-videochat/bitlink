@@ -17,6 +17,11 @@ interface MediasoupObj {
     }
 }
 
+interface StreamsObject {
+    video: MediaStream | null,
+    audio: MediaStream | null,
+}
+
 
 class CurrentUserInformationStore {
     @observable
@@ -34,24 +39,29 @@ class CurrentUserInformationStore {
         },
     };
 
+    private streams: StreamsObject = {
+        video: null,
+        audio: null,
+    };
+
 
     reset() {
         this.chosenName = undefined;
         this.info = undefined;
     }
 
-    pause(kind: "video" | "audio"){
+    pause(kind: "video" | "audio") {
         this.mediasoup.producers[kind]?.pause();
-        if(kind === "video"){
+        if (kind === "video") {
             this.info!.mediaState.cameraEnabled = false;
         } else {
             this.info!.mediaState.microphoneEnabled = false;
         }
     }
 
-    resume(kind: "video" | "audio"){
+    resume(kind: "video" | "audio") {
         this.mediasoup.producers[kind]?.resume();
-        if(kind === "video"){
+        if (kind === "video") {
             this.info!.mediaState.cameraEnabled = true;
         } else {
             this.info!.mediaState.microphoneEnabled = true;
@@ -59,13 +69,17 @@ class CurrentUserInformationStore {
     }
 
     async getVideoStream() {
-        const stream = await navigator.mediaDevices.getUserMedia({video: true});
-        return stream.getVideoTracks()[0]
+        if (!this.streams.video) {
+            this.streams.video = await navigator.mediaDevices.getUserMedia({video: true});
+        }
+        return this.streams.video.getVideoTracks()[0]
     }
 
     async getAudioStream() {
-        const stream = await navigator.mediaDevices.getUserMedia({audio: true});
-        return stream.getAudioTracks()[0]
+        if (!this.streams.audio) {
+            this.streams.audio = await navigator.mediaDevices.getUserMedia({audio: true});
+        }
+        return this.streams.audio.getAudioTracks()[0]
     }
 }
 

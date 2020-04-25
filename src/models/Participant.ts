@@ -71,6 +71,7 @@ class Participant extends Event.EventEmitter {
     }
 
     leave(){
+        this._isConnected = false;
         this.mediasoupPeer.destroy();
         this.emit("leave");
     }

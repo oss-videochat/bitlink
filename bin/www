@@ -20,10 +20,7 @@ app.set('port', port);
 /**
  * Create HTTP server.
  */
-const server = http.createServer(); /*https.createServer({
-  key: fs.readFileSync(__dirname + '/../keystore/server.key'),
-  cert: fs.readFileSync(__dirname + '/../keystore/server.cert')
-}, app);*/
+const server = http.createServer({}, app);
 
 const io = require('socket.io')(server);
 socket.socket = io;

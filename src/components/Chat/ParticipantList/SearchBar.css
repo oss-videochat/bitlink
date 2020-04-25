@@ -1,0 +1,22 @@
+.search-wrapper {
+    width: 100%;
+    padding: 10px;
+    border-bottom: #e4e4e4 1px solid;
+}
+.search-container {
+    display: flex;
+    background: white;
+    border: 1px solid #d8d8d8;
+    border-radius: 25px;
+    padding: 5px 10px;
+}
+
+.search--icon {
+    display: block;
+    color: #2b2b2b;
+    margin-right: 5px;
+}
+
+.search--input {
+    flex: 1;
+}

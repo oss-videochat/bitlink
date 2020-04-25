@@ -1,0 +1,26 @@
+.participant-list {
+    width: 100%;
+    flex: 1;
+    overflow: auto;
+    border: 1px solid #d3d3d3;
+    border-radius: 5px;
+    max-height: 300px;
+    margin-bottom: 20px;
+    background: white;
+}
+
+.participant {
+    height: 30px;
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid #eaeaea;
+    padding-left: 20px;
+}
+
+.participant--name {
+    display: inline-block;
+    max-width: 100%;
+    overflow: hidden;
+    font-weight: 800;
+    text-overflow: ellipsis;
+}

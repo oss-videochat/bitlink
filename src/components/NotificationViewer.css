@@ -1,0 +1,41 @@
+.notification-list {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    z-index: 200;
+    padding: 40px;
+    max-width: 400px;
+    overflow: auto;
+    max-height: 100%;
+}
+.notification {
+    padding: 13px 20px;
+    margin: 10px 0;
+    display: block;
+}
+
+.notification.alert {
+    background: #7fa7ff;
+    color: darkblue;
+    border-radius: 5px;
+}
+
+
+.notification.success {
+    background: #82ffb8;
+    color: darkgreen;
+    border-radius: 5px;
+}
+
+.notification.warning {
+    background: #f5ff8d;
+    color: #5d5d00;
+    border-radius: 5px;
+}
+
+.notification.error {
+    background: #ff8d8e;
+    color: darkred;
+    border-radius: 5px;
+}
+

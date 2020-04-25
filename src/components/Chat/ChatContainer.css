@@ -1,0 +1,27 @@
+.chat-container {
+    height: 100%;
+    width: 0;
+    transition: width 100ms ease-in-out;
+    border-top: 1px solid #bbbbbb;
+    position: relative;
+}
+
+.chat-container--content {
+    display: flex;
+    position: absolute;
+    right: 0;
+}
+
+.chat-container.open {
+    width: 450px;
+    border-right: 1px solid #e1e1e1;
+}
+
+.chat-container--content {
+    height: 100%;
+    width: 450px;
+}
+
+.message-container {
+    flex: 1;
+}

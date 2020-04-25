@@ -1,0 +1,10 @@
+.message.system .message--content-container {
+    text-align: center;
+    font-size: 13px;
+    color: gray;
+    font-style: italic;
+}
+
+.message.system:hover {
+    background: unset;
+}

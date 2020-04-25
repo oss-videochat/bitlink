@@ -1,0 +1,123 @@
+.message {
+    width: 100%;
+    position: relative;
+    padding: 2px  10px;
+}
+.message:hover {
+    background: #dfdfdf;
+}
+
+/*
+.message .message--content-container:after {
+    content: " ";
+    display: block;
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 10px 11px 10px 0;
+    position: absolute;
+    right: calc(100% - 1px);
+    top: 50%;
+    transform: translateY(-50%);
+    border-color: transparent #94ffc3 transparent transparent;
+}
+
+.message.from-me .message--content-container:after {
+    right: unset;
+    left: calc(100% - 1px);
+    border-width: 10px 0 11px 10px;
+    border-color: transparent transparent transparent  #a1c6f0;
+}
+*/
+
+.message--meta {
+    display: flex;
+    align-items: center;
+}
+
+.message--name {
+    font-weight: 700;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+    flex: 1;
+    font-size: 16px;
+}
+.message--date {
+    margin-left: 10px;
+    font-size: 12px;
+    color: #525252;
+}
+
+.message--content-container {
+  /*  background: #94ffc3;*/
+    border-radius: 15px;
+    position: relative;
+}
+
+.message.from-me .message--content-container {
+   /* background: #a1c6f0;*/
+}
+
+.message--content {
+    white-space: pre-wrap;
+    width: 100%;
+    display: block;
+    word-break: break-word;
+    line-height: 18px;
+}
+
+.message--options-container {
+    display: none;
+    position: absolute;
+    top: 0;
+    right: 0;
+    margin-right: 10px;
+    transform: translateY(-50%);
+    z-index: 100;
+    border: 1px solid #bbbbbb;
+    background: #f9f9f9;
+    border-radius: 7px;
+    font-size: 14px;
+}
+.message--option {
+    padding: 8px 12px;
+}
+.message--options-container .message--option:first-child {
+    border-top-left-radius: 7px;
+    border-bottom-left-radius: 7px;
+}
+
+.message--options-container .message--option:last-child {
+    border-top-right-radius: 7px;
+    border-bottom-right-radius: 7px;
+}
+
+.message--option:hover {
+    background: #eeeeee;
+}
+
+.message:hover .message--options-container {
+    display: flex;
+}
+
+.message--content--edit-input {
+    border: 1px solid #d8d8d8;
+    width: 100%;
+    padding: 7px 7px 7px 10px;
+    border-radius: 5px;
+    resize: none;
+}
+
+.message--content-edit-cancel {
+    font-size: 12px;
+    color: #423fc0;
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.message--content-edit-cancel:hover {
+    color: #4c49ff;
+}

@@ -1,0 +1,50 @@
+.chat-participant {
+    height: 50px;
+    padding: 10px;
+    padding-top: 5px;
+    font-weight: 500;
+    color: #5c8dff;
+    font-size: 15px;
+    user-select: none;
+    -webkit-user-select: none;
+    cursor: pointer;
+    border-bottom: #e4e4e4 1px solid;
+}
+
+.chat-participant.selected {
+    background: #e1e1e1;
+}
+
+.chat-participant:hover {
+    background: #e1e1e1;
+}
+
+.chat-participant:hover .chat-participant--name {
+    color: #556bd6;
+}
+
+.chat-participant--content {
+    font-size: 15px;
+    color: #999999;
+    width: 100%;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    display: block;
+}
+
+.chat-participant-name-container {
+    display: flex;
+}
+
+.chat-participant--name {
+    flex: 1;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+.participant--icon {
+    margin: 0 5px;
+    color: #ff5f66;
+}

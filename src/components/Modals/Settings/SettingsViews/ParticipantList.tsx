@@ -32,7 +32,7 @@ export class ParticipantList extends React.Component<any, any> {
                             .slice(2)
                             .map(participant => {
                                 return (
-                                    <div className={"participant"}>
+                                    <div key={participant.id} className={"participant"}>
                                         <span className={"participant--name"}>{participant.name}</span>
                                     </div>
                                 )

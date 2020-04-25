@@ -35,8 +35,8 @@ export class VideoContainer extends React.Component<any, any> {
         }
         const stream  = await MyInfo.getVideoStream();
         const srcObject: MediaStream | undefined =   this.previewRef!.current!.srcObject as MediaStream | undefined;
-        if (srcObject?.getVideoTracks()[0].id !== stream.id ) {
-            this.previewRef!.current!.srcObject = new MediaStream([stream]);
+        if (srcObject?.getVideoTracks()[0].id !== stream.getVideoTracks()[0].id) {
+            this.previewRef!.current!.srcObject = stream;
         }
     }
 
@@ -89,9 +89,7 @@ export class VideoContainer extends React.Component<any, any> {
             <div ref={this.containerRef} className={"video-container"}>
 
                 <div className={"preview-video"} hidden={!MyInfo.info?.mediaState.cameraEnabled}>
-                   <div className={"preview-video-wrapper"}>
-                       <video playsInline={true}  muted={true} autoPlay={true} ref={this.previewRef}/>
-                   </div>
+                    <video ref={this.previewRef}/>
                 </div>
 
                 <div className={"videos-list-wrapper"}>

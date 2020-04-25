@@ -17,6 +17,11 @@ interface MediasoupObj {
     }
 }
 
+interface StreamsObject {
+    video: MediaStream | null,
+    audio: MediaStream | null,
+}
+
 
 class CurrentUserInformationStore {
     @observable
@@ -46,18 +51,18 @@ class CurrentUserInformationStore {
         this.info = undefined;
     }
 
-    pause(kind: "video" | "audio"){
+    pause(kind: "video" | "audio") {
         this.mediasoup.producers[kind]?.pause();
-        if(kind === "video"){
+        if (kind === "video") {
             this.info!.mediaState.cameraEnabled = false;
         } else {
             this.info!.mediaState.microphoneEnabled = false;
         }
     }
 
-    resume(kind: "video" | "audio"){
+    resume(kind: "video" | "audio") {
         this.mediasoup.producers[kind]?.resume();
-        if(kind === "video"){
+        if (kind === "video") {
             this.info!.mediaState.cameraEnabled = true;
         } else {
             this.info!.mediaState.microphoneEnabled = true;

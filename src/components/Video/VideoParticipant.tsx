@@ -2,6 +2,7 @@ import React, {RefObject} from 'react';
 import './VideoParticipant.css';
 import MyInfo from "../../stores/MyInfo";
 import {observer} from 'mobx-react';
+import {reaction} from 'mobx';
 
 @observer
 export class VideoParticipant extends React.Component<any, any> {
@@ -11,6 +12,11 @@ export class VideoParticipant extends React.Component<any, any> {
         video: null,
         audio: null
     };
+    private detectAudioChange = reaction(() => {
+        return this.props.participant.mediaState.microphoneEnabled
+    }, () =>{
+        this.updateMedia();
+    });
 
     constructor(props: any) {
         super(props);
@@ -28,7 +34,7 @@ export class VideoParticipant extends React.Component<any, any> {
 
 
 
-    updateMedia () {
+    updateMedia() {
         this.videoRef.current!.srcObject = new MediaStream([this.props.participant.mediasoup.consumer.video.track]);
 
         if (this.props.participant.mediaState.microphoneEnabled) {
@@ -46,6 +52,10 @@ export class VideoParticipant extends React.Component<any, any> {
            this.oldTrackId.audio = this.props.participant.mediasoup.consumer.audio?.track.id;
            this.updateMedia();
        }
+    }
+
+    componentWillUnmount(): void {
+        this.detectAudioChange();
     }
 
 

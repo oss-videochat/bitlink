@@ -381,6 +381,7 @@ class IO extends Event.EventEmitter {
         UIStore.store.modalStore.join = true;
     }
 
+
     _handleUpdatedRoomSettings(newSettings: RoomSettingsObj) {
         if (RoomStore.room?.name !== newSettings.name) {
             RoomStore.room!.name = newSettings.name;
@@ -398,6 +399,7 @@ class IO extends Event.EventEmitter {
             }
             return;
         }
+
         const stream = await MyInfo.getVideoStream();
         if (!stream) {
             NotificationStore.add(new UINotification(`An error occurred accessing the webcam`, NotificationType.Error));

@@ -119,7 +119,6 @@ export class MySettings extends React.Component<any, any> {
                         }
                     </select>
                 </label>
-
             </div>
         );
     }

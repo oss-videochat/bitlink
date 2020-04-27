@@ -2,13 +2,14 @@ import React from 'react';
 import {observer} from "mobx-react"
 import {reaction, observable} from "mobx"
 import './VideoContainer.css';
-import ParticipantsStore, {ParticipantInformation} from "../../stores/ParticipantsStore";
+import ParticipantsStore from "../../stores/ParticipantsStore";
 import {VideoParticipant} from "./VideoParticipant";
 import {AudioParticipant} from "./AudioParticipant";
 import {VideoPlaceholder} from "./VideoPlaceholder";
 import MyInfo from "../../stores/MyInfo";
 import UIStore from "../../stores/UIStore";
 import {LayoutSizeCalculation} from "../../util/LayoutSizeCalculation";
+import Participant from "../models/Participant";
 
 @observer
 export class VideoContainer extends React.Component<any, any> {
@@ -55,7 +56,7 @@ export class VideoContainer extends React.Component<any, any> {
             width: this.windowSize.width,
             chatPanel: UIStore.store.chatPanel,
             numParticipants: ParticipantsStore.getLiving()
-                .filter(participant => participant.mediaState.microphoneEnabled || participant.mediaState.cameraEnabled).length
+                .filter(participant => participant.hasAudio || participant.hasVideo).length
         }
 
     }, (data) => {
@@ -86,8 +87,8 @@ export class VideoContainer extends React.Component<any, any> {
     }
 
     render() {
-        const participants: ParticipantInformation[] = ParticipantsStore.getLiving()
-            .filter(participant => participant.mediaState.microphoneEnabled || participant.mediaState.cameraEnabled);
+        const participants: Participant[] = ParticipantsStore.getLiving()
+            .filter(participant => participant.hasAudio|| participant.hasVideo);
 
         return (
             <div ref={this.containerRef} className={"video-container"}>
@@ -102,7 +103,7 @@ export class VideoContainer extends React.Component<any, any> {
                     {ParticipantsStore.participants.length > 3 ?
                         participants
                             .map((participant, i, arr) => {
-                                if (participant.mediaState.cameraEnabled) {
+                                if (participant.hasVideo) {
                                     return <VideoParticipant flexBasis={this.state.basis} maxWidth={this.state.maxWidth}
                                                              key={participant.id}
                                                              participant={participant}/>

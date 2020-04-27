@@ -1,29 +1,10 @@
 import {observable} from "mobx"
 import {types} from "mediasoup-client";
-
-export interface MediaState {
-    cameraEnabled: boolean,
-    microphoneEnabled: boolean,
-}
-
-export interface ParticipantInformation {
-    id: string,
-    name: string,
-    isHost: boolean,
-    isMe: boolean,
-    isAlive: boolean,
-    mediaState: MediaState,
-    mediasoup: {
-        consumer: {
-            video: types.Consumer | null,
-            audio: types.Consumer | null
-        }
-    }
-}
+import Participant from "../components/models/Participant";
 
 class ParticipantsStore {
 
-    public system: ParticipantInformation = {
+    public system: Participant = new Participant({
         id: "system",
         isAlive: true,
         isHost: false,
@@ -36,9 +17,9 @@ class ParticipantsStore {
             cameraEnabled: false,
             microphoneEnabled: false
         }
-    };
+    });
 
-    public everyone: ParticipantInformation = {
+    public everyone: Participant = new Participant( {
         id: "everyone",
         isAlive: true,
         isHost: false, isMe: false, name: "everyone",
@@ -49,11 +30,11 @@ class ParticipantsStore {
             cameraEnabled: false,
             microphoneEnabled: false
         }
-    };
+    });
 
-    public participants = observable<ParticipantInformation>([this.system, this.everyone]);
+    public participants = observable<Participant>([this.system, this.everyone]);
 
-    public waitingRoom = observable<ParticipantInformation>([]);
+    public waitingRoom = observable<Participant>([]);
 
 
     getLiving(){
@@ -64,16 +45,16 @@ class ParticipantsStore {
         this.participants.replace([this.system, this.everyone]);
     }
 
-    replace(array: Array<ParticipantInformation>){
+    replace(array: Array<Participant>){
         this.participants.replace([this.system, this.everyone, ...array]);
     }
 
-    getById(id: string): ParticipantInformation | undefined {
-        return this.participants?.find((participant: ParticipantInformation) => participant.id === id);
+    getById(id: string): Participant | undefined {
+        return this.participants?.find((participant: Participant) => participant.id === id);
     }
 
     getIndexById(id: string): number | undefined {
-        return this.participants?.findIndex((participant: ParticipantInformation) => participant.id === id);
+        return this.participants?.findIndex((participant: Participant) => participant.id === id);
     }
 
     removeFromWaitingRoom(id: string){

@@ -1,5 +1,5 @@
 import io from 'socket.io-client';
-import ParticipantsStore, {ParticipantInformation} from "../stores/ParticipantsStore";
+import ParticipantsStore from "../stores/ParticipantsStore";
 import {action, reaction} from 'mobx';
 import * as Event from 'events';
 
@@ -12,6 +12,7 @@ import NotificationStore, {NotificationType, UINotification} from "../stores/Not
 import UIStore from "../stores/UIStore";
 import {ResetStores} from "../util/ResetStores";
 import * as mediasoupclient from 'mediasoup-client';
+import Participant, {ParticipantData} from "../components/models/Participant";
 
 interface APIResponse {
     success: boolean,
@@ -196,13 +197,7 @@ class IO extends Event.EventEmitter {
 
         const roomSummary: RoomSummary = data.summary;
 
-        roomSummary.participants.forEach((participant: ParticipantInformation | CurrentUserInformation) => {
-
-            participant.mediaState = {
-                cameraEnabled: false,
-                microphoneEnabled: false
-            };
-
+        roomSummary.participants.forEach((participant: ParticipantData) => {
             participant.mediasoup = {
                 consumer: {
                     video: null,
@@ -211,9 +206,11 @@ class IO extends Event.EventEmitter {
             };
 
             if (participant.isMe) {
-                CurrentUserInformationStore.info = participant as CurrentUserInformation;
+                CurrentUserInformationStore.info = new Participant(participant);
             }
         });
+
+        roomSummary.participants = roomSummary.participants.map((data) => new Participant(data));
 
         ParticipantsStore.replace(roomSummary.participants);
         ChatStore.addParticipant(...roomSummary.participants);
@@ -241,7 +238,7 @@ class IO extends Event.EventEmitter {
         return Object.assign({}, message, replacementObj) as Message;
     }
 
-    _handleNewParticipant(participantSummary: ParticipantInformation) {
+    _handleNewParticipant(participantSummary: ParticipantData) {
         ParticipantsStore.removeFromWaitingRoom(participantSummary.id);
 
         participantSummary.mediaState = {
@@ -255,15 +252,16 @@ class IO extends Event.EventEmitter {
                 audio: null
             }
         };
-        ParticipantsStore.participants.push(participantSummary);
-        NotificationStore.add(new UINotification(`${participantSummary.name} joined!`, NotificationType.Alert));
-        this.emit("new-participant", participantSummary);
-        ChatStore.participantJoined(participantSummary);
+        const participant = new Participant(participantSummary);
+        ParticipantsStore.participants.push(participant);
+        NotificationStore.add(new UINotification(`${participant.name} joined!`, NotificationType.Alert));
+        this.emit("new-participant", participant);
+        ChatStore.participantJoined(participant);
     }
 
     @action
-    _handleWaitingRoomNewParticipant(data: { participant: ParticipantInformation }) {
-        ParticipantsStore.waitingRoom.push(data.participant);
+    _handleWaitingRoomNewParticipant(data: { participant: ParticipantData }) {
+        ParticipantsStore.waitingRoom.push(new Participant(data.participant));
     }
 
     _handleMediaStateUpdate(update: MediaStateUpdate) {
@@ -293,7 +291,7 @@ class IO extends Event.EventEmitter {
     }
 
     _handleParticipantLeft(participantId: string) {
-        const participant: ParticipantInformation | undefined = ParticipantsStore.getById(participantId);
+        const participant: Participant | undefined = ParticipantsStore.getById(participantId);
         if (participant) {
             participant.isAlive = false;
             ChatStore.participantLeft(participant);
@@ -347,19 +345,9 @@ class IO extends Event.EventEmitter {
             rtpParameters: data.rtpParameters
         });
 
-        participant.mediasoup!.consumer[kind]?.on("transportclose", () => {
+        participant.mediasoup!.consumer[kind]!.on("transportclose", () => {
             participant.mediasoup!.consumer[kind] = null;
         });
-
-        debugger;
-
-        if(!participant.mediasoup!.consumer[kind]!.paused){
-            if (kind === "video") {
-                participant.mediaState.cameraEnabled = true;
-            } else {
-                participant.mediaState.microphoneEnabled = true;
-            }
-        }
 
         cb(true);
         participant.mediasoup!.consumer[kind]?.resume();

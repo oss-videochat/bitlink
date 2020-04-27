@@ -1,8 +1,8 @@
-import {ParticipantInformation} from "./ParticipantsStore";
 import {observable} from "mobx";
 import {types} from 'mediasoup-client'
+import Participant, {ParticipantData} from "../components/models/Participant";
 
-export interface CurrentUserInformation extends ParticipantInformation {
+export interface CurrentUserInformation extends ParticipantData {
     key: string
 }
 
@@ -25,7 +25,7 @@ interface StreamsObject {
 
 class CurrentUserInformationStore {
     @observable
-    public info?: CurrentUserInformation;
+    public info?: Participant;
 
     public chosenName?: string;
     public mediasoup: MediasoupObj = {

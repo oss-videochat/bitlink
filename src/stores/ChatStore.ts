@@ -1,8 +1,9 @@
-import ParticipantsStore, {ParticipantInformation} from "./ParticipantsStore";
+import ParticipantsStore from "./ParticipantsStore";
 import {action, observable} from "mobx";
 import {Message} from "./MessagesStore";
 import MyInfo from "./MyInfo";
 import UIStore from "./UIStore";
+import Participant from "../components/models/Participant";
 
 export interface ChatStoreObj {
     [key: string]: Array<Message>
@@ -26,8 +27,8 @@ class ChatStore {
     }
 
     @action
-    addParticipant(...participants: Array<ParticipantInformation>) {
-        participants.forEach((participant: ParticipantInformation) => {
+    addParticipant(...participants: Array<Participant>) {
+        participants.forEach((participant: Participant) => {
             if (this.chatStore.hasOwnProperty(participant.id)) {
                 return;
             }
@@ -35,7 +36,7 @@ class ChatStore {
         });
     }
 
-    participantLeft(participant: ParticipantInformation) {
+    participantLeft(participant: Participant) {
         this.addMessage({
             content: `${participant.name} left`,
             created: Date.now(),
@@ -46,7 +47,7 @@ class ChatStore {
         });
     }
 
-    participantJoined(participant: ParticipantInformation) {
+    participantJoined(participant: Participant) {
         this.addMessage({
             content: `${participant.name} joined`,
             created: Date.now(),
@@ -79,7 +80,7 @@ class ChatStore {
         });
     }
 
-    static getExternalParticipant(message: Message): ParticipantInformation {
+    static getExternalParticipant(message: Message): Participant {
         if (message.from.id === MyInfo.info!.id) {
             return message.to;
         } else {

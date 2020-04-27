@@ -1,15 +1,16 @@
 import {Reactions} from "../enum/Reactions";
-import {ParticipantInformation} from "./ParticipantsStore";
+import Participant from "../components/models/Participant";
+import {CurrentUserInformation} from "./MyInfo";
 
 export interface Reaction {
     type: Reactions,
-    participant: ParticipantInformation;
+    participant: Participant;
 }
 
 export interface Message {
     id: string,
-    from: ParticipantInformation,
-    to: ParticipantInformation,
+    from: Participant,
+    to: Participant,
     content: string,
     reactions: Array<Reaction>,
     created: number,

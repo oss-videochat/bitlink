@@ -42,8 +42,12 @@ export class VideoContainer extends React.Component<any, any> {
 
     componentWillUnmount(): void {
         this.updateBasis();
+        this.updateMediaListener();
     }
 
+    updateMediaListener = reaction(() => {
+        return MyInfo.preferredInputs.video;
+    }, this.updateMedia.bind(this));
 
     updateBasis = reaction(() => {
         return {

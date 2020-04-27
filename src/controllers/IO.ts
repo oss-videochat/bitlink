@@ -81,7 +81,7 @@ class IO extends Event.EventEmitter {
                 MyInfo.preferredInputs.audio
                 && MyInfo.mediasoup.producers.audio?.track?.getSettings().deviceId !== MyInfo.preferredInputs.audio
             ) {
-                MyInfo.getAudioStream().then((stream) => {
+                MyInfo.getStream("audio").then((stream) => {
                     MyInfo.mediasoup.producers.audio?.replaceTrack({track: stream.getAudioTracks()[0]});
                 });
             }
@@ -89,7 +89,7 @@ class IO extends Event.EventEmitter {
                 MyInfo.preferredInputs.video
                 && MyInfo.mediasoup.producers.video?.track?.getSettings().deviceId !== MyInfo.preferredInputs.video
             ) {
-                MyInfo.getVideoStream().then((stream) => {
+                MyInfo.getStream("video").then((stream) => {
                     MyInfo.mediasoup.producers.video?.replaceTrack({track: stream.getVideoTracks()[0]});
                 });
             }
@@ -137,7 +137,7 @@ class IO extends Event.EventEmitter {
                 });
             })
             .catch(error => {
-                console.error(error);
+                console.error("Join Error:" + error.toString());
                 UIStore.store.modalStore.joiningRoom = false;
                 UIStore.store.modalStore.join = true;
                 NotificationStore.add(new UINotification(`Join Error: ${error}`, NotificationType.Error));
@@ -351,10 +351,14 @@ class IO extends Event.EventEmitter {
             participant.mediasoup!.consumer[kind] = null;
         });
 
-        if (kind === "video") {
-            participant.mediaState.cameraEnabled = true;
-        } else {
-            participant.mediaState.microphoneEnabled = true;
+        debugger;
+
+        if(!participant.mediasoup!.consumer[kind]!.paused){
+            if (kind === "video") {
+                participant.mediaState.cameraEnabled = true;
+            } else {
+                participant.mediaState.microphoneEnabled = true;
+            }
         }
 
         cb(true);
@@ -400,7 +404,7 @@ class IO extends Event.EventEmitter {
             return;
         }
 
-        const stream = await MyInfo.getVideoStream();
+        const stream = await MyInfo.getStream("video");
         if (!stream) {
             NotificationStore.add(new UINotification(`An error occurred accessing the webcam`, NotificationType.Error));
             return;
@@ -420,7 +424,7 @@ class IO extends Event.EventEmitter {
             }
             return;
         }
-        const stream = await MyInfo.getAudioStream();
+        const stream = await MyInfo.getStream("audio");
         if (!stream) {
             NotificationStore.add(new UINotification(`An error occurred accessing the microphone`, NotificationType.Error));
             return;

@@ -26,7 +26,7 @@ export class MySettings extends React.Component<any, any> {
                     });
             };
 
-            MyInfo.getVideoStream()
+            MyInfo.getStream("video")
                 .then((stream) => {
                     enumerate();
                 })
@@ -70,9 +70,9 @@ export class MySettings extends React.Component<any, any> {
 
     handleInputChange(kind: "video" | "audio", e: ChangeEvent<HTMLSelectElement>) {
         if (kind === "video") {
-            this.setState({preferredVideo: e.target.value});
+            this.setState({preferredVideo: e.target.value ?? null});
         } else {
-            this.setState({preferredAudio: e.target.value});
+            this.setState({preferredAudio: e.target.value ?? null});
         }
     }
 

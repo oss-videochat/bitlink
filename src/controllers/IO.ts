@@ -526,4 +526,6 @@ class IO extends Event.EventEmitter {
 
 }
 
-export default new IO("https://" + window.location.hostname);
+const ioAddress = process.env.NODE_ENV === "development" ? ("http://" + window.location.hostname + ":3001") : ("https://" + window.location.hostname);
+
+export default new IO(ioAddress);

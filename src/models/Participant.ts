@@ -2,14 +2,19 @@ import * as Event from 'events'
 import {v4 as uuidv4} from 'uuid';
 import * as cryptoRandomString from 'crypto-random-string';
 import Message from "./Message";
-import  * as mediasoup from "mediasoup";
 import MediasoupPeer from "./MediasoupPeer";
+
+interface MediaState {
+    cameraEnabled: boolean,
+    microphoneEnabled: boolean
+}
 
 interface ParticipantSummary {
     id: string,
     name: string,
     isHost: boolean,
     isAlive: boolean,
+    mediaState: MediaState
 }
 
 class Participant extends Event.EventEmitter {
@@ -37,6 +42,10 @@ class Participant extends Event.EventEmitter {
     public isHost = false;
     public readonly key = cryptoRandomString({length: 12});
     public readonly mediasoupPeer: MediasoupPeer;
+    private readonly mediaState: MediaState = {
+        cameraEnabled: false,
+        microphoneEnabled: false
+    };
 
     constructor(name: string, socket) {
         super();
@@ -47,7 +56,7 @@ class Participant extends Event.EventEmitter {
             this._isConnected = false;
             this.emit("disconnect");
             setTimeout(() => {
-                if(!this.isConnected){
+                if (!this.isConnected) {
                     this.socket.removeAllListeners();
                 }
             }, 0);
@@ -63,14 +72,24 @@ class Participant extends Event.EventEmitter {
 
         this.mediasoupPeer.on("audio-toggle", (state: boolean) => {
             this.emit("media-state-update", "audio", state ? "resume" : "pause");
+            this.mediaState.microphoneEnabled = state;
+        });
+
+        this.mediasoupPeer.on("new-producer", (kind: "video" | "audio") => {
+            if (kind === "video") {
+                this.mediaState.cameraEnabled = true;
+            } else {
+                this.mediaState.microphoneEnabled = true;
+            }
         });
 
         this.mediasoupPeer.on("video-toggle", (state: boolean) => {
             this.emit("media-state-update", "video", state ? "resume" : "pause");
+            this.mediaState.cameraEnabled = state;
         });
     }
 
-    leave(){
+    leave() {
         this._isConnected = false;
         this.mediasoupPeer.destroy();
         this.emit("leave");
@@ -84,23 +103,25 @@ class Participant extends Event.EventEmitter {
     directMessage(message: Message, eventType: "new" | "edit" | "delete") {
         this.socket.emit(eventType + "-direct-message", message.toSummary());
     }
-/*
-    kill(){
-        this._isConnected = false;
-        this.emit("dead");
-    }
 
-    revive(){
-        this._isConnected = true;
-        this.emit("revive");
-    }
-*/
+    /*
+        kill(){
+            this._isConnected = false;
+            this.emit("dead");
+        }
+
+        revive(){
+            this._isConnected = true;
+            this.emit("revive");
+        }
+    */
     toSummary(): ParticipantSummary {
         return {
             id: this.id,
             name: this.name,
             isHost: this.isHost,
             isAlive: this._isConnected,
+            mediaState: this.mediaState
         }
     }
 }

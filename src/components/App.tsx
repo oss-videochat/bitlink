@@ -8,6 +8,7 @@ import {Modal} from "./Modals/Modal";
 import UIStore from "../stores/UIStore";
 import {NotificationViewer} from "./NotificationViewer";
 import NotificationStore, {NotificationType, UINotification} from "../stores/NotificationStore";
+import msToTime from "../util/msToTime";
 
 export class App extends React.Component<any, any> {
     private ref: any = React.createRef();
@@ -33,7 +34,15 @@ export class App extends React.Component<any, any> {
         if (!verb) {
             UIStore.store.modalStore.joinOrCreate = true;
         }
-
+        document.title = UIStore.store.title;
+        setInterval(() => {
+           if(UIStore.store.joinedDate){
+               const time = Date.now() - UIStore.store.joinedDate.getTime();
+               document.title = `${UIStore.store.title} | ${msToTime(time)}`;
+           } else {
+               document.title = UIStore.store.title;
+           }
+        }, )
     }
 
     toggleFullscreen(){

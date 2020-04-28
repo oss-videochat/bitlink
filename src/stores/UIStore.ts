@@ -17,7 +17,9 @@ class UIStore {
             settings: false
         },
         preFillJoinValue: null,
-        messageIdEditControl: null
+        messageIdEditControl: null,
+        joinedDate: null,
+        title: "BitLink"
     };
 
     reset(){

@@ -222,6 +222,7 @@ class IO extends Event.EventEmitter {
 
         RoomStore.room = roomSummary;
         RoomStore.mediasoup.rtcCapabilities = data.rtcCapabilities;
+        UIStore.store.joinedDate = new Date();
 
         this.emit("room-summary", roomSummary);
     }

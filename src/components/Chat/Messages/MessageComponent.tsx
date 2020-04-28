@@ -8,6 +8,7 @@ import {observer} from "mobx-react"
 import {computed} from 'mobx';
 import UIStore from "../../../stores/UIStore";
 import ChatStore from "../../../stores/ChatStore";
+import MessageContent from "./MessageContent";
 
 @observer
 export class MessageComponent extends React.Component<any, any> {
@@ -101,7 +102,7 @@ export class MessageComponent extends React.Component<any, any> {
                 <div className={"message--content-container"}>
                     {
                         UIStore.store.messageIdEditControl !== this.props.messageId ?
-                            <span className={"message--content"}>{this.props.message.content}</span>
+                            <MessageContent content={this.props.message.content}/>
                             :
                             <React.Fragment>
                               <textarea autoFocus={true} onKeyDown={e => this.handleKeyDown(e)}

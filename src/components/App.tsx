@@ -7,8 +7,11 @@ import {ChatContainer} from "./Chat/ChatContainer";
 import {Modal} from "./Modals/Modal";
 import UIStore from "../stores/UIStore";
 import {NotificationViewer} from "./NotificationViewer";
+import NotificationStore, {NotificationType, UINotification} from "../stores/NotificationStore";
 
 export class App extends React.Component<any, any> {
+    private ref: any = React.createRef();
+
     constructor(props: any) {
         super(props);
         const url = new URL(window.location.href);
@@ -33,12 +36,22 @@ export class App extends React.Component<any, any> {
 
     }
 
+    toggleFullscreen(){
+        if(!document.fullscreenElement){
+            this.ref.current.requestFullscreen().catch((err: Error) => {
+                NotificationStore.add(new UINotification("Could not enable fullscreen: " + err.toString(), NotificationType.Error))
+            });
+            return;
+        }
+        document.exitFullscreen();
+    }
+
     render() {
         return (
-            <div className={"app"}>
+            <div ref={this.ref} className={"app"}>
                 <NotificationViewer/>
                 <Modal/>
-                <Header/>
+                <Header toggleFullscreen={this.toggleFullscreen.bind(this)}/>
                 <div className={"main-container"}>
                     <ChatContainer/>
                     <VideoContainer/>

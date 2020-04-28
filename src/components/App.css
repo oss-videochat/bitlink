@@ -14,6 +14,7 @@ body {
 
 #root, .app {
     height: 100vh;
+    background: #f9f9f9;
 }
 
 .app {

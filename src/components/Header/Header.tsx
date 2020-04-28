@@ -4,7 +4,7 @@ import './Header.css';
 import RoomStore from "../../stores/RoomStore";
 import IO from "../../controllers/IO";
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
-import {faUsers, faComments, faMicrophone, faMicrophoneSlash, faVideo, faVideoSlash, faCogs} from '@fortawesome/free-solid-svg-icons'
+import {faUsers, faComments, faMicrophone, faMicrophoneSlash, faVideo, faVideoSlash, faCogs, faExpand} from '@fortawesome/free-solid-svg-icons'
 import UIStore from "../../stores/UIStore";
 import {RoomId} from "./RoomId";
 import MyInfo from "../../stores/MyInfo";
@@ -59,6 +59,12 @@ export class Header extends React.Component<any, any> {
                     <ul>
                         <li onClick={() => UIStore.store.modalStore.join = true}>Join Room</li>
                         <li onClick={() => UIStore.store.modalStore.create = true}>Create Room</li>
+                    </ul>
+                    <span className={"divider"}/>
+                    <ul>
+                        <li onClick={this.props.toggleFullscreen}>
+                            <FontAwesomeIcon icon={faExpand}/>
+                        </li>
                     </ul>
                 </nav>
             </header>

@@ -32,6 +32,7 @@ class Room extends Event.EventEmitter {
     private readonly waitingRoom: Array<Participant> = [];
 
     private readonly messages: Array<Message> = []; // TODO mongodb
+    private readonly latestMessage = {};
     private settings: RoomSettings = {...Room.defaultSettings};
     public readonly created;
     private _router: mediasoup.types.Router;
@@ -247,7 +248,19 @@ class Room extends Event.EventEmitter {
 
 
         participant.socket.on("send-message", (to: string, content: string, cb) => {
+            if(this.latestMessage.hasOwnProperty(participant.id)
+            && Date.now() - this.latestMessage[participant.id] < 250){ // throttling
+                cb({
+                    success: false,
+                    status: 429,
+                    error: "Please wait before sending messages"
+                });
+                return;
+            }
             const response: APIResponse = this.sendMessage(participant, to, content);
+            if(response.success){
+                this.latestMessage[participant.id] = Date.now();
+            }
             cb(response);
         });
 

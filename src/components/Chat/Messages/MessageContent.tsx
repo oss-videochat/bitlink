@@ -9,9 +9,9 @@ export default class MessageContent extends React.Component<any, any>{
         const jsx: Array<React.ClassicElement<any>> = [];
 
         splits.forEach((split:string, index: number) => {
-            jsx.push(<span>{split}</span>);
+            jsx.push(<span key={split}>{split}</span>);
             if(matches.length - 1 >= index){
-                jsx.push(<a target={"_blank"} href={matches[index]}>{matches[index]}</a>)
+                jsx.push(<a target={"_blank"} key={split} href={matches[index]}>{matches[index]}</a>)
             }
         });
 

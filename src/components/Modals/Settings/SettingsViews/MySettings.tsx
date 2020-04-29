@@ -88,7 +88,7 @@ export class MySettings extends React.Component<any, any> {
                 <label>
                     Name
                     <input className={"modal--input"} onChange={this.handleNameChange.bind(this)}
-                           value={this.state.inputValue} placeholder={"Name"}/>
+                           value={this.state.nameInput} placeholder={"Name"}/>
                 </label>
                 <label>
                     Camera Input

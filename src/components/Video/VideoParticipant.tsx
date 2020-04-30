@@ -24,10 +24,10 @@ export class VideoParticipant extends React.Component<any, any> {
 
     async componentDidMount() {
         this.videoRef.current!.addEventListener("canplay", () => {
-            this.videoRef.current!.play();
+            this.videoRef.current?.play();
         });
         this.audioRef.current!.addEventListener("canplay", () => {
-            this.audioRef.current!.play();
+            this.audioRef.current?.play();
         });
         this.updateMedia();
     }

@@ -270,22 +270,29 @@ class IO extends Event.EventEmitter {
         if (!participant) {
             return;
         }
-        if (update.kind === "video" && participant.mediasoup?.consumer.video) {
+        if (update.kind === "video") {
             if (update.action === "resume") {
-                participant.mediasoup.consumer.video.resume();
+                if(participant.mediasoup?.consumer.video){
+                    participant.mediasoup.consumer.video.resume();
+                }
                 participant.mediaState.cameraEnabled = true;
 
             } else {
-                participant.mediasoup.consumer.video.pause();
+                if(participant.mediasoup?.consumer.video){
+                    participant.mediasoup.consumer.video.pause();
+                }
                 participant.mediaState.cameraEnabled = false;
-
             }
         } else if (update.kind === "audio" && participant.mediasoup?.consumer.audio) {
             if (update.action === "resume") {
-                participant.mediasoup.consumer.audio.resume();
+                if(participant.mediasoup?.consumer.audio){
+                    participant.mediasoup.consumer.audio.resume();
+                }
                 participant.mediaState!.microphoneEnabled = true;
             } else {
-                participant.mediasoup.consumer.audio.pause();
+                if(participant.mediasoup?.consumer.audio){
+                    participant.mediasoup.consumer.audio.pause();
+                }
                 participant.mediaState.microphoneEnabled = false;
             }
         }
@@ -483,7 +490,6 @@ class IO extends Event.EventEmitter {
     async changeName(newName: string) {
         const response = await this.socketRequest("change-name", newName);
         if (response.success) {
-            console.log("switch my named");
             MyInfo.info!.name = newName;
         }
     }

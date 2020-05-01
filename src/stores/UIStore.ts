@@ -1,7 +1,21 @@
 import {observable} from "mobx";
 
 interface UIStoreInterface {
-    [key: string]: any
+    [key: string]: any,
+    chatPanel: boolean,
+    participantPanel: boolean,
+    modalStore: {
+        joinOrCreate: boolean,
+        join: boolean,
+        joiningRoom: boolean,
+        waitingRoom: boolean,
+        create: boolean,
+        settings: boolean
+    },
+    preFillJoinValue: null | string,
+    messageIdEditControl: null | string,
+    joinedDate: null | Date,
+    title: string
 }
 
 class UIStore {

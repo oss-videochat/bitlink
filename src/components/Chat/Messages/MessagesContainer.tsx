@@ -8,6 +8,9 @@ import './MessageContainer.css'
 import IO from "../../../controllers/IO";
 import ParticipantsStore from "../../../stores/ParticipantsStore";
 import {SystemMessage} from "./SystemMessage";
+import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
+import {faChevronLeft} from '@fortawesome/free-solid-svg-icons'
+import UIStore from "../../../stores/UIStore";
 
 @observer
 export class MessagesContainer extends React.Component<any, any> {
@@ -58,6 +61,12 @@ export class MessagesContainer extends React.Component<any, any> {
         let lastTime = 0;
         return (
             <div className={"message-container"}>
+                <div className={"message-container--top-bar"}>
+                    <span onClick={() => { UIStore.store.participantPanel = true}} className={"message-container--back-button"}>
+                        <FontAwesomeIcon icon={faChevronLeft}/>
+                    </span>
+                    <span className={"message-container--participant-name"}>{ParticipantsStore.getById(this.props.selectedUser)?.name}</span>
+                </div>
                 <div ref={this.list} className={"message-list"}>
                     {ChatStore.chatStore[this.props.selectedUser]?.map((message: Message, index) => {
                             let el;

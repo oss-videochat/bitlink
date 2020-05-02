@@ -3,8 +3,15 @@
     flex-direction: column;
     min-width: 0;
 }
-.message-list {
+.message-list-wrapper {
     flex: 1;
+    position: relative;
+    overflow: hidden;
+}
+
+.message-list {
+    max-height: 100%;
+    width: 100%;
     overflow: auto;
 }
 
@@ -49,6 +56,10 @@
 
 
 @media screen and (max-width: 900px) {
+    .message-list {
+        position: absolute;
+        bottom: 0;
+    }
     .message-container--top-bar {
         display: flex;
     }

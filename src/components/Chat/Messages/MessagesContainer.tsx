@@ -62,30 +62,35 @@ export class MessagesContainer extends React.Component<any, any> {
         return (
             <div className={"message-container"}>
                 <div className={"message-container--top-bar"}>
-                    <span onClick={() => { UIStore.store.participantPanel = true}} className={"message-container--back-button"}>
+                    <span onClick={() => {
+                        UIStore.store.participantPanel = true
+                    }} className={"message-container--back-button"}>
                         <FontAwesomeIcon icon={faChevronLeft}/>
                     </span>
-                    <span className={"message-container--participant-name"}>{ParticipantsStore.getById(this.props.selectedUser)?.name}</span>
+                    <span
+                        className={"message-container--participant-name"}>{ParticipantsStore.getById(this.props.selectedUser)?.name}</span>
                 </div>
-                <div ref={this.list} className={"message-list"}>
-                    {ChatStore.chatStore[this.props.selectedUser]?.map((message: Message, index) => {
-                            let el;
-                            if (message.from.id === ParticipantsStore.system.id) {
-                                el = <SystemMessage key={index} message={message}/>
-                            } else {
-                                el = <MessageComponent
-                                    startGroup={lastParticipant !== message.from.id || message.created - lastTime > 1000 * 60 * 5}
-                                    key={message.id}
-                                    messageId={message.id}
-                                    fromMe={message.from.id === MyInfo.info!.id}
-                                    message={message}
-                                />;
+                <div className={"message-list-wrapper"}>
+                    <div ref={this.list} className={"message-list"}>
+                        {ChatStore.chatStore[this.props.selectedUser]?.map((message: Message, index) => {
+                                let el;
+                                if (message.from.id === ParticipantsStore.system.id) {
+                                    el = <SystemMessage key={index} message={message}/>
+                                } else {
+                                    el = <MessageComponent
+                                        startGroup={lastParticipant !== message.from.id || message.created - lastTime > 1000 * 60 * 5}
+                                        key={message.id}
+                                        messageId={message.id}
+                                        fromMe={message.from.id === MyInfo.info!.id}
+                                        message={message}
+                                    />;
+                                }
+                                lastTime = message.created;
+                                lastParticipant = message.from.id;
+                                return el;
                             }
-                            lastTime = message.created;
-                            lastParticipant = message.from.id;
-                            return el;
-                        }
-                    )}
+                        )}
+                    </div>
                 </div>
                 {ParticipantsStore.getById(this.props.selectedUser)?.isAlive || this.props.selectedUser === "everyone" ?
                     (

@@ -9,6 +9,12 @@
     overflow: hidden;
 }
 
+@media screen and (max-width: 900px) {
+    .dialog-modal {
+        margin: 5px;
+    }
+}
+
 .modal--title {
     font-size: 30px;
     font-weight: 700;
@@ -46,6 +52,7 @@
     padding: 6px 15px;
     font-size: 16px;
     color: #f1f1f1;
+    -webkit-appearance: none;
 }
 
 .modal--button:not(:disabled):hover {

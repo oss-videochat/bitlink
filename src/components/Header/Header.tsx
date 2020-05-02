@@ -39,18 +39,6 @@ export class Header extends React.Component<any, any> {
                                     <li onClick={() => UIStore.store.modalStore.settings = true}>
                                             <FontAwesomeIcon icon={faCogs}/>
                                     </li>
-                                    <li onClick={() => IO.toggleAudio()}>
-                                        {MyInfo.info.mediaState.microphoneEnabled ?
-                                            <FontAwesomeIcon icon={faMicrophone}/> :
-                                            <FontAwesomeIcon icon={faMicrophoneSlash}/>
-                                        }
-                                    </li>
-                                    <li onClick={() => IO.toggleVideo()}>
-                                        {MyInfo.info.mediaState.cameraEnabled ?
-                                            <FontAwesomeIcon icon={faVideo}/> :
-                                            <FontAwesomeIcon icon={faVideoSlash}/>
-                                        }
-                                    </li>
                                 </React.Fragment>
                                 : null
                         }

@@ -24,6 +24,7 @@
     font-size: 13px;
     text-transform: uppercase;
 }
+
 .header .divider {
     display: inline-block;
     height: 60%;
@@ -31,6 +32,7 @@
     background: #c1c1c1;
     opacity: 0.3;
 }
+
 .header ul li {
     margin: 0 10px;
     cursor: pointer;

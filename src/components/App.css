@@ -2,18 +2,22 @@
     box-sizing: border-box;
 }
 
+html, body {
+    height: 100%;
+    overflow: hidden;
+}
+
 body {
     margin: 0;
     font-size: 15px;
     color: #151948;
     background: #f9f9f9;
     font-family: 'Lato', sans-serif;
-    height: 100vh;
     overflow: hidden;
 }
 
 #root, .app {
-    height: 100vh;
+    height: 100%;
     background: #f9f9f9;
 }
 

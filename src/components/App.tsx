@@ -9,6 +9,7 @@ import UIStore from "../stores/UIStore";
 import {NotificationViewer} from "./NotificationViewer";
 import NotificationStore, {NotificationType, UINotification} from "../stores/NotificationStore";
 import msToTime from "../util/msToTime";
+import {Footer} from "./Footer/Footer";
 
 export class App extends React.Component<any, any> {
     private ref: any = React.createRef();
@@ -65,6 +66,7 @@ export class App extends React.Component<any, any> {
                     <ChatContainer/>
                     <VideoContainer/>
                 </div>
+                <Footer/>
             </div>
         );
     }

@@ -22,12 +22,12 @@ export class VideoParticipant extends React.Component<any, any> {
         super(props);
     }
 
-    async componentDidMount() {
+    componentDidMount() {
         this.videoRef.current!.addEventListener("canplay", () => {
-            this.videoRef.current?.play();
+            this.videoRef.current?.play().catch(console.error);
         });
         this.audioRef.current!.addEventListener("canplay", () => {
-            this.audioRef.current?.play();
+            this.audioRef.current?.play().catch(console.error);
         });
         this.updateMedia();
     }

@@ -13,7 +13,7 @@ export class AudioParticipant extends React.Component<any, any> {
 
     componentDidMount(): void {
         this.audioRef.current.addEventListener("canplay", () => {
-            this.audioRef.current.play();
+            this.audioRef.current.play().catch(console.error);
         });
         this.audioRef.current.srcObject = new MediaStream([this.props.participant.mediasoup.consumer.audio.track]);
     }
@@ -25,7 +25,7 @@ export class AudioParticipant extends React.Component<any, any> {
                 <div className={"audio-participant--spacer"}>
                     <span className={"audio-participant--name"}>{this.props.participant.name}</span>
                 </div>
-                <audio ref={this.audioRef} className={"video-participant--audio"}/>
+                <audio ref={this.audioRef} autoPlay={true} className={"video-participant--audio"}/>
             </div>
         );
     }

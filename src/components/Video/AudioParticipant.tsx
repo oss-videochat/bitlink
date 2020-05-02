@@ -2,6 +2,7 @@ import React from 'react';
 import './AudioParticipant.css';
 
 import {observer} from 'mobx-react';
+import {AutoPlayAudio} from "./AutoPlayAudio";
 
 @observer
 export class AudioParticipant extends React.Component<any, any> {
@@ -11,13 +12,6 @@ export class AudioParticipant extends React.Component<any, any> {
         super(props);
     }
 
-    componentDidMount(): void {
-        this.audioRef.current.addEventListener("canplay", () => {
-            this.audioRef.current.play().catch(console.error);
-        });
-        this.audioRef.current.srcObject = new MediaStream([this.props.participant.mediasoup.consumer.audio.track]);
-    }
-
 
     render() {
         return (
@@ -25,7 +19,7 @@ export class AudioParticipant extends React.Component<any, any> {
                 <div className={"audio-participant--spacer"}>
                     <span className={"audio-participant--name"}>{this.props.participant.name}</span>
                 </div>
-                <audio ref={this.audioRef} autoPlay={true} className={"video-participant--audio"}/>
+                <AutoPlayAudio srcObject={new MediaStream([this.props.participant.mediasoup.consumer.audio.track])}/>
             </div>
         );
     }

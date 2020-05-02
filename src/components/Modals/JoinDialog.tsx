@@ -5,6 +5,7 @@ import MyInfo from "../../stores/MyInfo";
 import UIStore from "../../stores/UIStore";
 import RoomStore from "../../stores/RoomStore";
 import NotificationStore from "../../stores/NotificationStore";
+import {prepareAudioBank} from "../Video/AutoPlayAudio";
 
 export class JoinDialog extends React.Component<any, any> {
     constructor(props: any) {
@@ -35,6 +36,7 @@ export class JoinDialog extends React.Component<any, any> {
     }
 
     handleJoinRoom() {
+        prepareAudioBank();
         NotificationStore.requestPermission();
         UIStore.store.modalStore.join = false;
         MyInfo.chosenName = this.state.userName;

@@ -283,7 +283,7 @@ class IO extends Event.EventEmitter {
                 }
                 participant.mediaState.cameraEnabled = false;
             }
-        } else if (update.kind === "audio" && participant.mediasoup?.consumer.audio) {
+        } else if (update.kind === "audio") {
             if (update.action === "resume") {
                 if(participant.mediasoup?.consumer.audio){
                     participant.mediasoup.consumer.audio.resume();

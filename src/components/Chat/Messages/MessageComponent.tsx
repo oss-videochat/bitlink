@@ -16,7 +16,7 @@ export class MessageComponent extends React.Component<any, any> {
     constructor(props: any) {
         super(props);
         this.state = {
-            editValue: "",
+            editValue: null,
         };
 
         this.handleEditButton = this.handleEditButton.bind(this);
@@ -26,7 +26,7 @@ export class MessageComponent extends React.Component<any, any> {
 
     @computed
     get textareaValue(): string {
-        return this.state.editValue || this.props.message.content;
+        return this.state.editValue ?? this.props.message.content;
     }
 
     handleEditButton() {
@@ -37,18 +37,18 @@ export class MessageComponent extends React.Component<any, any> {
         if (e.key === "Enter" && !e.shiftKey) {
             e.preventDefault();
             if (this.state.editValue.trim().length > 0) {
-                this.setState({editValue: ""});
-                this.userIsTyping = false;
-                UIStore.store.messageIdEditControl = null;
+                this.cancelEdit();
                 IO.edit(this.props.messageId, this.state.editValue);
             }
         }
         if (e.key === "ArrowUp" && !this.userIsTyping) {
+            this.cancelEdit();
             ChatStore.editNextMessage({messageId: this.props.messageId});
             return;
         }
 
         if (e.key === "ArrowDown" && !this.userIsTyping) {
+            this.cancelEdit();
             ChatStore.editPreviewMessage(this.props.messageId);
             return;
         }
@@ -69,7 +69,7 @@ export class MessageComponent extends React.Component<any, any> {
     cancelEdit() {
         UIStore.store.messageIdEditControl = null;
         this.userIsTyping = false;
-        this.setState({editValue: ""});
+        this.setState({editValue: null});
     }
 
     render() {

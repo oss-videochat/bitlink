@@ -24,6 +24,6 @@
 
 @media only screen and (max-width: 900px) {
     .room-info--id-wrapper {
-        display: none;
+       margin-top: 2px;
     }
 }

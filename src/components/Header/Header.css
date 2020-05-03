@@ -54,7 +54,7 @@
 
 @media only screen and (max-width: 900px) {
     .header {
-        height: 25px;
+        height: 60px;
     }
     .header--nav {
         display: none;
@@ -66,5 +66,8 @@
         overflow: hidden;
         white-space: nowrap;
         text-overflow: ellipsis;
+    }
+    .room-info--name {
+        display: block;
     }
 }

@@ -4,7 +4,7 @@ import './Header.css';
 import RoomStore from "../../stores/RoomStore";
 import IO from "../../controllers/IO";
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
-import {faUsers, faComments, faMicrophone, faMicrophoneSlash, faVideo, faVideoSlash, faCogs, faExpand} from '@fortawesome/free-solid-svg-icons'
+import {faUsers, faComments, faCogs, faExpand} from '@fortawesome/free-solid-svg-icons'
 import UIStore from "../../stores/UIStore";
 import {RoomId} from "./RoomId";
 import MyInfo from "../../stores/MyInfo";

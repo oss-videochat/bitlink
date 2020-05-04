@@ -10,6 +10,9 @@ import MyInfo from "../../stores/MyInfo";
 import UIStore from "../../stores/UIStore";
 import {LayoutSizeCalculation} from "../../util/LayoutSizeCalculation";
 import Participant from "../models/Participant";
+import IO from "../../controllers/IO";
+import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
+import {faMicrophone, faMicrophoneSlash, faVideo, faVideoSlash} from '@fortawesome/free-solid-svg-icons'
 
 @observer
 export class VideoContainer extends React.Component<any, any> {
@@ -97,6 +100,21 @@ export class VideoContainer extends React.Component<any, any> {
                    <div className={"preview-video-wrapper"}>
                        <video playsInline={true}  muted={true} autoPlay={true} ref={this.previewRef}/>
                    </div>
+                </div>
+
+                <div className={"controls-wrapper"}>
+                    <span onClick={() => IO.toggleVideo()}>
+                        {MyInfo.info?.mediaState.cameraEnabled ?
+                            <FontAwesomeIcon icon={faVideo}/> :
+                            <FontAwesomeIcon icon={faVideoSlash}/>
+                        }
+                    </span>
+                    <span onClick={() => IO.toggleAudio()}>
+                        {MyInfo.info?.mediaState.microphoneEnabled ?
+                            <FontAwesomeIcon icon={faMicrophone}/> :
+                            <FontAwesomeIcon icon={faMicrophoneSlash}/>
+                        }
+                    </span>
                 </div>
 
                 <div className={"videos-list-wrapper"}>

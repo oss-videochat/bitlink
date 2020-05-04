@@ -19,11 +19,11 @@
 
 .preview-video {
     position: absolute;
-    bottom: 0;
+    top: 0;
     right: 0;
     margin: 20px;
     margin-bottom: 0;
-    width: 200px;
+    width: 175px;
     padding-bottom: 20px;
     z-index: 1;
 }
@@ -50,4 +50,31 @@
     flex-wrap: wrap;
     justify-content: center;
     width: 100%;
+}
+
+.controls-wrapper {
+    position: absolute;
+    bottom: 0;
+    margin-bottom: 20px;
+    font-size: 20px;
+    color: #f1f1f1;
+}
+.controls-wrapper span {
+    height: 50px;
+    width: 50px;
+    border-radius: 50%;
+    background: #3a3a3a;
+    padding: 5px;
+    margin: 0 10px;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+}
+
+@media only screen and (max-width: 900px) {
+    .preview-video {
+        width: 150px;
+        bottom: 80px;
+    }
+
 }

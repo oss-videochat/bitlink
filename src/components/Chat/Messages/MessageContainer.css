@@ -3,8 +3,15 @@
     flex-direction: column;
     min-width: 0;
 }
-.message-list {
+.message-list-wrapper {
     flex: 1;
+    position: relative;
+    overflow: hidden;
+}
+
+.message-list {
+    max-height: 100%;
+    width: 100%;
     overflow: auto;
 }
 
@@ -18,4 +25,42 @@
     padding: 7px 7px 7px 10px;
     border-radius: 5px;
     resize: none;
+}
+
+.message-container--top-bar {
+    display: none;
+    height: 40px;
+    background: #fffefe;
+    border-bottom: 1px solid #d8d8d8;
+    align-items: center;
+    position: relative;
+}
+
+.message-container--participant-name {
+    display: block;
+    text-align: center;
+    flex: 1;
+    margin-right: 30px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.message-container--back-button {
+    height: 25px;
+    width: 25px;
+    border-radius: 50%;
+    text-align: center;
+    line-height: 25px;
+    margin: 0 10px;
+}
+
+
+@media screen and (max-width: 900px) {
+    .message-list {
+        position: absolute;
+        bottom: 0;
+    }
+    .message-container--top-bar {
+        display: flex;
+    }
 }

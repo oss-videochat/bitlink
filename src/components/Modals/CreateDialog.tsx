@@ -5,6 +5,7 @@ import MyInfo from "../../stores/MyInfo";
 import UIStore from "../../stores/UIStore";
 import RoomStore from "../../stores/RoomStore";
 import NotificationStore from "../../stores/NotificationStore";
+import {prepareAudioBank} from "../Video/AutoPlayAudio";
 
 export class CreateDialog extends React.Component<any, any> {
     constructor(props: any) {
@@ -32,6 +33,7 @@ export class CreateDialog extends React.Component<any, any> {
     }
 
     handleCreateRoom() {
+        prepareAudioBank();
         NotificationStore.requestPermission();
         UIStore.store.modalStore.create = false;
         MyInfo.chosenName = this.state.userName;

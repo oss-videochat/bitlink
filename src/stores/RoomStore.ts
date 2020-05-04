@@ -16,12 +16,16 @@ class RoomStore {
 
     public device?: mediasoupclient.types.Device = new mediasoupclient.Device();
 
-    public mediasoup =  {
+    public mediasoup = {
         rtcCapabilities: null,
     };
 
     reset(){
         this.room = undefined;
+        this.device = new mediasoupclient.Device();
+        this.mediasoup = {
+            rtcCapabilities: null,
+        };
     }
 }
 

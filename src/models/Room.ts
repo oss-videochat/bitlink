@@ -113,6 +113,11 @@ class Room extends Event.EventEmitter {
         this.broadcast("participant-left", [], participant.id);
     }
 
+    kickParticipant(participant: Participant){
+        this.leaveParticipant(participant);
+        participant.socket.emit("kicked");
+    }
+
     getConnectedParticipants(): Participant[] {
         return this.participants.filter(participant => participant.isConnected);
     }
@@ -246,10 +251,45 @@ class Room extends Event.EventEmitter {
             });
         });
 
+        participant.socket.on("kick-participant", (participantId: string, cb: APIResponseCallback) => {
+            if (!participant.isHost) {
+                cb({
+                    success: false,
+                    status: 401,
+                    error: "You must be a host to kick people.",
+                });
+                return;
+            }
+
+            const participantToRemove = this.participants.find(participant => participant.id === participantId);
+            if (!participantToRemove || !participantToRemove.isConnected) {
+                cb({
+                    success: false,
+                    status: 404,
+                    error: "Could not find that participant",
+                });
+                return;
+            }
+
+            if (participantToRemove.isHost) {
+                cb({
+                    success: false,
+                    status: 401,
+                    error: "You cannot kick a host",
+                    data: {
+                        settings: this.settings
+                    }
+                });
+                return;
+            }
+
+            this.kickParticipant(participantToRemove);
+        });
+
 
         participant.socket.on("send-message", (to: string, content: string, cb) => {
-            if(this.latestMessage.hasOwnProperty(participant.id)
-            && Date.now() - this.latestMessage[participant.id] < 250){ // throttling
+            if (this.latestMessage.hasOwnProperty(participant.id)
+                && Date.now() - this.latestMessage[participant.id] < 250) { // throttling
                 cb({
                     success: false,
                     status: 429,
@@ -258,7 +298,7 @@ class Room extends Event.EventEmitter {
                 return;
             }
             const response: APIResponse = this.sendMessage(participant, to, content);
-            if(response.success){
+            if (response.success) {
                 this.latestMessage[participant.id] = Date.now();
             }
             cb(response);

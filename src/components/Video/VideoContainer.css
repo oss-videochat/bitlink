@@ -81,10 +81,27 @@
     transition-delay: 0ms;
 }
 
+.controls-wrapper span.controls-wrapper--leave-button {
+    display: none;
+    background: #e74848;
+}
+
+.controls-wrapper span.controls-wrapper--leave-button svg {
+    transform: rotate(-135deg);
+}
+
+.controls-wrapper span.controls-wrapper--leave-button:hover {
+    background: #a33636;
+}
+
+
 @media only screen and (max-width: 600px) {
     .preview-video {
         width: 150px;
         bottom: 80px;
     }
 
+    .controls-wrapper span.controls-wrapper--leave-button {
+        display: inline-flex;
+    }
 }

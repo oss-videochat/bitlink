@@ -13,17 +13,20 @@ ReactDOM.render(
 );
 
 
-autorun(() => {
-    if (!RoomStore.room) {
-        const modalStore = UIStore.store.modalStore;
-        if (modalStore.join) {
-            window.history.pushState({}, "BitLink | Join ", '/join/');
-        } else if (modalStore.create) {
-            window.history.pushState({}, "BitLink | Create ", '/create');
-        } else {
-            window.history.pushState({}, "BitLink | Create ", '/');
+// @ts-ignore
+if (!window.navigator.standalone) { // ios is stupid. If i try to change url bar stuff gets messed up
+    autorun(() => {
+        if (!RoomStore.room) {
+            const modalStore = UIStore.store.modalStore;
+            if (modalStore.join) {
+                window.history.pushState({}, "BitLink | Join ", '/join/');
+            } else if (modalStore.create) {
+                window.history.pushState({}, "BitLink | Create ", '/create');
+            } else {
+                window.history.pushState({}, "BitLink | Create ", '/');
+            }
+            return;
         }
-        return;
-    }
-    window.history.pushState({}, "BitLink | Join " + RoomStore.room.name, '/join/' + RoomStore.room.id);
-});
+        window.history.pushState({}, "BitLink | Join " + RoomStore.room.name, '/join/' + RoomStore.room.id);
+    });
+}

@@ -12,7 +12,8 @@ import {LayoutSizeCalculation} from "../../util/LayoutSizeCalculation";
 import Participant from "../models/Participant";
 import IO from "../../controllers/IO";
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
-import {faMicrophone, faMicrophoneSlash, faVideo, faVideoSlash} from '@fortawesome/free-solid-svg-icons'
+import {faMicrophone, faMicrophoneSlash, faVideo, faVideoSlash, faPhone} from '@fortawesome/free-solid-svg-icons'
+import RoomStore from "../../stores/RoomStore";
 
 @observer
 export class VideoContainer extends React.Component<any, any> {
@@ -93,25 +94,38 @@ export class VideoContainer extends React.Component<any, any> {
             <div ref={this.containerRef} className={"video-container"}>
 
                 <div className={"preview-video"} hidden={!MyInfo.info?.mediaState.cameraEnabled}>
-                   <div className={"preview-video-wrapper"}>
-                       <video playsInline={true}  muted={true} autoPlay={true} ref={this.previewRef}/>
-                   </div>
+                    <div className={"preview-video-wrapper"}>
+                        <video playsInline={true} muted={true} autoPlay={true} ref={this.previewRef}/>
+                    </div>
                 </div>
 
-                <div className={"controls-wrapper"}>
+                {
+                    RoomStore.room ?
+                        <div className={"controls-wrapper"}>
                     <span onClick={() => IO.toggleVideo()}>
                         {MyInfo.info?.mediaState.cameraEnabled ?
                             <FontAwesomeIcon icon={faVideo}/> :
                             <FontAwesomeIcon icon={faVideoSlash}/>
                         }
                     </span>
-                    <span onClick={() => IO.toggleAudio()}>
+                            <span className={"controls-wrapper--leave-button"} onClick={() => {
+                                // eslint-disable-next-line no-restricted-globals
+                                const confirmed: boolean = confirm("Are you sure you would like to leave this room?");
+                                if (confirmed) {
+                                    IO.leave();
+                                }
+                            }}>
+                       <FontAwesomeIcon icon={faPhone}/>
+                    </span>
+                            <span onClick={() => IO.toggleAudio()}>
                         {MyInfo.info?.mediaState.microphoneEnabled ?
                             <FontAwesomeIcon icon={faMicrophone}/> :
                             <FontAwesomeIcon icon={faMicrophoneSlash}/>
                         }
                     </span>
-                </div>
+                        </div>
+                        : null
+                }
 
                 <div className={"videos-list-wrapper"}>
                     {ParticipantsStore.participants.length > 3 ?

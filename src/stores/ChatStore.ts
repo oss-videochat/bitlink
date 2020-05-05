@@ -36,25 +36,14 @@ class ChatStore {
         });
     }
 
-    participantLeft(participant: Participant) {
+    addSystemMessage(options: { content: string }) {
         this.addMessage({
-            content: `${participant.name} left`,
             created: Date.now(),
             from: ParticipantsStore.system,
             id: Math.random().toString(),
             reactions: [],
-            to: ParticipantsStore.everyone
-        });
-    }
-
-    participantJoined(participant: Participant) {
-        this.addMessage({
-            content: `${participant.name} joined`,
-            created: Date.now(),
-            from: ParticipantsStore.system,
-            id: Math.random().toString(),
-            reactions: [],
-            to: ParticipantsStore.everyone
+            to: ParticipantsStore.everyone,
+            ...options,
         });
     }
 

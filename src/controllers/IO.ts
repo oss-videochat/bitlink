@@ -4,7 +4,7 @@ import {action, reaction} from 'mobx';
 import * as Event from 'events';
 
 import CurrentUserInformationStore from "../stores/MyInfo";
-import MyInfo, {CurrentUserInformation} from "../stores/MyInfo";
+import MyInfo from "../stores/MyInfo";
 import RoomStore, {RoomSummary} from "../stores/RoomStore";
 import ChatStore from "../stores/ChatStore";
 import {Message, MessageSummary} from "../stores/MessagesStore";
@@ -38,6 +38,8 @@ class IO extends Event.EventEmitter {
     constructor(ioAddress: string) {
         super();
         this.io = io(ioAddress);
+
+        this.io.on("kicked", this._handleKick.bind(this));
 
         this.io.on("join-room", this._handleJoinRoom.bind(this));
 
@@ -100,6 +102,10 @@ class IO extends Event.EventEmitter {
 
     leave() {
         this.io.emit("leave");
+        this.reset();
+    }
+
+    reset() {
         UIStore.store.modalStore.joinOrCreate = true;
         ResetStores();
     }
@@ -187,6 +193,11 @@ class IO extends Event.EventEmitter {
 
     }
 
+    _handleKick() {
+        this.reset();
+        NotificationStore.add(new UINotification("You have been kicked from the room", NotificationType.Warning))
+    }
+
     _handleJoinRoom(id: string) {
         this.joinRoom(id, MyInfo.chosenName);
     }
@@ -257,7 +268,7 @@ class IO extends Event.EventEmitter {
         ParticipantsStore.participants.push(participant);
         NotificationStore.add(new UINotification(`${participant.name} joined!`, NotificationType.Alert));
         this.emit("new-participant", participant);
-        ChatStore.participantJoined(participant);
+        ChatStore.addSystemMessage({content: `${participant.name} joined`});
     }
 
     @action
@@ -272,25 +283,25 @@ class IO extends Event.EventEmitter {
         }
         if (update.kind === "video") {
             if (update.action === "resume") {
-                if(participant.mediasoup?.consumer.video){
+                if (participant.mediasoup?.consumer.video) {
                     participant.mediasoup.consumer.video.resume();
                 }
                 participant.mediaState.cameraEnabled = true;
 
             } else {
-                if(participant.mediasoup?.consumer.video){
+                if (participant.mediasoup?.consumer.video) {
                     participant.mediasoup.consumer.video.pause();
                 }
                 participant.mediaState.cameraEnabled = false;
             }
         } else if (update.kind === "audio") {
             if (update.action === "resume") {
-                if(participant.mediasoup?.consumer.audio){
+                if (participant.mediasoup?.consumer.audio) {
                     participant.mediasoup.consumer.audio.resume();
                 }
                 participant.mediaState!.microphoneEnabled = true;
             } else {
-                if(participant.mediasoup?.consumer.audio){
+                if (participant.mediasoup?.consumer.audio) {
                     participant.mediasoup.consumer.audio.pause();
                 }
                 participant.mediaState.microphoneEnabled = false;
@@ -302,7 +313,7 @@ class IO extends Event.EventEmitter {
         const participant: Participant | undefined = ParticipantsStore.getById(participantId);
         if (participant) {
             participant.isAlive = false;
-            ChatStore.participantLeft(participant);
+            ChatStore.addSystemMessage({content: `${participant.name} left`});
             NotificationStore.add(new UINotification(`${participant.name} left!`, NotificationType.Alert));
         }
         ParticipantsStore.removeFromWaitingRoom(participantId);
@@ -511,6 +522,16 @@ class IO extends Event.EventEmitter {
             throw response.error;
         }
         RoomStore.room!.name = newSettings.name;
+        return;
+    }
+
+    async kick(participant: Participant): Promise<void> {
+        const response = await this.socketRequest("kick-participant", participant.id);
+        if (!response.success) {
+            NotificationStore.add(new UINotification("Error Kicking Participant: " + response.error, NotificationType.Error))
+            throw response.error;
+        }
+        ChatStore.addSystemMessage({content: `${participant.name} was kicked`})
         return;
     }
 

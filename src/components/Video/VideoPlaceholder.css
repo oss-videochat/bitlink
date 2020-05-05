@@ -1,4 +1,9 @@
+.video-placeholder {
+    color: white;
+}
+
 .video-placeholder--message {
-    font-size: 5vw;
+    display: block;
+    font-size: 20px;
     color: white;
 }

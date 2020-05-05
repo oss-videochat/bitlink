@@ -65,8 +65,12 @@
     white-space: nowrap;
 }
 
-.header--nav {
+header ul li.leave-button {
+    background: #e74848;
+}
 
+header ul li.leave-button:hover {
+    background: #a33636;
 }
 
 @media only screen and (max-width: 600px) {

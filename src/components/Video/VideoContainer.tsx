@@ -18,6 +18,7 @@ import {faMicrophone, faMicrophoneSlash, faVideo, faVideoSlash} from '@fortaweso
 export class VideoContainer extends React.Component<any, any> {
     private previewRef: React.RefObject<HTMLVideoElement> = React.createRef();
     private containerRef: React.RefObject<HTMLDivElement> = React.createRef();
+    private updateBasis?: any;
 
     @observable
     windowSize = {
@@ -53,31 +54,26 @@ export class VideoContainer extends React.Component<any, any> {
         return MyInfo.preferredInputs.video;
     }, this.updateMedia.bind(this));
 
-    updateBasis = reaction(() => {
-        return {
-            height: this.windowSize.height,
-            width: this.windowSize.width,
-            chatPanel: UIStore.store.chatPanel,
-            numParticipants: ParticipantsStore.getLiving()
-                .filter(participant => participant.hasAudio || participant.hasVideo).length
-        }
-
-    }, (data) => {
-        const div = this.containerRef.current!;
-
-        if (!div) {
-            return;
-        }
-
-        const divWidth = UIStore.store.chatPanel ? div.offsetWidth : data.width; // there's an animation with the chat panel so we need to figure out how large the div will be post animation
-        const result = LayoutSizeCalculation(divWidth, div.offsetHeight, data.numParticipants);
-        this.setState({basis: result.basis, maxWidth: result.maxWidth});
-    });
-
     componentDidMount(): void {
         this.previewRef!.current!.addEventListener("canplay", () => {
             this.previewRef!.current!.play();
         });
+        this.updateBasis = reaction(() => {
+            return {
+                height: this.windowSize.height,
+                width: this.windowSize.width,
+                chatPanel: UIStore.store.chatPanel,
+                numParticipants: ParticipantsStore.getLiving()
+                    .filter(participant => participant.hasAudio || participant.hasVideo).length
+            }
+
+        }, (data) => {
+            const div = this.containerRef.current!;
+            const divWidth = UIStore.store.chatPanel ? data.width - 450 : data.width; // there's an animation with the chat panel so we need to figure out how large the div will be post animation
+            const result = LayoutSizeCalculation(divWidth, div.offsetHeight, data.numParticipants);
+            this.setState({basis: result.basis, maxWidth: result.maxWidth});
+        });
+
         this.updateMedia();
         window.addEventListener("resize", () => {
             this.windowSize.height = window.innerHeight;

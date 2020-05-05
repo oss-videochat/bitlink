@@ -61,6 +61,7 @@
     opacity: 0;
     transition: opacity 200ms ease-in-out;
     transition-delay: 500ms;
+    z-index: 1;
 }
 
 .controls-wrapper span {

@@ -55,11 +55,12 @@
 }
 
 
-@media screen and (max-width: 900px) {
+@media screen and (max-width: 600px) {
     .message-list {
         position: absolute;
         bottom: 0;
     }
+
     .message-container--top-bar {
         display: flex;
     }

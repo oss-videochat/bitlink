@@ -26,10 +26,11 @@
     flex: 1;
 }
 
-@media only screen and (max-width: 900px) {
+@media only screen and (max-width: 600px) {
     .chat-container--content {
         width: 100%;
     }
+
     .chat-container.open {
         width: 100%;
         border: none;

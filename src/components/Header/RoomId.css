@@ -1,5 +1,5 @@
 .room-info--id-wrapper {
-    display: inline-block;
+    display: inline-flex;
     margin-left: 10px;
     padding: 6px 10px;
     background: #2a3365;
@@ -22,8 +22,9 @@
     font-size: 12px;
 }
 
-@media only screen and (max-width: 900px) {
+@media only screen and (max-width: 600px) {
     .room-info--id-wrapper {
-       margin-top: 2px;
+        display: block;
+        margin-top: 2px;
     }
 }

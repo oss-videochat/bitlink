@@ -71,7 +71,7 @@
     align-items: center;
 }
 
-@media only screen and (max-width: 900px) {
+@media only screen and (max-width: 600px) {
     .preview-video {
         width: 150px;
         bottom: 80px;

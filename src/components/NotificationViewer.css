@@ -42,7 +42,7 @@
     border-radius: 5px;
 }
 
-@media screen and (max-width: 900px) {
+@media screen and (max-width: 600px) {
     .notification-list {
         top: 0;
         bottom: unset;

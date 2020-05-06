@@ -91,7 +91,7 @@ class CurrentUserInformationStore {
 
         const setPreferredInput = async () => {
             const stream: MediaStream = await navigator.mediaDevices.getUserMedia(options[type]);
-            this.setPreferredInput(type, stream ? stream.getVideoTracks()[0].getSettings().deviceId! : null);
+            this.setPreferredInput(type, stream ? stream.getTracks()[0].getSettings().deviceId! : null);
         };
 
 

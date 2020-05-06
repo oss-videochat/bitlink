@@ -1,6 +1,5 @@
 import React, {RefObject} from 'react';
 import './VideoParticipant.css';
-import MyInfo from "../../stores/MyInfo";
 import {observer} from 'mobx-react';
 import {reaction} from 'mobx';
 import {AutoPlayAudio} from "./AutoPlayAudio";

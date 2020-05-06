@@ -94,12 +94,13 @@ class CurrentUserInformationStore {
             this.setPreferredInput(type, stream ? stream.getVideoTracks()[0].getSettings().deviceId! : null);
         };
 
+
         if (!this.preferredInputs[type]) {
             await setPreferredInput();
         }
 
         if (this.cachedStreams[type]?.getTracks()[0].getSettings().deviceId !== this.preferredInputs[type]) {
-            const stream = await navigator.mediaDevices.getUserMedia({[type]: {deviceId: {exact: this.preferredInputs[type]!}}});
+            const stream: MediaStream = await navigator.mediaDevices.getUserMedia({[type]: {deviceId: {exact: this.preferredInputs[type]!}}});
             this.cachedStreams[type] = stream;
             return stream;
         }
@@ -108,6 +109,7 @@ class CurrentUserInformationStore {
             throw `No ${type} device available`;
         }
 
+        debugger
         return this.cachedStreams[type]!;
     }
 }

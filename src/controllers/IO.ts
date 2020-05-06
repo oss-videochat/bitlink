@@ -82,18 +82,24 @@ class IO extends Event.EventEmitter {
         }, (_) => {
             if (
                 MyInfo.preferredInputs.audio
-                && MyInfo.mediasoup.producers.audio?.track?.getSettings().deviceId !== MyInfo.preferredInputs.audio
+                && MyInfo.mediasoup.producers.audio
+                && MyInfo.mediasoup.producers.audio.track?.getSettings().deviceId !== MyInfo.preferredInputs.audio
             ) {
+
+                (MyInfo.mediasoup.producers.audio.track as MediaStreamTrack).stop();
                 MyInfo.getStream("audio").then((stream) => {
                     MyInfo.mediasoup.producers.audio?.replaceTrack({track: stream.getAudioTracks()[0]});
                 });
             }
             if (
                 MyInfo.preferredInputs.video
-                && MyInfo.mediasoup.producers.video?.track?.getSettings().deviceId !== MyInfo.preferredInputs.video
+                && MyInfo.mediasoup.producers.video
+                && MyInfo.mediasoup.producers.video.track?.getSettings().deviceId !== MyInfo.preferredInputs.video
             ) {
+                (MyInfo.mediasoup.producers.video.track as MediaStreamTrack).stop();
+
                 MyInfo.getStream("video").then((stream) => {
-                    MyInfo.mediasoup.producers.video?.replaceTrack({track: stream.getVideoTracks()[0]});
+                    MyInfo.mediasoup.producers.video!.replaceTrack({track: stream.getVideoTracks()[0]});
                 });
             }
         });

@@ -109,7 +109,6 @@ class CurrentUserInformationStore {
             throw `No ${type} device available`;
         }
 
-        debugger
         return this.cachedStreams[type]!;
     }
 }

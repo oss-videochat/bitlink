@@ -1,6 +1,6 @@
 {
   "name": "video-web-app-frontend",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "private": true,
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^1.2.28",

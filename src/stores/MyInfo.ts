@@ -85,7 +85,7 @@ class CurrentUserInformationStore {
 
     async getStream(type: "video" | "audio"): Promise<MediaStream>{
         const options = {
-            video: {video: {facingMode: {ideal: "user"}}},
+            video: {video: {facingMode: {ideal: "user"}, width: {ideal: 960}, height: {ideal: 640}}},
             audio: {audio: true}
         };
 
@@ -100,7 +100,8 @@ class CurrentUserInformationStore {
         }
 
         if (this.cachedStreams[type]?.getTracks()[0].getSettings().deviceId !== this.preferredInputs[type]) {
-            const stream: MediaStream = await navigator.mediaDevices.getUserMedia({[type]: {deviceId: {exact: this.preferredInputs[type]!}}});
+            console.log({[type]: {deviceId: {exact: this.preferredInputs[type]!}}})
+            const stream: MediaStream = await navigator.mediaDevices.getUserMedia({[type]: {deviceId: this.preferredInputs[type]!}});
             this.cachedStreams[type] = stream;
             return stream;
         }

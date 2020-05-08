@@ -5,6 +5,9 @@ import {APIResponse, APIResponseCallback} from "./APIResponse";
 import * as mediasoup from 'mediasoup';
 import {config} from "../../config";
 import {UpdateRoomSettingsValidation} from "../helpers/validation/UpdateRoomSettings";
+import debug from "../helpers/debug";
+
+const log = debug("Room");
 
 interface ParticipantAuthObj {
     id: string,
@@ -17,6 +20,9 @@ interface RoomSettings {
 }
 
 class Room extends Event.EventEmitter {
+    get settings(): RoomSettings {
+        return this._settings;
+    }
     get router(): mediasoup.types.Router {
         return this._router;
     }
@@ -33,13 +39,14 @@ class Room extends Event.EventEmitter {
 
     private readonly messages: Array<Message> = []; // TODO mongodb
     private readonly latestMessage = {};
-    private settings: RoomSettings = {...Room.defaultSettings};
+    private _settings: RoomSettings = {...Room.defaultSettings};
     public readonly created;
     private _router: mediasoup.types.Router;
 
     constructor(name: string = "Untitled Room", router: mediasoup.types.Router) {
         super();
-        this.settings.name = name;
+        log("New room with name %s", name)
+        this._settings.name = name;
         this.created = new Date();
         this._router = router;
 
@@ -51,13 +58,16 @@ class Room extends Event.EventEmitter {
     }
 
     addParticipant(participant: Participant, cb: APIResponseCallback) {
+        log("Participant adding %s", participant.name)
         participant.socket.on("leave", () => {
+            log("Participant left %s", participant.name);
             this.leaveParticipant(participant);
             if (this.getConnectedParticipants().length === 0 || this.getHosts().length === 0) {
                 this.destroy();
             }
         });
         participant.on("disconnect", () => { // TODO this should be different from above
+            log("Participant disconnected %s", participant.name)
             this.leaveParticipant(participant);
             if (this.getConnectedParticipants().length === 0 || this.getHosts().length === 0) {
                 this.destroy();
@@ -68,11 +78,11 @@ class Room extends Event.EventEmitter {
             participant.isHost = true;
         }
 
-        if (this.settings.waitingRoom && !participant.isHost) {
+        if (this._settings.waitingRoom && !participant.isHost) {
             this.waitingRoom.push(participant);
             cb({
                 success: false, error: "In waiting room", status: 403, data: {
-                    name: this.settings.name
+                    name: this._settings.name
                 }
             });
 
@@ -108,12 +118,13 @@ class Room extends Event.EventEmitter {
     }
 
     leaveParticipant(participant: Participant) {
+        log("Forcing participant to leave", participant.name)
         participant.leave();
-        console.log("left");
         this.broadcast("participant-left", [], participant.id);
     }
 
     kickParticipant(participant: Participant){
+        log("Participant kicked", participant.name)
         this.leaveParticipant(participant);
         participant.socket.emit("kicked");
     }
@@ -128,6 +139,8 @@ class Room extends Event.EventEmitter {
 
     addListeners(participant: Participant) {
         participant.on("media-state-update", (kind, action) => {
+            log("Participant %s media state update %s:%S", participant.name, kind, action);
+
             this.broadcast("participant-updated-media-state", [participant],
                 {
                     id: participant.id,
@@ -138,6 +151,7 @@ class Room extends Event.EventEmitter {
         });
 
         participant.socket.on("waiting-room-decision", (id, decision: "accept" | "reject", cb: APIResponseCallback) => {
+            log("Receiving waiting room decision %s", decision);
             if (!participant.isHost) {
                 cb({
                     success: false,
@@ -190,6 +204,7 @@ class Room extends Event.EventEmitter {
         });
 
         participant.socket.on("get-room-settings", (cb: APIResponseCallback) => {
+            log("Participant requesting room settings %s", participant.name);
             if (!participant.isHost) {
                 cb({
                     success: false,
@@ -203,12 +218,13 @@ class Room extends Event.EventEmitter {
                 status: 200,
                 error: null,
                 data: {
-                    settings: this.settings
+                    settings: this._settings
                 }
             });
         });
 
         participant.socket.on("change-name", (newName, cb: APIResponseCallback) => {
+            log("Participant changing name %s --> %s", participant.name, newName);
             participant.name = newName;
             this.broadcast("participant-changed-name", [participant], participant.id, participant.name);
             cb({
@@ -219,6 +235,7 @@ class Room extends Event.EventEmitter {
         });
 
         participant.socket.on("update-room-settings", (newSettings, cb: APIResponseCallback) => {
+            log("Participant changing room settings %O", newSettings);
             if (!participant.isHost) {
                 cb({
                     success: false,
@@ -235,18 +252,18 @@ class Room extends Event.EventEmitter {
                 });
                 return;
             }
-            if (newSettings.name !== this.settings.name) {
+            if (newSettings.name !== this._settings.name) {
                 this.broadcast("update-room-settings", this.getConnectedParticipants().filter(participant1 => participant1.isHost), this.makeSettingsSafe(newSettings));
                 this.broadcast("update-room-settings-host", this.getConnectedParticipants().filter(participant1 => participant1.isHost), newSettings);
             }
 
-            this.settings = newSettings;
+            this._settings = newSettings;
             cb({
                 success: true,
                 status: 200,
                 error: null,
                 data: {
-                    settings: this.settings
+                    settings: this._settings
                 }
             });
         });
@@ -277,7 +294,7 @@ class Room extends Event.EventEmitter {
                     status: 401,
                     error: "You cannot kick a host",
                     data: {
-                        settings: this.settings
+                        settings: this._settings
                     }
                 });
                 return;
@@ -288,6 +305,7 @@ class Room extends Event.EventEmitter {
 
 
         participant.socket.on("send-message", (to: string, content: string, cb) => {
+            log("Participant sending message");
             if (this.latestMessage.hasOwnProperty(participant.id)
                 && Date.now() - this.latestMessage[participant.id] < 250) { // throttling
                 cb({
@@ -320,6 +338,7 @@ class Room extends Event.EventEmitter {
 
 
         participant.socket.on("create-transport", async (type, kind, cb: (response: APIResponse) => void) => {
+            log("Participant creating a transport %s:%s", participant.name, kind);
             let transport;
             switch (type) {
                 case "webrtc":
@@ -355,6 +374,7 @@ class Room extends Event.EventEmitter {
 
 
         participant.socket.on("connect-transport", (transportId, dtlsParameters, cb: (response: APIResponse) => void) => {
+            log("Participant connecting to a transport %s:%s", participant.name, transportId);
             const transport: mediasoup.types.Transport = participant.mediasoupPeer.getTransport(transportId);
             if (!transport) {
                 cb({
@@ -392,6 +412,7 @@ class Room extends Event.EventEmitter {
         });
 
         participant.socket.once("transports-ready", () => {
+            log("Participant says their transports are ready %s", participant.name);
             this.getConnectedParticipants().forEach(participantJoined => {
                 if (participantJoined.id === participant.id) {
                     return;
@@ -403,6 +424,7 @@ class Room extends Event.EventEmitter {
         });
 
         participant.socket.on("create-producer", async (transportId, kind, rtpParameters, cb: (response: APIResponse) => void) => {
+            log("Participant creating a producer %s:%s", participant.name, kind);
             const transport = participant.mediasoupPeer.getTransport(transportId);
             if (!transport) {
                 cb({
@@ -545,7 +567,7 @@ class Room extends Event.EventEmitter {
         return {
             id: this.id,
             idHash: this.idHash,
-            name: this.settings.name,
+            name: this._settings.name,
             participants: this.participants.map(participantInRoom => {
                 const obj: any = {
                     isMe: participantInRoom.id === currentParticipant.id,
@@ -572,6 +594,7 @@ class Room extends Event.EventEmitter {
     }
 
     async createConsumerAndNotify(producerPeer: Participant, consumerPeer: Participant, kind: "video" | "audio") {
+        log("New consumer creation { Producer: %s | Consumer: %s }", producerPeer.name, consumerPeer.name);
         const producer = producerPeer.mediasoupPeer.getProducersByKind(kind);
         if (
             !producer

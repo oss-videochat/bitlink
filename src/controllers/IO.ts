@@ -1,3 +1,4 @@
+import debug from "../util/debug";
 import io from 'socket.io-client';
 import ParticipantsStore from "../stores/ParticipantsStore";
 import {action, reaction} from 'mobx';
@@ -13,6 +14,8 @@ import UIStore from "../stores/UIStore";
 import {ResetStores} from "../util/ResetStores";
 import * as mediasoupclient from 'mediasoup-client';
 import Participant, {ParticipantData} from "../components/models/Participant";
+
+const log = debug("IO");
 
 interface APIResponse {
     success: boolean,
@@ -80,12 +83,13 @@ class IO extends Event.EventEmitter {
             }
 
         }, (_) => {
+            log("Preferred input changed detected");
             if (
                 MyInfo.preferredInputs.audio
                 && MyInfo.mediasoup.producers.audio
                 && MyInfo.mediasoup.producers.audio.track?.getSettings().deviceId !== MyInfo.preferredInputs.audio
             ) {
-
+                log("Preferred audio input changed detected");
                 (MyInfo.mediasoup.producers.audio.track as MediaStreamTrack).stop();
                 MyInfo.getStream("audio").then((stream) => {
                     MyInfo.mediasoup.producers.audio?.replaceTrack({track: stream.getAudioTracks()[0]});
@@ -96,6 +100,7 @@ class IO extends Event.EventEmitter {
                 && MyInfo.mediasoup.producers.video
                 && MyInfo.mediasoup.producers.video.track?.getSettings().deviceId !== MyInfo.preferredInputs.video
             ) {
+                log("Preferred video input changed detected");
                 (MyInfo.mediasoup.producers.video.track as MediaStreamTrack).stop();
 
                 MyInfo.getStream("video").then((stream) => {
@@ -107,21 +112,24 @@ class IO extends Event.EventEmitter {
     }
 
     leave() {
+        log("Leaving room");
         this.io.emit("leave");
         this.reset();
     }
 
     reset() {
+        log("Resetting stores");
         UIStore.store.modalStore.joinOrCreate = true;
         ResetStores();
     }
 
     createRoom(name: string) {
-        console.log("Creating room...");
+        log("Creating room with name %s", name);
         this.io.emit("create-room", name);
     }
 
     joinRoom(id: string, name?: string) {
+        log("Joining room with id: %s", id);
         UIStore.store.modalStore.joiningRoom = true;
         this.socketRequest("get-rtp-capabilities", id)
             .then((response: APIResponse) => {
@@ -159,14 +167,20 @@ class IO extends Event.EventEmitter {
     }
 
     createTransports() {
+        log("Starting creation of transports process");
         const addTransportListeners = (transport: mediasoupclient.types.Transport) => {
+            log("Adding transport");
+
             transport.on("connect", async ({dtlsParameters}, callback, errback) => {
+                log("transport connect event emitted");
                 const response = await this.socketRequest("connect-transport", transport.id, dtlsParameters);
                 if (!response.success) {
+                    log("connect-transport request success");
                     NotificationStore.add(new UINotification(`An error occurred connecting to the transport: ${response.error}`, NotificationType.Error));
                     errback();
                     return;
                 }
+                log("connect-transport request success");
                 callback();
             });
 

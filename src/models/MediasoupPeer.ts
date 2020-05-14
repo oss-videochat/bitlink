@@ -71,6 +71,7 @@ export default class MediasoupPeer extends Events.EventEmitter{
 
     addProducer(producer, kind: "video" | "audio") {
         this.producers[kind] = producer;
+        this.emit("new-producer", kind)
     }
 
     addConsumer(consumer) {

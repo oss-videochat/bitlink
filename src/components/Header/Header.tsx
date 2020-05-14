@@ -4,19 +4,13 @@ import './Header.css';
 import RoomStore from "../../stores/RoomStore";
 import IO from "../../controllers/IO";
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
-import {faUsers, faComments, faMicrophone, faMicrophoneSlash, faVideo, faVideoSlash, faCogs} from '@fortawesome/free-solid-svg-icons'
+import {faCogs, faComments, faExpand, faUsers} from '@fortawesome/free-solid-svg-icons'
 import UIStore from "../../stores/UIStore";
 import {RoomId} from "./RoomId";
 import MyInfo from "../../stores/MyInfo";
 
 @observer
 export class Header extends React.Component<any, any> {
-    handleJoinRoom(){
-        const chosenId = prompt("Enter a Room ID") || "";
-        const chosenName = prompt("Enter a Name") || undefined;
-        IO.joinRoom(chosenId, chosenName)
-    }
-
     render() {
         return (
             <header className={"header"}>
@@ -37,28 +31,35 @@ export class Header extends React.Component<any, any> {
                             MyInfo.info ?
                                 <React.Fragment>
                                     <li onClick={() => UIStore.store.modalStore.settings = true}>
-                                            <FontAwesomeIcon icon={faCogs}/>
-                                    </li>
-                                    <li onClick={() => IO.toggleAudio()}>
-                                        {MyInfo.info.mediaState.microphoneEnabled ?
-                                            <FontAwesomeIcon icon={faMicrophone}/> :
-                                            <FontAwesomeIcon icon={faMicrophoneSlash}/>
-                                        }
-                                    </li>
-                                    <li onClick={() => IO.toggleVideo()}>
-                                        {MyInfo.info.mediaState.cameraEnabled ?
-                                            <FontAwesomeIcon icon={faVideo}/> :
-                                            <FontAwesomeIcon icon={faVideoSlash}/>
-                                        }
+                                        <FontAwesomeIcon icon={faCogs}/>
                                     </li>
                                 </React.Fragment>
                                 : null
                         }
                     </ul>
+                    {RoomStore.room ?
+                        <React.Fragment>
+                            <span className={"divider"}/>
+                            <ul>
+                                <li className={"leave-button"} onClick={() => {
+                                    // eslint-disable-next-line no-restricted-globals
+                                    const confirmed: boolean = confirm("Are you sure you would like to leave this room?");
+                                    if (confirmed) {
+                                        IO.leave();
+                                    }
+                                }}>Leave Room
+                                </li>
+                            </ul>
+                        </React.Fragment>
+                        :
+                        null
+                    }
+
                     <span className={"divider"}/>
                     <ul>
-                        <li onClick={() => UIStore.store.modalStore.join = true}>Join Room</li>
-                        <li onClick={() => UIStore.store.modalStore.create = true}>Create Room</li>
+                        <li onClick={this.props.toggleFullscreen}>
+                            <FontAwesomeIcon icon={faExpand}/>
+                        </li>
                     </ul>
                 </nav>
             </header>

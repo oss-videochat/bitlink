@@ -1,8 +1,8 @@
 import React, {RefObject} from 'react';
 import './VideoParticipant.css';
-import MyInfo from "../../stores/MyInfo";
 import {observer} from 'mobx-react';
 import {reaction} from 'mobx';
+import {AutoPlayAudio} from "./AutoPlayAudio";
 
 @observer
 export class VideoParticipant extends React.Component<any, any> {
@@ -12,33 +12,33 @@ export class VideoParticipant extends React.Component<any, any> {
         video: null,
         audio: null
     };
-    private detectAudioChange = reaction(() => {
-        return this.props.participant.mediaState.microphoneEnabled
-    }, () =>{
-        this.updateMedia();
-    });
+    private detectAudioChange: any = null;
 
     constructor(props: any) {
         super(props);
+        this.state = {
+            audioSrcObject: null,
+        };
     }
 
-    async componentDidMount() {
-        this.videoRef.current!.addEventListener("canplay", () => {
-            this.videoRef.current!.play();
+    componentDidMount() {
+        this.detectAudioChange = reaction(() => {
+            return this.props.participant.mediaState.microphoneEnabled
+        }, () => {
+            this.updateMedia();
         });
-        this.audioRef.current!.addEventListener("canplay", () => {
-            this.audioRef.current!.play();
+        this.videoRef.current!.addEventListener("canplay", () => {
+            this.videoRef.current?.play().catch(console.error);
         });
         this.updateMedia();
     }
 
 
-
-    updateMedia() {
+    updateMedia () {
         this.videoRef.current!.srcObject = new MediaStream([this.props.participant.mediasoup.consumer.video.track]);
 
-        if (this.props.participant.mediaState.microphoneEnabled) {
-            this.audioRef.current!.srcObject = new MediaStream([this.props.participant.mediasoup.consumer.audio.track]);
+        if (this.props.participant.hasAudio) {
+            this.setState({audioSrcObject: new MediaStream([this.props.participant.mediasoup.consumer.audio.track])})
         }
     };
 
@@ -58,13 +58,12 @@ export class VideoParticipant extends React.Component<any, any> {
         this.detectAudioChange();
     }
 
-
     render() {
         return (
             <div className={"video-pad"} style={{flexBasis: this.props.flexBasis, maxWidth: this.props.maxWidth}}>
                 <div className={"video-participant-wrapper"}>
                     <video autoPlay={true} playsInline={true}  muted={true} ref={this.videoRef} className={"video-participant--video"}/>
-                    <audio autoPlay={true} ref={this.audioRef} className={"video-participant--audio"}/>
+                    <AutoPlayAudio srcObject={this.state.audioSrcObject}/>
                     <span className={"video-participant--name"}>{this.props.participant.name}</span>
                 </div>
             </div>

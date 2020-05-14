@@ -1,10 +1,11 @@
+import debug from "../util/debug";
 import io from 'socket.io-client';
-import ParticipantsStore, {ParticipantInformation} from "../stores/ParticipantsStore";
-import {action} from 'mobx';
+import ParticipantsStore from "../stores/ParticipantsStore";
+import {action, reaction} from 'mobx';
 import * as Event from 'events';
 
 import CurrentUserInformationStore from "../stores/MyInfo";
-import MyInfo, {CurrentUserInformation} from "../stores/MyInfo";
+import MyInfo from "../stores/MyInfo";
 import RoomStore, {RoomSummary} from "../stores/RoomStore";
 import ChatStore from "../stores/ChatStore";
 import {Message, MessageSummary} from "../stores/MessagesStore";
@@ -12,6 +13,9 @@ import NotificationStore, {NotificationType, UINotification} from "../stores/Not
 import UIStore from "../stores/UIStore";
 import {ResetStores} from "../util/ResetStores";
 import * as mediasoupclient from 'mediasoup-client';
+import Participant, {ParticipantData} from "../components/models/Participant";
+
+const log = debug("IO");
 
 interface APIResponse {
     success: boolean,
@@ -37,6 +41,8 @@ class IO extends Event.EventEmitter {
     constructor(ioAddress: string) {
         super();
         this.io = io(ioAddress);
+
+        this.io.on("kicked", this._handleKick.bind(this));
 
         this.io.on("join-room", this._handleJoinRoom.bind(this));
 
@@ -70,20 +76,60 @@ class IO extends Event.EventEmitter {
 
         this.io.on("new-consumer", this._handleNewConsumer.bind(this));
 
+        reaction(() => {
+            return {
+                audio: MyInfo.preferredInputs.audio,
+                video: MyInfo.preferredInputs.video
+            }
+
+        }, (_) => {
+            log("Preferred input changed detected");
+            if (
+                MyInfo.preferredInputs.audio
+                && MyInfo.mediasoup.producers.audio
+                && MyInfo.mediasoup.producers.audio.track?.getSettings().deviceId !== MyInfo.preferredInputs.audio
+            ) {
+                log("Preferred audio input changed detected");
+                (MyInfo.mediasoup.producers.audio.track as MediaStreamTrack).stop();
+                MyInfo.getStream("audio").then((stream) => {
+                    MyInfo.mediasoup.producers.audio?.replaceTrack({track: stream.getAudioTracks()[0]});
+                });
+            }
+            if (
+                MyInfo.preferredInputs.video
+                && MyInfo.mediasoup.producers.video
+                && MyInfo.mediasoup.producers.video.track?.getSettings().deviceId !== MyInfo.preferredInputs.video
+            ) {
+                log("Preferred video input changed detected");
+                (MyInfo.mediasoup.producers.video.track as MediaStreamTrack).stop();
+
+                MyInfo.getStream("video").then((stream) => {
+                    MyInfo.mediasoup.producers.video!.replaceTrack({track: stream.getVideoTracks()[0]});
+                });
+            }
+        });
+
     }
 
     leave() {
+        log("Leaving room");
         this.io.emit("leave");
+        this.reset();
+    }
+
+    reset() {
+        log("Resetting stores");
         UIStore.store.modalStore.joinOrCreate = true;
         ResetStores();
     }
 
     createRoom(name: string) {
-        console.log("Creating room...");
+        log("Creating room with name %s", name);
         this.io.emit("create-room", name);
     }
 
     joinRoom(id: string, name?: string) {
+        log("Joining room with id: %s", id);
         UIStore.store.modalStore.joiningRoom = true;
         this.socketRequest("get-rtp-capabilities", id)
             .then((response: APIResponse) => {
@@ -112,7 +158,7 @@ class IO extends Event.EventEmitter {
                 });
             })
             .catch(error => {
-                console.error(error);
+                console.error("Join Error:" + error.toString());
                 UIStore.store.modalStore.joiningRoom = false;
                 UIStore.store.modalStore.join = true;
                 NotificationStore.add(new UINotification(`Join Error: ${error}`, NotificationType.Error));
@@ -121,14 +167,20 @@ class IO extends Event.EventEmitter {
     }
 
     createTransports() {
+        log("Starting creation of transports process");
         const addTransportListeners = (transport: mediasoupclient.types.Transport) => {
+            log("Adding transport");
+
             transport.on("connect", async ({dtlsParameters}, callback, errback) => {
+                log("transport connect event emitted");
                 const response = await this.socketRequest("connect-transport", transport.id, dtlsParameters);
                 if (!response.success) {
+                    log("connect-transport request success");
                     NotificationStore.add(new UINotification(`An error occurred connecting to the transport: ${response.error}`, NotificationType.Error));
                     errback();
                     return;
                 }
+                log("connect-transport request success");
                 callback();
             });
 
@@ -161,6 +213,11 @@ class IO extends Event.EventEmitter {
 
     }
 
+    _handleKick() {
+        this.reset();
+        NotificationStore.add(new UINotification("You have been kicked from the room", NotificationType.Warning))
+    }
+
     _handleJoinRoom(id: string) {
         this.joinRoom(id, MyInfo.chosenName);
     }
@@ -171,13 +228,7 @@ class IO extends Event.EventEmitter {
 
         const roomSummary: RoomSummary = data.summary;
 
-        roomSummary.participants.forEach((participant: ParticipantInformation | CurrentUserInformation) => {
-
-            participant.mediaState = {
-                cameraEnabled: false,
-                microphoneEnabled: false
-            };
-
+        roomSummary.participants.forEach((participant: ParticipantData) => {
             participant.mediasoup = {
                 consumer: {
                     video: null,
@@ -186,9 +237,11 @@ class IO extends Event.EventEmitter {
             };
 
             if (participant.isMe) {
-                CurrentUserInformationStore.info = participant as CurrentUserInformation;
+                CurrentUserInformationStore.info = new Participant(participant);
             }
         });
+
+        roomSummary.participants = roomSummary.participants.map((data) => new Participant(data));
 
         ParticipantsStore.replace(roomSummary.participants);
         ChatStore.addParticipant(...roomSummary.participants);
@@ -200,6 +253,7 @@ class IO extends Event.EventEmitter {
 
         RoomStore.room = roomSummary;
         RoomStore.mediasoup.rtcCapabilities = data.rtcCapabilities;
+        UIStore.store.joinedDate = new Date();
 
         this.emit("room-summary", roomSummary);
     }
@@ -216,7 +270,7 @@ class IO extends Event.EventEmitter {
         return Object.assign({}, message, replacementObj) as Message;
     }
 
-    _handleNewParticipant(participantSummary: ParticipantInformation) {
+    _handleNewParticipant(participantSummary: ParticipantData) {
         ParticipantsStore.removeFromWaitingRoom(participantSummary.id);
 
         participantSummary.mediaState = {
@@ -230,15 +284,16 @@ class IO extends Event.EventEmitter {
                 audio: null
             }
         };
-        ParticipantsStore.participants.push(participantSummary);
-        NotificationStore.add(new UINotification(`${participantSummary.name} joined!`, NotificationType.Alert));
-        this.emit("new-participant", participantSummary);
-        ChatStore.participantJoined(participantSummary);
+        const participant = new Participant(participantSummary);
+        ParticipantsStore.participants.push(participant);
+        NotificationStore.add(new UINotification(`${participant.name} joined!`, NotificationType.Alert));
+        this.emit("new-participant", participant);
+        ChatStore.addSystemMessage({content: `${participant.name} joined`});
     }
 
     @action
-    _handleWaitingRoomNewParticipant(data: { participant: ParticipantInformation }) {
-        ParticipantsStore.waitingRoom.push(data.participant);
+    _handleWaitingRoomNewParticipant(data: { participant: ParticipantData }) {
+        ParticipantsStore.waitingRoom.push(new Participant(data.participant));
     }
 
     _handleMediaStateUpdate(update: MediaStateUpdate) {
@@ -246,40 +301,47 @@ class IO extends Event.EventEmitter {
         if (!participant) {
             return;
         }
-        if (update.kind === "video" && participant.mediasoup?.consumer.video) {
+        if (update.kind === "video") {
             if (update.action === "resume") {
-                participant.mediasoup.consumer.video.resume();
+                if (participant.mediasoup?.consumer.video) {
+                    participant.mediasoup.consumer.video.resume();
+                }
                 participant.mediaState.cameraEnabled = true;
 
             } else {
-                participant.mediasoup.consumer.video.pause();
+                if (participant.mediasoup?.consumer.video) {
+                    participant.mediasoup.consumer.video.pause();
+                }
                 participant.mediaState.cameraEnabled = false;
-
             }
-        } else if (update.kind === "audio" && participant.mediasoup?.consumer.audio) {
+        } else if (update.kind === "audio") {
             if (update.action === "resume") {
-                participant.mediasoup.consumer.audio.resume();
+                if (participant.mediasoup?.consumer.audio) {
+                    participant.mediasoup.consumer.audio.resume();
+                }
                 participant.mediaState!.microphoneEnabled = true;
             } else {
-                participant.mediasoup.consumer.audio.pause();
+                if (participant.mediasoup?.consumer.audio) {
+                    participant.mediasoup.consumer.audio.pause();
+                }
                 participant.mediaState.microphoneEnabled = false;
             }
         }
     }
 
     _handleParticipantLeft(participantId: string) {
-        const participant: ParticipantInformation | undefined = ParticipantsStore.getById(participantId);
+        const participant: Participant | undefined = ParticipantsStore.getById(participantId);
         if (participant) {
             participant.isAlive = false;
-            ChatStore.participantLeft(participant);
+            ChatStore.addSystemMessage({content: `${participant.name} left`});
             NotificationStore.add(new UINotification(`${participant.name} left!`, NotificationType.Alert));
         }
         ParticipantsStore.removeFromWaitingRoom(participantId);
     }
 
-    _handleParticipantNameChange(participantId: string, newName: string){
+    _handleParticipantNameChange(participantId: string, newName: string) {
         const participant = ParticipantsStore.getById(participantId);
-        if(participant){
+        if (participant) {
             participant.name = newName;
         }
     }
@@ -322,15 +384,9 @@ class IO extends Event.EventEmitter {
             rtpParameters: data.rtpParameters
         });
 
-        participant.mediasoup!.consumer[kind]?.on("transportclose", () => {
+        participant.mediasoup!.consumer[kind]!.on("transportclose", () => {
             participant.mediasoup!.consumer[kind] = null;
         });
-
-        if (kind === "video") {
-            participant.mediaState.cameraEnabled = true;
-        } else {
-            participant.mediaState.microphoneEnabled = true;
-        }
 
         cb(true);
         participant.mediasoup!.consumer[kind]?.resume();
@@ -356,8 +412,9 @@ class IO extends Event.EventEmitter {
         UIStore.store.modalStore.join = true;
     }
 
-    _handleUpdatedRoomSettings(newSettings: RoomSettingsObj){
-        if(RoomStore.room?.name !== newSettings.name){
+
+    _handleUpdatedRoomSettings(newSettings: RoomSettingsObj) {
+        if (RoomStore.room?.name !== newSettings.name) {
             RoomStore.room!.name = newSettings.name;
         }
     }
@@ -373,12 +430,13 @@ class IO extends Event.EventEmitter {
             }
             return;
         }
-        const track = await MyInfo.getVideoStream();
-        if (!track) {
+
+        const stream = await MyInfo.getStream("video");
+        if (!stream) {
             NotificationStore.add(new UINotification(`An error occurred accessing the webcam`, NotificationType.Error));
             return;
         }
-        MyInfo.mediasoup.producers.video = await MyInfo.mediasoup.transports.sending!.produce({track});
+        MyInfo.mediasoup.producers.video = await MyInfo.mediasoup.transports.sending!.produce({track: stream.getVideoTracks()[0]});
         MyInfo.resume("video");
     }
 
@@ -393,12 +451,12 @@ class IO extends Event.EventEmitter {
             }
             return;
         }
-        const track = await MyInfo.getAudioStream();
-        if (!track) {
+        const stream = await MyInfo.getStream("audio");
+        if (!stream) {
             NotificationStore.add(new UINotification(`An error occurred accessing the microphone`, NotificationType.Error));
             return;
         }
-        MyInfo.mediasoup.producers.audio = await MyInfo.mediasoup.transports.sending!.produce({track});
+        MyInfo.mediasoup.producers.audio = await MyInfo.mediasoup.transports.sending!.produce({track: stream.getAudioTracks()[0]});
         MyInfo.resume("audio");
     }
 
@@ -462,8 +520,7 @@ class IO extends Event.EventEmitter {
 
     async changeName(newName: string) {
         const response = await this.socketRequest("change-name", newName);
-        if(response.success){
-            console.log("switch my named");
+        if (response.success) {
             MyInfo.info!.name = newName;
         }
     }
@@ -488,6 +545,16 @@ class IO extends Event.EventEmitter {
         return;
     }
 
+    async kick(participant: Participant): Promise<void> {
+        const response = await this.socketRequest("kick-participant", participant.id);
+        if (!response.success) {
+            NotificationStore.add(new UINotification("Error Kicking Participant: " + response.error, NotificationType.Error))
+            throw response.error;
+        }
+        ChatStore.addSystemMessage({content: `${participant.name} was kicked`})
+        return;
+    }
+
     socketRequest(event: string, ...args: any[]): Promise<APIResponse> {
         return new Promise(async (resolve, reject) => {
             this.io.emit(event, ...args, (json: APIResponse) => {
@@ -499,4 +566,6 @@ class IO extends Event.EventEmitter {
 
 }
 
-export default new IO("https://" + window.location.hostname);
+const ioAddress = process.env.NODE_ENV === "development" ? ("http://" + window.location.hostname + ":3001") : ("https://" + window.location.hostname);
+
+export default new IO(ioAddress);

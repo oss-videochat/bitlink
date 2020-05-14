@@ -1,5 +1,5 @@
 .room-info--id-wrapper {
-    display: inline-block;
+    display: inline-flex;
     margin-left: 10px;
     padding: 6px 10px;
     background: #2a3365;
@@ -20,4 +20,11 @@
 .room-info--share-icon {
     vertical-align: top;
     font-size: 12px;
+}
+
+@media only screen and (max-width: 600px) {
+    .room-info--id-wrapper {
+        display: block;
+        margin-top: 2px;
+    }
 }

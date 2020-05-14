@@ -3,6 +3,7 @@ import IO from "../../../../controllers/IO";
 import ParticipantsStore from "../../../../stores/ParticipantsStore";
 import './ParticipantList.css';
 import {observer} from 'mobx-react';
+import MyInfo from "../../../../stores/MyInfo";
 
 @observer
 export class ParticipantList extends React.Component<any, any> {
@@ -32,8 +33,14 @@ export class ParticipantList extends React.Component<any, any> {
                             .slice(2)
                             .map(participant => {
                                 return (
-                                    <div className={"participant"}>
+                                    <div key={participant.id} className={"participant"}>
                                         <span className={"participant--name"}>{participant.name}</span>
+                                        {MyInfo.info?.isHost
+                                        && !participant.isHost ?
+                                            <span onClick={() => IO.kick(participant)}
+                                                  className={"participant--kick-button"}>Kick</span>
+                                            : null
+                                        }
                                     </div>
                                 )
                             })

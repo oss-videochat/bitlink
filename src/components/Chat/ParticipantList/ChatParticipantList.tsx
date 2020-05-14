@@ -37,6 +37,14 @@ export class ChatParticipantList extends React.Component<any, any> {
         return lastMessage;
     }
 
+    onChosen(selected: string) {
+        this.props.onUserSelect(selected);
+        console.log("here");
+        if (window.matchMedia('(max-width: 600px)').matches) {
+            UIStore.store.participantPanel = false;
+        }
+    }
+
     render() {
         return (
             <div className={"chat-participant-wrapper " + (UIStore.store.participantPanel ? "open" : "")}>
@@ -51,7 +59,7 @@ export class ChatParticipantList extends React.Component<any, any> {
 
                             {
                                 (!this.state.searchText || RoomStore.room.name.toLowerCase().includes(this.state.searchText.toLowerCase())) ?
-                                    <ChatParticipant onChosen={this.props.onUserSelect} key={"chat-everyone"}
+                                    <ChatParticipant onChosen={this.onChosen.bind(this)}key={"chat-everyone"}
                                                      selected={this.props.selectedUser === "everyone"}
                                                      participant={ParticipantsStore.everyone}
                                                      name={RoomStore.room.name}
@@ -71,10 +79,10 @@ export class ChatParticipantList extends React.Component<any, any> {
                                 })
                                 .map(participant => {
                                     const lastMessage = this.getLastMessage(participant.id);
-                                    if(!participant.isAlive && !lastMessage){
+                                    if (!participant.isAlive && !lastMessage) {
                                         return null;
                                     }
-                                    return <ChatParticipant onChosen={this.props.onUserSelect}
+                                    return <ChatParticipant onChosen={this.onChosen.bind(this)}
                                                             selected={this.props.selectedUser === participant.id}
                                                             key={"chat-" + participant.id} lastMessage={lastMessage}
                                                             participant={participant}/>

@@ -21,13 +21,13 @@ export class ChatParticipant extends React.Component<any, any> {
                     {this.props.participant.id !== ParticipantsStore.everyone.id && this.props.participant.isAlive ?
                         <div className={"chat-participant---media-state"}>
                              <span className={"participant--icon"}>
-                                 {this.props.participant.mediaState.microphoneEnabled ?
+                                 {this.props.participant.hasAudio ?
                                      null :
                                      <FontAwesomeIcon icon={faMicrophoneSlash}/>
                                  }
                              </span>
                             <span className={"participant--icon"}>
-                                {this.props.participant.mediaState.cameraEnabled ?
+                                {this.props.participant.hasVideo ?
                                     null :
                                     <FontAwesomeIcon icon={faVideoSlash}/>
                                 }

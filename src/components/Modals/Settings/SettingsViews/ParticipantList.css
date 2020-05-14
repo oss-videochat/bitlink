@@ -14,7 +14,8 @@
     display: flex;
     align-items: center;
     border-bottom: 1px solid #eaeaea;
-    padding-left: 20px;
+    padding: 0 20px;
+    justify-content: space-between;
 }
 
 .participant--name {
@@ -23,4 +24,15 @@
     overflow: hidden;
     font-weight: 800;
     text-overflow: ellipsis;
+}
+
+.participant--kick-button {
+    color: #d04e53;
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.participant--kick-button:hover {
+    color: #9e3b40;
 }

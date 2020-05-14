@@ -5,6 +5,7 @@ import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
 import {faExternalLinkSquareAlt} from '@fortawesome/free-solid-svg-icons'
 import './RoomId.css';
 import NotificationStore, {NotificationType, UINotification} from "../../stores/NotificationStore";
+import MyInfo from "../../stores/MyInfo";
 
 @observer
 export class RoomId extends React.Component<any, any> {
@@ -21,6 +22,14 @@ export class RoomId extends React.Component<any, any> {
            if(this.copyFallback(window.location.href)){
                NotificationStore.add(new UINotification(`Link copied!`, NotificationType.Success));
            }
+        }
+        const navigatior2: any = navigator;
+        if(navigatior2.share){
+            navigatior2.share({
+                title: `${MyInfo.info?.name}'s BitLink Room`,
+                text: `${MyInfo.info?.name}'s BitLink Room`,
+                url: window.location.href
+            })
         }
     }
 

@@ -8,6 +8,9 @@ import './MessageContainer.css'
 import IO from "../../../controllers/IO";
 import ParticipantsStore from "../../../stores/ParticipantsStore";
 import {SystemMessage} from "./SystemMessage";
+import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
+import {faChevronLeft} from '@fortawesome/free-solid-svg-icons'
+import UIStore from "../../../stores/UIStore";
 
 @observer
 export class MessagesContainer extends React.Component<any, any> {
@@ -58,32 +61,43 @@ export class MessagesContainer extends React.Component<any, any> {
         let lastTime = 0;
         return (
             <div className={"message-container"}>
-                <div ref={this.list} className={"message-list"}>
-                    {ChatStore.chatStore[this.props.selectedUser]?.map((message: Message, index) => {
-                            let el;
-                            if (message.from.id === ParticipantsStore.system.id) {
-                                el = <SystemMessage key={index} message={message}/>
-                            } else {
-                                el = <MessageComponent
-                                    startGroup={lastParticipant !== message.from.id || message.created - lastTime > 1000 * 60 * 5}
-                                    key={message.id}
-                                    messageId={message.id}
-                                    fromMe={message.from.id === MyInfo.info!.id}
-                                    message={message}
-                                />;
+                <div className={"message-container--top-bar"}>
+                    <span onClick={() => {
+                        UIStore.store.participantPanel = true
+                    }} className={"message-container--back-button"}>
+                        <FontAwesomeIcon icon={faChevronLeft}/>
+                    </span>
+                    <span
+                        className={"message-container--participant-name"}>{ParticipantsStore.getById(this.props.selectedUser)?.name}</span>
+                </div>
+                <div className={"message-list-wrapper"}>
+                    <div ref={this.list} className={"message-list"}>
+                        {ChatStore.chatStore[this.props.selectedUser]?.map((message: Message, index) => {
+                                let el;
+                                if (message.from.id === ParticipantsStore.system.id) {
+                                    el = <SystemMessage key={index} message={message}/>
+                                } else {
+                                    el = <MessageComponent
+                                        startGroup={lastParticipant !== message.from.id || message.created - lastTime > 1000 * 60 * 5}
+                                        key={message.id}
+                                        messageId={message.id}
+                                        fromMe={message.from.id === MyInfo.info!.id}
+                                        message={message}
+                                    />;
+                                }
+                                lastTime = message.created;
+                                lastParticipant = message.from.id;
+                                return el;
                             }
-                            lastTime = message.created;
-                            lastParticipant = message.from.id;
-                            return el;
-                        }
-                    )}
+                        )}
+                    </div>
                 </div>
                 {ParticipantsStore.getById(this.props.selectedUser)?.isAlive || this.props.selectedUser === "everyone" ?
                     (
                         <div className={"chat--input-container"}>
-                    <textarea onKeyDown={e => this.handleKeyDown(e)} placeholder={"Say something..."}
-                              className={"chat--input"} value={this.state.inputValue}
-                              onChange={(e) => this.setState({inputValue: e.target.value})}/>
+                            <textarea onKeyDown={e => this.handleKeyDown(e)} placeholder={"Say something..."}
+                                      className={"chat--input"} value={this.state.inputValue}
+                                      onChange={(e) => this.setState({inputValue: e.target.value})}/>
                         </div>
                     )
                     : null

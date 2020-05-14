@@ -1,8 +1,8 @@
-import {ParticipantInformation} from "./ParticipantsStore";
 import {observable} from "mobx";
 import {types} from 'mediasoup-client'
+import Participant, {ParticipantData} from "../components/models/Participant";
 
-export interface CurrentUserInformation extends ParticipantInformation {
+export interface CurrentUserInformation extends ParticipantData {
     key: string
 }
 
@@ -25,7 +25,7 @@ interface StreamsObject {
 
 class CurrentUserInformationStore {
     @observable
-    public info?: CurrentUserInformation;
+    public info?: Participant;
 
     public chosenName?: string;
     public mediasoup: MediasoupObj = {
@@ -39,9 +39,15 @@ class CurrentUserInformationStore {
         },
     };
 
-    private streams: StreamsObject = {
+    @observable
+    public preferredInputs = {
+        video: localStorage.getItem("preferred-video-input") ?? null,
+        audio: localStorage.getItem("preferred-audio-input") ?? null,
+    };
+
+    private cachedStreams: StreamsObject = {
         video: null,
-        audio: null,
+        audio: null
     };
 
 
@@ -68,18 +74,47 @@ class CurrentUserInformationStore {
         }
     }
 
-    async getVideoStream() {
-        if (!this.streams.video) {
-            this.streams.video = await navigator.mediaDevices.getUserMedia({video: true});
+    setPreferredInput(kind: "video" | "audio", deviceId: string | null) {
+        this.preferredInputs[kind] = deviceId;
+        if (!deviceId) {
+            localStorage.removeItem(`preferred-${kind}-input`);
+            return;
         }
-        return this.streams.video.getVideoTracks()[0]
+        localStorage.setItem(`preferred-${kind}-input`, deviceId);
     }
 
-    async getAudioStream() {
-        if (!this.streams.audio) {
-            this.streams.audio = await navigator.mediaDevices.getUserMedia({audio: true});
+    async getStream(type: "video" | "audio"): Promise<MediaStream> {
+        const options = {
+            video: {video: {facingMode: {ideal: "user"}, width: {ideal: 960}, height: {ideal: 640}}},
+            audio: {audio: true}
+        };
+
+        const setPreferredInput = async () => {
+            const stream: MediaStream = await navigator.mediaDevices.getUserMedia(options[type]);
+            if (!stream) {
+                throw `No ${type} device available`;
+            }
+            this.setPreferredInput(type, stream ? stream.getTracks()[0].getSettings().deviceId! : null);
+            this.cachedStreams[type] = stream;
         }
-        return this.streams.audio.getAudioTracks()[0]
+
+        if (!this.preferredInputs[type]) {
+            await setPreferredInput()
+            return this.cachedStreams[type]!;
+        }
+
+        // we have a previously selected preferred
+        if (!this.cachedStreams[type] || this.cachedStreams[type]!.getTracks()[0].getSettings().deviceId !== this.preferredInputs[type]) {
+            this.cachedStreams[type] = await navigator.mediaDevices.getUserMedia({[type]: {deviceId: this.preferredInputs[type]!}});
+        }
+
+        if (!this.cachedStreams[type]) { // if its still not filled then that means that the preferredInputs is outdated
+            await setPreferredInput();
+        }
+
+        this.preferredInputs[type] = this.cachedStreams[type]!.getTracks()[0].getSettings().deviceId!;
+
+        return this.cachedStreams[type]!;
     }
 }
 

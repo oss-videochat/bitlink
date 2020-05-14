@@ -14,7 +14,7 @@ ReactDOM.render(
 
 
 // @ts-ignore
-if (!window.navigator.standalone) { // ios is stupid. If i try to change url bar stuff gets messed up
+if (!window.navigator.standalone) { // ios is stupid. If i try to change url bar stuff gets messed up in PWA
     autorun(() => {
         if (!RoomStore.room) {
             const modalStore = UIStore.store.modalStore;

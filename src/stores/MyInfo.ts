@@ -76,38 +76,43 @@ class CurrentUserInformationStore {
 
     setPreferredInput(kind: "video" | "audio", deviceId: string | null) {
         this.preferredInputs[kind] = deviceId;
-        if(!deviceId){
+        if (!deviceId) {
             localStorage.removeItem(`preferred-${kind}-input`);
             return;
         }
         localStorage.setItem(`preferred-${kind}-input`, deviceId);
     }
 
-    async getStream(type: "video" | "audio"): Promise<MediaStream>{
+    async getStream(type: "video" | "audio"): Promise<MediaStream> {
         const options = {
-            video: {video: {facingMode: {ideal: "user"}}},
+            video: {video: {facingMode: {ideal: "user"}, width: {ideal: 960}, height: {ideal: 640}}},
             audio: {audio: true}
         };
 
         const setPreferredInput = async () => {
             const stream: MediaStream = await navigator.mediaDevices.getUserMedia(options[type]);
+            if (!stream) {
+                throw `No ${type} device available`;
+            }
             this.setPreferredInput(type, stream ? stream.getTracks()[0].getSettings().deviceId! : null);
-        };
-
+            this.cachedStreams[type] = stream;
+        }
 
         if (!this.preferredInputs[type]) {
+            await setPreferredInput()
+            return this.cachedStreams[type]!;
+        }
+
+        // we have a previously selected preferred
+        if (!this.cachedStreams[type] || this.cachedStreams[type]!.getTracks()[0].getSettings().deviceId !== this.preferredInputs[type]) {
+            this.cachedStreams[type] = await navigator.mediaDevices.getUserMedia({[type]: {deviceId: this.preferredInputs[type]!}});
+        }
+
+        if (!this.cachedStreams[type]) { // if its still not filled then that means that the preferredInputs is outdated
             await setPreferredInput();
         }
 
-        if (this.cachedStreams[type]?.getTracks()[0].getSettings().deviceId !== this.preferredInputs[type]) {
-            const stream: MediaStream = await navigator.mediaDevices.getUserMedia({[type]: {deviceId: {exact: this.preferredInputs[type]!}}});
-            this.cachedStreams[type] = stream;
-            return stream;
-        }
-
-        if(!this.cachedStreams[type]){
-            throw `No ${type} device available`;
-        }
+        this.preferredInputs[type] = this.cachedStreams[type]!.getTracks()[0].getSettings().deviceId!;
 
         return this.cachedStreams[type]!;
     }

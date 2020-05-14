@@ -12,11 +12,7 @@ export class VideoParticipant extends React.Component<any, any> {
         video: null,
         audio: null
     };
-    private detectAudioChange = reaction(() => {
-        return this.props.participant.mediaState.microphoneEnabled
-    }, () =>{
-        this.updateMedia();
-    });
+    private detectAudioChange: any = null;
 
     constructor(props: any) {
         super(props);
@@ -26,6 +22,11 @@ export class VideoParticipant extends React.Component<any, any> {
     }
 
     componentDidMount() {
+        this.detectAudioChange = reaction(() => {
+            return this.props.participant.mediaState.microphoneEnabled
+        }, () => {
+            this.updateMedia();
+        });
         this.videoRef.current!.addEventListener("canplay", () => {
             this.videoRef.current?.play().catch(console.error);
         });

@@ -1,15 +1,15 @@
 import Room from './Room';
 import Participant from './Participant';
 import {SocketWrapper} from "./SocketWrapper";
-import * as mediasoup from 'mediasoup';
 
 import * as cryptoRandomString from 'crypto-random-string';
 import * as crypto from 'crypto';
 import {APIResponseCallback} from "./APIResponse";
-import {config} from "../../config";
 import {MediasoupWorkersGroup} from "./MediasoupWorkersGroup";
 import * as Events from "events";
+import debug from "../helpers/debug";
 
+const log = debug("RoomManger");
 
 interface roomObject {
     [id: string]: Room,
@@ -29,15 +29,19 @@ class RoomManager extends Events.EventEmitter {
         MediasoupWorkersGroup.create().then((msWG) => {
             this.msWorkerGroup = msWG;
             this.emit("ready");
-            console.log("Ready!");
+            log("Mediasoup workers setup");
         });
     }
 
 
     addRoom(room: Room) {
+        log("Adding new room with name %s" + room.settings.name);
         room.id = this.getUniqueName();
         room.idHash = crypto.createHash('md5').update(room.id).digest("hex");
-        room.on("destroy", () => delete this.rooms[room.id]);
+        room.on("destroy", () => {
+            log("Room destroyed %s" + room.settings.name);
+            delete this.rooms[room.id]
+        });
         this.rooms[room.id] = (room);
     }
 
@@ -50,6 +54,7 @@ class RoomManager extends Events.EventEmitter {
     }
 
     async handleCreateRoom(socket, name) {
+        log("Creating new room");
         const router = await this.msWorkerGroup.getGoodRouter();
         const room = new Room(name, router);
         this.addRoom(room);
@@ -65,6 +70,7 @@ class RoomManager extends Events.EventEmitter {
     }
 
     handleJoinRoom(socket, roomId: string, name: string, rtpCapabilities: string, cb: APIResponseCallback) {
+        log("New participant joining room %s with name ", roomId, name);
         const participant = new Participant(name, socket);
         participant.mediasoupPeer.rtcCapabilities = rtpCapabilities;
         const room = this.rooms[roomId];
@@ -74,6 +80,7 @@ class RoomManager extends Events.EventEmitter {
         room.addParticipant(participant, cb);
 
         participant.on("leave", () =>{ // TODO is this necessary? i'm not sure
+            log("Participant left %s", participant.name);
             socket.removeAllListeners();
             this.socketWrapper.addSocket(socket);
         });

@@ -6,6 +6,7 @@ import UIStore from "../../stores/UIStore";
 import RoomStore from "../../stores/RoomStore";
 import NotificationStore from "../../stores/NotificationStore";
 import {prepareAudioBank} from "../Video/AutoPlayAudio";
+import logo from "../../assets/logo/logo.svg";
 
 export class CreateDialog extends React.Component<any, any> {
     constructor(props: any) {
@@ -56,6 +57,7 @@ export class CreateDialog extends React.Component<any, any> {
     render() {
         return (
             <div className={"dialog-modal"}>
+                <img className={"dialog--logo"} src={logo}/>
                 <h2 className={"modal--title"}>Create Room</h2>
                 <input onBlur={() => this.setState({RoomNameValidationEnabled: true})}
                        className={"modal--input " + ((!this.state.RoomNameValidationEnabled || this.roomNameIsValid()) ? "" : "invalid")}

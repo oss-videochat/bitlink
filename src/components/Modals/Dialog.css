@@ -76,3 +76,9 @@
     display: block;
     text-align: center;
 }
+
+.dialog--logo {
+    width: 210px;
+    margin: 0 auto;
+    display: block;
+}

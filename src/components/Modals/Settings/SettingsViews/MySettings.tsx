@@ -5,7 +5,6 @@ import IO from "../../../../controllers/IO";
 export class MySettings extends React.Component<any, any> {
     constructor(props: any) {
         super(props);
-
         this.state = {
             nameInput: MyInfo.info!.name,
             preferredAudio: MyInfo.preferredInputs.audio || undefined,
@@ -37,7 +36,7 @@ export class MySettings extends React.Component<any, any> {
 
     componentDidMount(): void {
         this.props.events.on("save", (cb: () => void) => {
-            IO.changeName(this.state.inputValue).then(cb);
+            IO.changeName(this.state.nameInput).then(cb);
             MyInfo.setPreferredInput("video", this.state.preferredVideo);
             MyInfo.setPreferredInput("audio", this.state.preferredAudio);
         });
@@ -62,6 +61,9 @@ export class MySettings extends React.Component<any, any> {
         }
         if (MyInfo.preferredInputs.video !== this.state.preferredVideo) {
             changes = true;
+        }
+        if(this.state.nameInput.length === 0){
+            changes = false;
         }
         if (this.props.changesMade !== changes) {
             this.props.handleChangesMade(changes);

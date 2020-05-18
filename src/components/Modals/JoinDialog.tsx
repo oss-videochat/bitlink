@@ -59,7 +59,6 @@ export class JoinDialog extends React.Component<any, any> {
     handlePaste(e: any) {
         const text = e.clipboardData.getData('text');
         const nums = text.match(/\/join\/(.+)$/);
-        console.log(nums);
         if(nums && nums[1]){
             e.preventDefault();
             this.setState({

@@ -1,7 +1,6 @@
 import {observable} from "mobx";
 
 interface UIStoreInterface {
-    [key: string]: any,
     chatPanel: boolean,
     participantPanel: boolean,
     modalStore: {
@@ -16,6 +15,8 @@ interface UIStoreInterface {
     messageIdEditControl: null | string,
     joinedDate: null | Date,
     title: string
+
+    [key: string]: any,
 }
 
 class UIStore {
@@ -35,12 +36,11 @@ class UIStore {
         joinedDate: null,
         title: "BitLink"
     };
+    @observable public store: UIStoreInterface = UIStore.defaultProperties;
 
-    reset(){
+    reset() {
         this.store = UIStore.defaultProperties;
     }
-
-    @observable public store: UIStoreInterface = UIStore.defaultProperties;
 
     toggle(property: string) {
         this.store[property] = !this.store[property];

@@ -21,6 +21,14 @@ class ChatStore {
     @observable public chatStore: ChatStoreObj = {};
     private messageMap: MessageStore = {};
 
+    static getExternalParticipant(message: Message): Participant {
+        if (message.from.id === MyInfo.info!.id) {
+            return message.to;
+        } else {
+            return message.from;
+        }
+    }
+
     reset() {
         this.chatStore = {};
         this.messageMap = {};
@@ -69,15 +77,7 @@ class ChatStore {
         });
     }
 
-    static getExternalParticipant(message: Message): Participant {
-        if (message.from.id === MyInfo.info!.id) {
-            return message.to;
-        } else {
-            return message.from;
-        }
-    }
-
-    getMessageFromStore(store: Message[], messageId: string): Message{
+    getMessageFromStore(store: Message[], messageId: string): Message {
         return store.find(message => message.id === messageId) as Message;
     }
 
@@ -104,11 +104,11 @@ class ChatStore {
         oldMessage.content = content;
     }
 
-    editNextMessage(options: {messageId?: string, selectedUser?: string}){
-        if(!options.messageId && !options.selectedUser){
+    editNextMessage(options: { messageId?: string, selectedUser?: string }) {
+        if (!options.messageId && !options.selectedUser) {
             throw "Can't edit next message"
         }
-        if(options.messageId){
+        if (options.messageId) {
             const message = this.messageMap[options.messageId];
             const store = this.chatStore[message.chatStoreKey];
             const index = this.getMessageIndexFromStore(store, options.messageId);
@@ -116,13 +116,13 @@ class ChatStore {
             UIStore.store.messageIdEditControl = store[newIndex].id;
         } else {
             const store = this.chatStore[options.selectedUser!];
-            if(store && store[0]){
+            if (store && store[0]) {
                 UIStore.store.messageIdEditControl = store[store.length - 1].id;
             }
         }
     }
 
-    editPreviewMessage(messageId: string){
+    editPreviewMessage(messageId: string) {
         const message = this.messageMap[messageId];
         const store = this.chatStore[message.chatStoreKey];
         const index = this.getMessageIndexFromStore(store, messageId);

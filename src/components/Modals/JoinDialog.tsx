@@ -60,7 +60,7 @@ export class JoinDialog extends React.Component<any, any> {
     handlePaste(e: any) {
         const text = e.clipboardData.getData('text');
         const nums = text.match(/\/join\/(.+)$/);
-        if(nums && nums[1]){
+        if (nums && nums[1]) {
             e.preventDefault();
             this.setState({
                 roomId: nums[1]
@@ -84,7 +84,7 @@ export class JoinDialog extends React.Component<any, any> {
                 <input onBlur={() => this.setState({UserNameValidationEnabled: true})}
                        value={this.state.userName}
                        className={"modal--input " + ((!this.state.UserNameValidationEnabled || this.userNameIsValid()) ? "" : "invalid")}
-                       onChange={(e) => this.setState({userName: e.target.value,UserNameValidationEnabled: true })}
+                       onChange={(e) => this.setState({userName: e.target.value, UserNameValidationEnabled: true})}
                        placeholder={"Your Name"}/>
                 <div className={"modal--button-container"}>
                     <input onClick={this.handleCancel} type={"button"} value={"Cancel"}

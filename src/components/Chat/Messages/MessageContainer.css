@@ -3,6 +3,7 @@
     flex-direction: column;
     min-width: 0;
 }
+
 .message-list-wrapper {
     flex: 1;
     position: relative;
@@ -19,6 +20,7 @@
     border-top: solid 1px #d8d8d8;
     padding: 10px;
 }
+
 .chat--input {
     border: 1px solid #d8d8d8;
     width: 100%;

@@ -15,16 +15,16 @@ export class RoomId extends React.Component<any, any> {
     }
 
     copyLink() {
-        if(navigator.clipboard){
+        if (navigator.clipboard) {
             navigator.clipboard.writeText(window.location.href);
             NotificationStore.add(new UINotification(`Link copied!`, NotificationType.Success));
         } else {
-           if(this.copyFallback(window.location.href)){
-               NotificationStore.add(new UINotification(`Link copied!`, NotificationType.Success));
-           }
+            if (this.copyFallback(window.location.href)) {
+                NotificationStore.add(new UINotification(`Link copied!`, NotificationType.Success));
+            }
         }
         const navigatior2: any = navigator;
-        if(navigatior2.share){
+        if (navigatior2.share) {
             navigatior2.share({
                 title: `${MyInfo.info?.name}'s BitLink Room`,
                 text: `${MyInfo.info?.name}'s BitLink Room`,
@@ -43,7 +43,7 @@ export class RoomId extends React.Component<any, any> {
     }
 
 
-    copyFallback(text: string){
+    copyFallback(text: string) {
         const textArea: any = document.createElement("textarea");
         textArea.style.position = 'fixed';
         textArea.style.top = 0;

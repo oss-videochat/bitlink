@@ -9,7 +9,7 @@ interface ReactionArrayObj {
 
 @observer
 export class ReactionsDisplayer extends React.Component<any, any> {
-    private reactionsArrays:ReactionArrayObj = {};
+    private reactionsArrays: ReactionArrayObj = {};
 
     constructor(props: any) {
         super(props);
@@ -17,7 +17,7 @@ export class ReactionsDisplayer extends React.Component<any, any> {
             this.reactionsArrays[value] = [];
         });
         this.props.reactions.forEach((reaction: Reaction) => {
-           this.reactionsArrays[reaction.type].push(reaction);
+            this.reactionsArrays[reaction.type].push(reaction);
         });
     }
 

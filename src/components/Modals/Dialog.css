@@ -29,7 +29,7 @@
     padding: 5px 10px;
 }
 
-.modal--input[type="checkbox"]{
+.modal--input[type="checkbox"] {
     display: inline-block;
     width: auto;
     margin-right: 10px;

@@ -1,4 +1,4 @@
-import React, {ChangeEvent} from 'react';
+import React from 'react';
 import IO from "../../../../controllers/IO";
 import ParticipantsStore from "../../../../stores/ParticipantsStore";
 import './ParticipantList.css';

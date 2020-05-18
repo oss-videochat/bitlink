@@ -2,7 +2,7 @@ import React from 'react';
 import {ReactionsDisplayer} from "./ReactionsDisplayer";
 import './MessageComponent.css';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
-import {faTrashAlt, faPencilAlt} from '@fortawesome/free-solid-svg-icons'
+import {faPencilAlt, faTrashAlt} from '@fortawesome/free-solid-svg-icons'
 import IO from "../../../controllers/IO";
 import {observer} from "mobx-react"
 import {computed} from 'mobx';

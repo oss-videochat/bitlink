@@ -1,6 +1,6 @@
 import React from 'react';
 import {observer} from "mobx-react"
-import {reaction, observable} from "mobx"
+import {observable, reaction} from "mobx"
 import './VideoContainer.css';
 import ParticipantsStore from "../../stores/ParticipantsStore";
 import {VideoParticipant} from "./VideoParticipant";
@@ -12,20 +12,22 @@ import {LayoutSizeCalculation} from "../../util/LayoutSizeCalculation";
 import Participant from "../models/Participant";
 import IO from "../../controllers/IO";
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
-import {faMicrophone, faMicrophoneSlash, faVideo, faVideoSlash, faPhone} from '@fortawesome/free-solid-svg-icons'
+import {faMicrophone, faMicrophoneSlash, faPhone, faVideo, faVideoSlash} from '@fortawesome/free-solid-svg-icons'
 import RoomStore from "../../stores/RoomStore";
 
 @observer
 export class VideoContainer extends React.Component<any, any> {
-    private previewRef: React.RefObject<HTMLVideoElement> = React.createRef();
-    private containerRef: React.RefObject<HTMLDivElement> = React.createRef();
-    private updateBasis?: any;
-
     @observable
     windowSize = {
         height: window.innerHeight,
         width: window.innerWidth
     };
+    updateMediaListener = reaction(() => {
+        return MyInfo.preferredInputs.video;
+    }, this.updateMedia.bind(this));
+    private previewRef: React.RefObject<HTMLVideoElement> = React.createRef();
+    private containerRef: React.RefObject<HTMLDivElement> = React.createRef();
+    private updateBasis?: any;
 
     constructor(props: any) {
         super(props);
@@ -36,11 +38,11 @@ export class VideoContainer extends React.Component<any, any> {
     }
 
     async updateMedia() {
-        if(!MyInfo.info?.mediaState.cameraEnabled){
+        if (!MyInfo.info?.mediaState.cameraEnabled) {
             return;
         }
-        const stream  = await MyInfo.getStream("video");
-        const srcObject: MediaStream | undefined =   this.previewRef!.current!.srcObject as MediaStream | undefined;
+        const stream = await MyInfo.getStream("video");
+        const srcObject: MediaStream | undefined = this.previewRef!.current!.srcObject as MediaStream | undefined;
         if (srcObject?.getVideoTracks()[0].id !== stream.getVideoTracks()[0].id) {
             this.previewRef!.current!.srcObject = stream;
         }
@@ -50,10 +52,6 @@ export class VideoContainer extends React.Component<any, any> {
         this.updateBasis();
         this.updateMediaListener();
     }
-
-    updateMediaListener = reaction(() => {
-        return MyInfo.preferredInputs.video;
-    }, this.updateMedia.bind(this));
 
     componentDidMount(): void {
         this.previewRef!.current!.addEventListener("canplay", () => {
@@ -88,7 +86,7 @@ export class VideoContainer extends React.Component<any, any> {
 
     render() {
         const participants: Participant[] = ParticipantsStore.getLiving()
-            .filter(participant => participant.hasAudio|| participant.hasVideo);
+            .filter(participant => participant.hasAudio || participant.hasVideo);
 
         return (
             <div ref={this.containerRef} className={"video-container"}>

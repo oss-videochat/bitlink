@@ -20,7 +20,7 @@ class RoomStore {
         rtcCapabilities: null,
     };
 
-    reset(){
+    reset() {
         this.room = undefined;
         this.device = new mediasoupclient.Device();
         this.mediasoup = {

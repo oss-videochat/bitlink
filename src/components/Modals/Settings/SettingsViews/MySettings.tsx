@@ -62,7 +62,7 @@ export class MySettings extends React.Component<any, any> {
         if (MyInfo.preferredInputs.video !== this.state.preferredVideo) {
             changes = true;
         }
-        if(this.state.nameInput.length === 0){
+        if (this.state.nameInput.length === 0) {
             changes = false;
         }
         if (this.props.changesMade !== changes) {

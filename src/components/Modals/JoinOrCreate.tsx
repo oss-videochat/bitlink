@@ -3,7 +3,6 @@ import './Dialog.css';
 import './JoinOrCreate.css'
 import UIStore from "../../stores/UIStore";
 import logo from '../../assets/logo/logo.svg';
-import {log} from "util";
 
 export class JoinOrCreate extends React.Component<any, any> {
     constructor(props: any) {

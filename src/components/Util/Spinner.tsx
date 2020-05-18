@@ -9,7 +9,8 @@ export class Spinner extends React.Component<any, any> {
 
     render() {
         return (
-            <div style={{width: this.props.size || "40px", height: this.props.size || "40px" }} className="sk-fading-circle">
+            <div style={{width: this.props.size || "40px", height: this.props.size || "40px"}}
+                 className="sk-fading-circle">
                 <div className="sk-circle1 sk-circle"/>
                 <div className="sk-circle2 sk-circle"/>
                 <div className="sk-circle3 sk-circle"/>

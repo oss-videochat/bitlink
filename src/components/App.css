@@ -50,6 +50,7 @@ input, textarea {
     height: 100%;
     display: flex;
 }
+
 .video-container {
     flex: 1;
 

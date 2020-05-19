@@ -7,6 +7,7 @@ import RoomStore from "../../stores/RoomStore";
 import NotificationStore from "../../stores/NotificationStore";
 import {prepareAudioBank} from "../Video/AutoPlayAudio";
 import logo from "../../assets/logo/logo.svg";
+import LegalText from "../LegalText";
 
 export class JoinDialog extends React.Component<any, any> {
     constructor(props: any) {
@@ -92,6 +93,7 @@ export class JoinDialog extends React.Component<any, any> {
                     <input onClick={this.handleJoinRoom} type={"button"} value={"Join"}
                            disabled={!this.hasValidInput()} className={"modal--button confirm"}/>
                 </div>
+                <LegalText/>
             </div>
         );
     }

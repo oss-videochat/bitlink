@@ -19,14 +19,14 @@ if (!window.navigator.standalone) { // ios is stupid. If i try to change url bar
         if (!RoomStore.room) {
             const modalStore = UIStore.store.modalStore;
             if (modalStore.join) {
-                window.history.pushState({}, "BitLink | Join ", '/join/');
+                window.history.replaceState({}, "BitLink | Join ", '/join');
             } else if (modalStore.create) {
-                window.history.pushState({}, "BitLink | Create ", '/create');
+                window.history.replaceState({}, "BitLink | Create ", '/create');
             } else {
-                window.history.pushState({}, "BitLink | Create ", '/');
+                window.history.replaceState({}, "BitLink | Create ", '/');
             }
             return;
         }
-        window.history.pushState({}, "BitLink | Join " + RoomStore.room.name, '/join/' + RoomStore.room.id);
+        window.history.replaceState({}, "BitLink | Join " + RoomStore.room.name, '/join/' + RoomStore.room.id);
     });
 }

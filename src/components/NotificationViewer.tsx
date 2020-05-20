@@ -15,7 +15,7 @@ export class NotificationViewer extends React.Component<any, any> {
                 {NotificationStore.store.map((notification: UINotification, index: number) => {
                     return (
                         <div key={index} className={"notification " + notification.type}>
-                            <span className={"notification--content"}>{notification.message}</span>
+                            <span data-private={""} className={"notification--content"}>{notification.message}</span>
                         </div>
                     );
                 })}

@@ -34,7 +34,7 @@ export class ParticipantList extends React.Component<any, any> {
                             .map(participant => {
                                 return (
                                     <div key={participant.id} className={"participant"}>
-                                        <span className={"participant--name"}>{participant.name}</span>
+                                        <span data-private={""} className={"participant--name"}>{participant.name}</span>
                                         {MyInfo.info?.isHost
                                         && !participant.isHost ?
                                             <span onClick={() => IO.kick(participant)}

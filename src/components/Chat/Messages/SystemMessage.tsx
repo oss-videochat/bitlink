@@ -12,7 +12,7 @@ export class SystemMessage extends React.Component<any, any> {
             <div className={"message system"}>
                 <div className={"message--content-container"}>
                     <span className={"message--date"}>{(new Date(this.props.message.created)).toLocaleString()}</span>
-                    <span className={"message--content"}>{this.props.message.content}</span>
+                    <span data-private={""} className={"message--content"}>{this.props.message.content}</span>
                 </div>
             </div>
         );

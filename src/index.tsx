@@ -1,9 +1,14 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+import LogRocket from 'logrocket';
 import App from './components/App';
 import {autorun} from 'mobx';
 import RoomStore from "./stores/RoomStore";
 import UIStore from "./stores/UIStore";
+
+if(process.env.NODE_ENV !== "development"){
+    LogRocket.init('wbok98/bitlink');
+}
 
 ReactDOM.render(
     <React.StrictMode>

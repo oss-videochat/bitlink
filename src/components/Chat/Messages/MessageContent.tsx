@@ -16,7 +16,7 @@ export default class MessageContent extends React.Component<any, any> {
         });
 
         return (
-            <span className={"message--content"}>{jsx}</span>
+            <span data-private={""} className={"message--content"}>{jsx}</span>
         )
     }
 }

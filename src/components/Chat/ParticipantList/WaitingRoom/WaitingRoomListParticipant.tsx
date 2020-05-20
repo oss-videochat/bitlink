@@ -18,7 +18,7 @@ export class WaitingRoomListParticipant extends React.Component<any, any> {
     render() {
         return (
             <div className={"waiting-room-participant"}>
-                <span className={"waiting-room-participant--name"}>{this.props.participant.name}</span>
+                <span data-private={""} className={"waiting-room-participant--name"}>{this.props.participant.name}</span>
                 <div className={"waiting-room-participant--decision-container"}>
                     <input onClick={this.handleAccept.bind(this)} type={"button"}
                            className={"waiting-room-participant--decision-button"} value={"Accept"}/>

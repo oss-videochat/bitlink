@@ -91,7 +91,7 @@ export class VideoContainer extends React.Component<any, any> {
         return (
             <div ref={this.containerRef} className={"video-container"}>
 
-                <div className={"preview-video"} hidden={!MyInfo.info?.mediaState.cameraEnabled}>
+                <div data-private={""} className={"preview-video"} hidden={!MyInfo.info?.mediaState.cameraEnabled}>
                     <div className={"preview-video-wrapper"}>
                         <video playsInline={true} muted={true} autoPlay={true} ref={this.previewRef}/>
                     </div>
@@ -125,7 +125,7 @@ export class VideoContainer extends React.Component<any, any> {
                         : null
                 }
 
-                <div className={"videos-list-wrapper"}>
+                <div data-private={""} className={"videos-list-wrapper"}>
                     {ParticipantsStore.participants.length > 3 ?
                         participants
                             .map((participant, i, arr) => {

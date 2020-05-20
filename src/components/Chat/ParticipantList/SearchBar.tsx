@@ -22,7 +22,7 @@ export class SearchBar extends React.Component<any, any> {
             <div className={"search-wrapper"}>
                 <div className={"search-container"}>
                     <span className={"search--icon"}><FontAwesomeIcon icon={faSearch}/></span>
-                    <input className={"search--input"} placeholder={"Search"} onChange={this.handleKeyUp}
+                    <input data-private={"lipsum"} className={"search--input"} placeholder={"Search"} onChange={this.handleKeyUp}
                            value={this.state.value}/>
                 </div>
             </div>

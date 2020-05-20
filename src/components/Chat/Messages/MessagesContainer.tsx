@@ -95,7 +95,7 @@ export class MessagesContainer extends React.Component<any, any> {
                 {ParticipantsStore.getById(this.props.selectedUser)?.isAlive || this.props.selectedUser === "everyone" ?
                     (
                         <div className={"chat--input-container"}>
-                            <textarea onKeyDown={e => this.handleKeyDown(e)} placeholder={"Say something..."}
+                            <textarea data-private={"lipsum"} onKeyDown={e => this.handleKeyDown(e)} placeholder={"Say something..."}
                                       className={"chat--input"} value={this.state.inputValue}
                                       onChange={(e) => this.setState({inputValue: e.target.value})}/>
                         </div>

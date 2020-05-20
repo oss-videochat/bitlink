@@ -89,7 +89,7 @@ export class MySettings extends React.Component<any, any> {
                 <h2 className={"modal--title"}>My Settings</h2>
                 <label>
                     Name
-                    <input className={"modal--input"} onChange={this.handleNameChange.bind(this)}
+                    <input data-private={"lipsum"} className={"modal--input"} onChange={this.handleNameChange.bind(this)}
                            value={this.state.nameInput} placeholder={"Name"}/>
                 </label>
                 <label>

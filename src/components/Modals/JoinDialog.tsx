@@ -75,14 +75,14 @@ export class JoinDialog extends React.Component<any, any> {
             <div className={"dialog-modal"}>
                 <img className={"dialog--logo"} src={logo}/>
                 <h2 className={"modal--title"}>Join Room</h2>
-                <input onBlur={() => this.setState({RoomIdValidationEnabled: true})}
+                <input data-private={"lipsum"} onBlur={() => this.setState({RoomIdValidationEnabled: true})}
                        value={this.state.roomId}
                        className={"modal--input " + ((!this.state.RoomIdValidationEnabled || this.roomIdIsValid()) ? "" : "invalid")}
                        onChange={(e) => this.setState({roomId: e.target.value, RoomIdValidationEnabled: true})}
                        onPaste={this.handlePaste}
                        type={"tel"}
                        placeholder={"Room ID or Paste Link"}/>
-                <input onBlur={() => this.setState({UserNameValidationEnabled: true})}
+                <input data-private={"lipsum"} onBlur={() => this.setState({UserNameValidationEnabled: true})}
                        value={this.state.userName}
                        className={"modal--input " + ((!this.state.UserNameValidationEnabled || this.userNameIsValid()) ? "" : "invalid")}
                        onChange={(e) => this.setState({userName: e.target.value, UserNameValidationEnabled: true})}

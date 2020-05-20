@@ -29,9 +29,9 @@ export class SettingsViewer extends React.Component<any, any> {
             <div className={"settings-viewer"}>
                 {this.getView()}
                 <div className={"settings--button-control"}>
-                    <input onClick={this.props.cancel} type={"button"} value={"Cancel"}
+                    <input data-private={"lipsum"} onClick={this.props.cancel} type={"button"} value={"Cancel"}
                            className={"modal--button cancel"}/>
-                    <input onClick={this.props.save} type={"button"} value={"Save"}
+                    <input data-private={"lipsum"} onClick={this.props.save} type={"button"} value={"Save"}
                            disabled={!this.props.changesMade} className={"modal--button save"}/>
                 </div>
             </div>

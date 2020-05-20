@@ -60,11 +60,11 @@ export class CreateDialog extends React.Component<any, any> {
             <div className={"dialog-modal"}>
                 <img className={"dialog--logo"} src={logo}/>
                 <h2 className={"modal--title"}>Create Room</h2>
-                <input onBlur={() => this.setState({RoomNameValidationEnabled: true})}
+                <input data-private={"lipsum"} onBlur={() => this.setState({RoomNameValidationEnabled: true})}
                        className={"modal--input " + ((!this.state.RoomNameValidationEnabled || this.roomNameIsValid()) ? "" : "invalid")}
                        onChange={(e) => this.setState({roomName: e.target.value})}
                        placeholder={"Room Name"}/>
-                <input onBlur={() => this.setState({UserNameValidationEnabled: true})}
+                <input data-private={"lipsum"} onBlur={() => this.setState({UserNameValidationEnabled: true})}
                        className={"modal--input " + ((!this.state.UserNameValidationEnabled || this.userNameIsValid()) ? "" : "invalid")}
                        onChange={(e) => this.setState({userName: e.target.value})}
                        placeholder={"Your Name"}/>

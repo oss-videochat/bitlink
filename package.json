@@ -1,6 +1,6 @@
 {
   "name": "bitlink-frontend",
-  "version": "0.3",
+  "version": "0.3.0",
   "private": true,
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^1.2.28",

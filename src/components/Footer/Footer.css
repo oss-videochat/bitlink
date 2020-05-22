@@ -16,6 +16,7 @@
     margin: 0;
     height: 100%;
 }
+
 .footer ul li {
     display: flex;
     flex-direction: column;

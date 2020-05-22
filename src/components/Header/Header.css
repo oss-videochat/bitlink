@@ -1,5 +1,5 @@
 .header {
-    background: linear-gradient(to right bottom,  #5958ff, #4744d5);
+    background: linear-gradient(to right bottom, #5958ff, #4744d5);
     height: 50px;
     width: 100%;
     display: flex;
@@ -90,6 +90,7 @@ header ul li.leave-button:hover {
         white-space: nowrap;
         text-overflow: ellipsis;
     }
+
     .room-info--name {
         display: block;
     }

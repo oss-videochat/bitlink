@@ -2,6 +2,8 @@ import React from 'react';
 import './Dialog.css';
 import './JoinOrCreate.css'
 import UIStore from "../../stores/UIStore";
+import logo from '../../assets/logo/logo.svg';
+import LegalText from "../LegalText";
 
 export class JoinOrCreate extends React.Component<any, any> {
     constructor(props: any) {
@@ -22,11 +24,13 @@ export class JoinOrCreate extends React.Component<any, any> {
     render() {
         return (
             <div className={"dialog-modal join-or-create"}>
+                <img className={"dialog--logo"} src={logo}/>
                 <h2 className={"modal--title"}>Join or Create a Room</h2>
                 <input onClick={() => this.handleClick("join")} type={"button"} value={"Join Room"}
                        className={"modal--button join-or-create-button"}/>
                 <input onClick={() => this.handleClick("create")} type={"button"} value={"Create Room"}
                        className={"modal--button join-or-create-button"}/>
+                <LegalText/>
             </div>
         );
     }

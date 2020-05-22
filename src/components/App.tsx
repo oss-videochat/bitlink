@@ -37,17 +37,17 @@ export class App extends React.Component<any, any> {
         }
         document.title = UIStore.store.title;
         setInterval(() => {
-           if(UIStore.store.joinedDate){
-               const time = Date.now() - UIStore.store.joinedDate.getTime();
-               document.title = `${UIStore.store.title} | ${msToTime(time)}`;
-           } else {
-               document.title = UIStore.store.title;
-           }
-        }, )
+            if (UIStore.store.joinedDate) {
+                const time = Date.now() - UIStore.store.joinedDate.getTime();
+                document.title = `${UIStore.store.title} | ${msToTime(time)}`;
+            } else {
+                document.title = UIStore.store.title;
+            }
+        },)
     }
 
-    toggleFullscreen(){
-        if(!document.fullscreenElement){
+    toggleFullscreen() {
+        if (!document.fullscreenElement) {
             this.ref.current.requestFullscreen().catch((err: Error) => {
                 NotificationStore.add(new UINotification("Could not enable fullscreen: " + err.toString(), NotificationType.Error))
             });

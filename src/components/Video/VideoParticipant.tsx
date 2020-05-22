@@ -34,7 +34,7 @@ export class VideoParticipant extends React.Component<any, any> {
     }
 
 
-    updateMedia () {
+    updateMedia() {
         this.videoRef.current!.srcObject = new MediaStream([this.props.participant.mediasoup.consumer.video.track]);
 
         if (this.props.participant.hasAudio) {
@@ -43,15 +43,14 @@ export class VideoParticipant extends React.Component<any, any> {
     };
 
 
-
     componentDidUpdate(): void { // TODO this is horribleish. Probably a better way to do this. Basically reinventing React's componentShouldUpdate but with a custom method and custom state tracking. Pretty crappy if you ask me.
-       if(this.oldTrackId.video !== this.props.participant.mediasoup.consumer.video.track.id
-           || this.oldTrackId.audio !== this.props.participant.mediasoup.consumer.audio?.track.id
-       ) {
-           this.oldTrackId.video = this.props.participant.mediasoup.consumer.video.track.id;
-           this.oldTrackId.audio = this.props.participant.mediasoup.consumer.audio?.track.id;
-           this.updateMedia();
-       }
+        if (this.oldTrackId.video !== this.props.participant.mediasoup.consumer.video.track.id
+            || this.oldTrackId.audio !== this.props.participant.mediasoup.consumer.audio?.track.id
+        ) {
+            this.oldTrackId.video = this.props.participant.mediasoup.consumer.video.track.id;
+            this.oldTrackId.audio = this.props.participant.mediasoup.consumer.audio?.track.id;
+            this.updateMedia();
+        }
     }
 
     componentWillUnmount(): void {
@@ -62,7 +61,8 @@ export class VideoParticipant extends React.Component<any, any> {
         return (
             <div className={"video-pad"} style={{flexBasis: this.props.flexBasis, maxWidth: this.props.maxWidth}}>
                 <div className={"video-participant-wrapper"}>
-                    <video autoPlay={true} playsInline={true}  muted={true} ref={this.videoRef} className={"video-participant--video"}/>
+                    <video autoPlay={true} playsInline={true} muted={true} ref={this.videoRef}
+                           className={"video-participant--video"}/>
                     <AutoPlayAudio srcObject={this.state.audioSrcObject}/>
                     <span className={"video-participant--name"}>{this.props.participant.name}</span>
                 </div>

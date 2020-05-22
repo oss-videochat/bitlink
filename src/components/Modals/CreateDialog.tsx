@@ -6,6 +6,8 @@ import UIStore from "../../stores/UIStore";
 import RoomStore from "../../stores/RoomStore";
 import NotificationStore from "../../stores/NotificationStore";
 import {prepareAudioBank} from "../Video/AutoPlayAudio";
+import logo from "../../assets/logo/logo.svg";
+import LegalText from "../LegalText";
 
 export class CreateDialog extends React.Component<any, any> {
     constructor(props: any) {
@@ -56,12 +58,13 @@ export class CreateDialog extends React.Component<any, any> {
     render() {
         return (
             <div className={"dialog-modal"}>
+                <img className={"dialog--logo"} src={logo}/>
                 <h2 className={"modal--title"}>Create Room</h2>
-                <input onBlur={() => this.setState({RoomNameValidationEnabled: true})}
+                <input data-private={"lipsum"} onBlur={() => this.setState({RoomNameValidationEnabled: true})}
                        className={"modal--input " + ((!this.state.RoomNameValidationEnabled || this.roomNameIsValid()) ? "" : "invalid")}
                        onChange={(e) => this.setState({roomName: e.target.value})}
                        placeholder={"Room Name"}/>
-                <input onBlur={() => this.setState({UserNameValidationEnabled: true})}
+                <input data-private={"lipsum"} onBlur={() => this.setState({UserNameValidationEnabled: true})}
                        className={"modal--input " + ((!this.state.UserNameValidationEnabled || this.userNameIsValid()) ? "" : "invalid")}
                        onChange={(e) => this.setState({userName: e.target.value})}
                        placeholder={"Your Name"}/>
@@ -71,6 +74,7 @@ export class CreateDialog extends React.Component<any, any> {
                     <input onClick={this.handleCreateRoom} type={"button"} value={"Create"}
                            disabled={!this.hasValidInput()} className={"modal--button confirm"}/>
                 </div>
+                <LegalText/>
             </div>
         );
     }

@@ -2,7 +2,7 @@ import React from 'react';
 import {ReactionsDisplayer} from "./ReactionsDisplayer";
 import './MessageComponent.css';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
-import {faTrashAlt, faPencilAlt} from '@fortawesome/free-solid-svg-icons'
+import {faPencilAlt, faTrashAlt} from '@fortawesome/free-solid-svg-icons'
 import IO from "../../../controllers/IO";
 import {observer} from "mobx-react"
 import {computed} from 'mobx';
@@ -82,7 +82,7 @@ export class MessageComponent extends React.Component<any, any> {
             }>
                 {this.props.startGroup ?
                     <div className={"message--meta"}>
-                        <span className={"message--name"}>{this.props.message.from.name}</span>
+                        <span data-private={"lipsum"} className={"message--name"}>{this.props.message.from.name}</span>
                         <span
                             className={"message--date"}>{(new Date(this.props.message.created)).toLocaleString()}</span>
                     </div>
@@ -105,7 +105,7 @@ export class MessageComponent extends React.Component<any, any> {
                             <MessageContent content={this.props.message.content}/>
                             :
                             <React.Fragment>
-                              <textarea autoFocus={true} onKeyDown={e => this.handleKeyDown(e)}
+                              <textarea data-private={"lipsum"} autoFocus={true} onKeyDown={e => this.handleKeyDown(e)}
                                         placeholder={"Say something..."}
                                         className={"message--content--edit-input"} value={this.textareaValue}
                                         onChange={(e) => this.setState({editValue: e.target.value})}/>

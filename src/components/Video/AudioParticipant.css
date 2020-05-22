@@ -3,6 +3,7 @@
     padding-bottom: 0;
     height: auto;
 }
+
 .audio-participant--name {
     font-size: 20px;
     color: white;
@@ -11,7 +12,7 @@
     text-overflow: ellipsis;
     position: absolute;
     top: 50%;
-    transform: translate(-50%,-50%);
+    transform: translate(-50%, -50%);
     left: 50%;
 }
 

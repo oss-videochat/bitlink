@@ -15,9 +15,9 @@ export class Header extends React.Component<any, any> {
         return (
             <header className={"header"}>
                 <div className={"header--room-info"}>
-                    { RoomStore.room ?
+                    {RoomStore.room ?
                         <React.Fragment>
-                            <span className={"room-info--name"}>{RoomStore.room.name}</span>
+                            <span data-private={""} className={"room-info--name"}>{RoomStore.room.name}</span>
                             <RoomId/>
                         </React.Fragment>
                         : null

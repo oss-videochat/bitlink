@@ -7,16 +7,20 @@ import {ParticipantList} from "./SettingsViews/ParticipantList";
 import {Report} from "./SettingsViews/Report";
 
 export class SettingsViewer extends React.Component<any, any> {
-    getView(){
+    getView() {
         switch (this.props.selected) {
             case SettingsPanels.MySettings:
-                return <MySettings handleChangesMade={this.props.handleChangesMade} changesMade={this.props.changesMade} events={this.props.events}/>;
+                return <MySettings handleChangesMade={this.props.handleChangesMade} changesMade={this.props.changesMade}
+                                   events={this.props.events}/>;
             case SettingsPanels.RoomSettings:
-                return <RoomSettings handleChangesMade={this.props.handleChangesMade} changesMade={this.props.changesMade} events={this.props.events}/>;
+                return <RoomSettings handleChangesMade={this.props.handleChangesMade}
+                                     changesMade={this.props.changesMade} events={this.props.events}/>;
             case SettingsPanels.Participants:
-                return <ParticipantList handleChangesMade={this.props.handleChangesMade} changesMade={this.props.changesMade} events={this.props.events}/>
+                return <ParticipantList handleChangesMade={this.props.handleChangesMade}
+                                        changesMade={this.props.changesMade} events={this.props.events}/>
             case SettingsPanels.Report:
-                return <Report handleChangesMade={this.props.handleChangesMade} changesMade={this.props.changesMade} events={this.props.events}/>
+                return <Report handleChangesMade={this.props.handleChangesMade} changesMade={this.props.changesMade}
+                               events={this.props.events}/>
         }
     }
 
@@ -25,9 +29,9 @@ export class SettingsViewer extends React.Component<any, any> {
             <div className={"settings-viewer"}>
                 {this.getView()}
                 <div className={"settings--button-control"}>
-                    <input onClick={this.props.cancel} type={"button"} value={"Cancel"}
+                    <input data-private={"lipsum"} onClick={this.props.cancel} type={"button"} value={"Cancel"}
                            className={"modal--button cancel"}/>
-                    <input onClick={this.props.save} type={"button"} value={"Save"}
+                    <input data-private={"lipsum"} onClick={this.props.save} type={"button"} value={"Save"}
                            disabled={!this.props.changesMade} className={"modal--button save"}/>
                 </div>
             </div>

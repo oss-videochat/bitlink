@@ -1,5 +1,4 @@
 import {observable} from "mobx"
-import {types} from "mediasoup-client";
 import Participant from "../components/models/Participant";
 
 class ParticipantsStore {
@@ -11,7 +10,7 @@ class ParticipantsStore {
         isMe: false,
         name: "System",
         mediasoup: {
-          consumer: {video: null, audio: null}
+            consumer: {video: null, audio: null}
         },
         mediaState: {
             cameraEnabled: false,
@@ -19,7 +18,7 @@ class ParticipantsStore {
         }
     });
 
-    public everyone: Participant = new Participant( {
+    public everyone: Participant = new Participant({
         id: "everyone",
         isAlive: true,
         isHost: false, isMe: false, name: "everyone",
@@ -37,7 +36,7 @@ class ParticipantsStore {
     public waitingRoom = observable<Participant>([]);
 
 
-    getLiving(){
+    getLiving() {
         return this.participants.filter(participant => participant.isAlive);
     }
 
@@ -45,7 +44,7 @@ class ParticipantsStore {
         this.participants.replace([this.system, this.everyone]);
     }
 
-    replace(array: Array<Participant>){
+    replace(array: Array<Participant>) {
         this.participants.replace([this.system, this.everyone, ...array]);
     }
 
@@ -57,9 +56,9 @@ class ParticipantsStore {
         return this.participants?.findIndex((participant: Participant) => participant.id === id);
     }
 
-    removeFromWaitingRoom(id: string){
+    removeFromWaitingRoom(id: string) {
         const waitingRoomIndex: number = this.waitingRoom.findIndex(patientParticipant => patientParticipant.id === id);
-        if(waitingRoomIndex >= 0){
+        if (waitingRoomIndex >= 0) {
             this.waitingRoom.splice(waitingRoomIndex, 1)
         }
     }

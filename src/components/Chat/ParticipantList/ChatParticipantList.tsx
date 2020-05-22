@@ -59,7 +59,7 @@ export class ChatParticipantList extends React.Component<any, any> {
 
                             {
                                 (!this.state.searchText || RoomStore.room.name.toLowerCase().includes(this.state.searchText.toLowerCase())) ?
-                                    <ChatParticipant onChosen={this.onChosen.bind(this)}key={"chat-everyone"}
+                                    <ChatParticipant onChosen={this.onChosen.bind(this)} key={"chat-everyone"}
                                                      selected={this.props.selectedUser === "everyone"}
                                                      participant={ParticipantsStore.everyone}
                                                      name={RoomStore.room.name}

@@ -1,6 +1,5 @@
 import {Reactions} from "../enum/Reactions";
 import Participant from "../components/models/Participant";
-import {CurrentUserInformation} from "./MyInfo";
 
 export interface Reaction {
     type: Reactions,

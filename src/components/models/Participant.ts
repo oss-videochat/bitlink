@@ -35,16 +35,6 @@ export default class Participant {
         }
     };
 
-    @computed
-    get hasVideo(): boolean {
-        return this.mediaState.cameraEnabled && !!this.mediasoup.consumer.video
-    }
-
-    @computed
-    get hasAudio(): boolean{
-        return this.mediaState.microphoneEnabled && !!this.mediasoup.consumer.audio
-    }
-
     constructor(data: ParticipantData) {
         this.id = data.id;
         this.name = data.name;
@@ -53,5 +43,15 @@ export default class Participant {
         this.isAlive = data.isAlive;
         this.mediaState = data.mediaState;
         this.mediasoup = data.mediasoup;
+    }
+
+    @computed
+    get hasVideo(): boolean {
+        return this.mediaState.cameraEnabled && !!this.mediasoup.consumer.video
+    }
+
+    @computed
+    get hasAudio(): boolean {
+        return this.mediaState.microphoneEnabled && !!this.mediasoup.consumer.audio
     }
 }

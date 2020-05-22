@@ -1,7 +1,7 @@
 import {observable} from "mobx";
 
 export enum NotificationType {
-    Alert= "alert",
+    Alert = "alert",
     Error = "error",
     Warning = "warning",
     Success = "success",
@@ -13,8 +13,8 @@ export interface UINotificationOptions {
 }
 
 export class UINotification {
-    public readonly created = new Date();
     private static defaultTime: number = 5000;
+    public readonly created = new Date();
     public message: string;
     public type: NotificationType;
     public timer?: any;
@@ -27,7 +27,7 @@ export class UINotification {
         this.message = message;
         this.type = type;
 
-       Object.assign(this.options, options);
+        Object.assign(this.options, options);
     }
 }
 
@@ -40,16 +40,16 @@ class NotificationStore {
             this.store.remove(notification);
         }, (notification.created.getTime() + notification.options.timeout) - Date.now());
         this.store.push(notification);
-        if(systemNotification){
+        if (systemNotification) {
             this.systemNotify(notification);
         }
     }
 
-    systemNotify(notification: UINotification){
-        if(!("Notification" in window)){
+    systemNotify(notification: UINotification) {
+        if (!("Notification" in window)) {
             return;
         }
-        if(Notification.permission !== "granted" || document.hasFocus()){
+        if (Notification.permission !== "granted" || document.hasFocus()) {
             return;
         }
         const title: any = notification.options.title || "BitLink";
@@ -63,11 +63,11 @@ class NotificationStore {
         this.store.clear();
     }
 
-    requestPermission(){
-        if(!("Notification" in window)){
+    requestPermission() {
+        if (!("Notification" in window)) {
             return;
         }
-        if(Notification.permission !== "granted"){
+        if (Notification.permission !== "granted") {
             Notification.requestPermission();
         }
     }

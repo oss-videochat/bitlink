@@ -35,11 +35,11 @@ export class RoomSettings extends React.Component<any, any> {
 
     updateChangesMade() {
         if (JSON.stringify(this.state.currentSettings) !== JSON.stringify(this.state.newSettings)) {
-            if(!this.props.changesMade){
+            if (!this.props.changesMade) {
                 this.props.handleChangesMade(true);
             }
         } else {
-            if(this.props.changesMade){
+            if (this.props.changesMade) {
                 this.props.handleChangesMade(false);
             }
         }
@@ -48,7 +48,7 @@ export class RoomSettings extends React.Component<any, any> {
     handleChange(e: ChangeEvent<HTMLInputElement>) {
         const key = e.target.getAttribute("data-settings-key")!;
         let value: any;
-        if(e.target.type === "checkbox"){
+        if (e.target.type === "checkbox") {
             value = e.target.checked;
         } else {
             value = e.target.value;
@@ -73,8 +73,8 @@ export class RoomSettings extends React.Component<any, any> {
 
     render() {
 
-        if(this.state.currentSettings === null){
-            return  (
+        if (this.state.currentSettings === null) {
+            return (
                 <div className={"settings-view loading"}>
                     <Spinner size={"50px"}/>
                 </div>
@@ -86,11 +86,13 @@ export class RoomSettings extends React.Component<any, any> {
                 <h2 className={"modal--title"}>Room Settings</h2>
                 <label>
                     Room Name
-                    <input className={"modal--input"} onChange={this.handleChange} data-settings-key={"name"} type={"text"} value={this.state.newSettings.name} placeholder={"Name"}/>
+                    <input data-private={"lipsum"} className={"modal--input"} onChange={this.handleChange} data-settings-key={"name"}
+                           type={"text"} value={this.state.newSettings.name} placeholder={"Name"}/>
                 </label>
 
                 <label>
-                    <input className={"modal--input"} onChange={this.handleChange} data-settings-key={"waitingRoom"} checked={this.state.newSettings.waitingRoom} type={"checkbox"} placeholder={"Name"}/>
+                    <input data-private={"lipsum"} className={"modal--input"} onChange={this.handleChange} data-settings-key={"waitingRoom"}
+                           checked={this.state.newSettings.waitingRoom} type={"checkbox"} placeholder={"Name"}/>
                     Enable Waiting Room
                 </label>
             </div>

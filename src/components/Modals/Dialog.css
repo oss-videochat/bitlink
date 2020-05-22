@@ -29,7 +29,7 @@
     padding: 5px 10px;
 }
 
-.modal--input[type="checkbox"]{
+.modal--input[type="checkbox"] {
     display: inline-block;
     width: auto;
     margin-right: 10px;
@@ -75,4 +75,10 @@
 .dialog-centered-text {
     display: block;
     text-align: center;
+}
+
+.dialog--logo {
+    width: 210px;
+    margin: 0 auto;
+    display: block;
 }

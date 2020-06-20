@@ -1,0 +1,10 @@
+.video-placeholder {
+    color: white;
+}
+
+.video-placeholder--message {
+    display: block;
+    font-size: 20px;
+    color: white;
+    text-align: center;
+}

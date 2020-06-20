@@ -1,0 +1,37 @@
+.chat-participant-wrapper {
+    border-right: 1px solid #e4e4e4;
+    height: 100%;
+    width: 0;
+    min-width: 0;
+    max-width: 0;
+    transition: width 200ms ease-in-out, min-width 200ms ease-in-out, max-width 200ms ease-in-out;
+    overflow: hidden;
+}
+
+.chat-participant-wrapper.open {
+    min-width: 200px;
+    width: 25%;
+    max-width: 300px;
+}
+
+.chat-participant-wrapper--content {
+    width: 100%;
+    overflow: auto;
+    max-height: 100%;
+}
+
+.chat-participant-list {
+    overflow: auto;
+}
+
+@media only screen and (max-width: 600px) {
+    .chat-participant-wrapper {
+        border: none;
+    }
+
+    .chat-participant-wrapper.open {
+        min-width: 100%;
+        width: 100%;
+        max-width: 100%;
+    }
+}

@@ -1,0 +1,9 @@
+.waiting-room-list {
+    border-bottom: 2px solid #bbbbbb;;
+}
+
+.waiting-room--title {
+    font-weight: 600;
+    display: block;
+    text-align: center;
+}

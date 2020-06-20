@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "es5",
+    "sourceMap": true,
+    "outDir": "build",
+    "downlevelIteration": true
+  },
+  "include": [
+    "public/**/*",
+    "src/**/*",
+    "app.ts",
+    "bin/www",
+    "routes/**/*"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}

@@ -13,13 +13,15 @@ interface MediasoupObj {
     },
     producers: {
         video: types.Producer | null,
-        audio: types.Producer | null
+        audio: types.Producer | null,
+        screen: types.Producer | null
     }
 }
 
 interface StreamsObject {
     video: MediaStream | null,
     audio: MediaStream | null,
+    screen: MediaStream | null,
 }
 
 
@@ -35,7 +37,8 @@ class CurrentUserInformationStore {
         },
         producers: {
             video: null,
-            audio: null
+            audio: null,
+            screen: null
         },
     };
 
@@ -47,7 +50,8 @@ class CurrentUserInformationStore {
 
     private cachedStreams: StreamsObject = {
         video: null,
-        audio: null
+        audio: null,
+        screen: null
     };
 
 
@@ -56,21 +60,25 @@ class CurrentUserInformationStore {
         this.info = undefined;
     }
 
-    pause(kind: "video" | "audio") {
+    pause(kind: "video" | "audio" | "screen") {
         this.mediasoup.producers[kind]?.pause();
         if (kind === "video") {
             this.info!.mediaState.cameraEnabled = false;
-        } else {
+        } else if (kind === "audio") {
             this.info!.mediaState.microphoneEnabled = false;
+        } else {
+            this.info!.mediaState.screenShareEnabled = false;
         }
     }
 
-    resume(kind: "video" | "audio") {
+    resume(kind: "video" | "audio" | "screen") {
         this.mediasoup.producers[kind]?.resume();
         if (kind === "video") {
             this.info!.mediaState.cameraEnabled = true;
-        } else {
+        } else if (kind === "audio") {
             this.info!.mediaState.microphoneEnabled = true;
+        } else {
+            this.info!.mediaState.screenShareEnabled = true;
         }
     }
 
@@ -83,7 +91,15 @@ class CurrentUserInformationStore {
         localStorage.setItem(`preferred-${kind}-input`, deviceId);
     }
 
-    async getStream(type: "video" | "audio"): Promise<MediaStream> {
+    async getStream(type: "video" | "audio" | "screen"): Promise<MediaStream> {
+        if(type === "screen"){
+            if(!this.cachedStreams[type]){
+                // @ts-ignore
+                this.cachedStreams[type] = await navigator.mediaDevices.getDisplayMedia().catch(e => console.error(e.toString()));
+            }
+            return this.cachedStreams[type]!;
+        }
+
         const options = {
             video: {video: {facingMode: {ideal: "user"}, width: {ideal: 960}, height: {ideal: 640}}},
             audio: {audio: true}

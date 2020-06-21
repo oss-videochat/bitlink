@@ -4,6 +4,7 @@ import {computed, observable} from 'mobx';
 export interface MediaState {
     cameraEnabled: boolean,
     microphoneEnabled: boolean,
+    screenShareEnabled: boolean
 }
 
 export interface ParticipantData {
@@ -16,7 +17,8 @@ export interface ParticipantData {
     mediasoup: {
         consumer: {
             video: types.Consumer | null,
-            audio: types.Consumer | null
+            audio: types.Consumer | null,
+            screen: types.Consumer | null
         }
     }
 }
@@ -31,7 +33,8 @@ export default class Participant {
     @observable mediasoup: {
         consumer: {
             video: types.Consumer | null,
-            audio: types.Consumer | null
+            audio: types.Consumer | null,
+            screen: types.Consumer | null
         }
     };
 
@@ -53,5 +56,10 @@ export default class Participant {
     @computed
     get hasAudio(): boolean {
         return this.mediaState.microphoneEnabled && !!this.mediasoup.consumer.audio
+    }
+
+    @computed
+    get hasScreen(): boolean {
+        return this.mediaState.screenShareEnabled && !!this.mediasoup.consumer.screen
     }
 }

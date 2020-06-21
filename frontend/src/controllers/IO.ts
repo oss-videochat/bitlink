@@ -26,7 +26,7 @@ interface APIResponse {
 
 interface MediaStateUpdate {
     id: string,
-    kind: "video" | "audio",
+    kind: "video" | "audio" | "screen",
     action: "resume" | "pause";
 }
 
@@ -80,6 +80,7 @@ class IO extends Event.EventEmitter {
             return {
                 audio: MyInfo.preferredInputs.audio,
                 video: MyInfo.preferredInputs.video
+                // no screen because we don't have a default
             }
 
         }, (_) => {
@@ -232,7 +233,8 @@ class IO extends Event.EventEmitter {
             participant.mediasoup = {
                 consumer: {
                     video: null,
-                    audio: null
+                    audio: null,
+                    screen: null
                 }
             };
 
@@ -275,13 +277,15 @@ class IO extends Event.EventEmitter {
 
         participantSummary.mediaState = {
             cameraEnabled: false,
-            microphoneEnabled: false
+            microphoneEnabled: false,
+            screenShareEnabled: false
         };
 
         participantSummary.mediasoup = {
             consumer: {
                 video: null,
-                audio: null
+                audio: null,
+                screen: null
             }
         };
         const participant = new Participant(participantSummary);
@@ -325,6 +329,18 @@ class IO extends Event.EventEmitter {
                     participant.mediasoup.consumer.audio.pause();
                 }
                 participant.mediaState.microphoneEnabled = false;
+            }
+        } else if (update.kind === "screen") {
+            if (update.action === "resume") {
+                if (participant.mediasoup?.consumer.screen) {
+                    participant.mediasoup.consumer.screen.resume();
+                }
+                participant.mediaState!.screenShareEnabled = true;
+            } else {
+                if (participant.mediasoup?.consumer.screen) {
+                    participant.mediasoup.consumer.screen.pause();
+                }
+                participant.mediaState.screenShareEnabled = false;
             }
         }
     }
@@ -372,7 +388,7 @@ class IO extends Event.EventEmitter {
         ChatStore.removeMessage(messageSummary.id);
     }
 
-    async _handleNewConsumer(kind: "video" | "audio", participantId: string, data: any, cb: Function) {
+    async _handleNewConsumer(kind: "video" | "audio" | "screen", participantId: string, data: any, cb: Function) {
         const participant = ParticipantsStore.getById(participantId);
         if (!participant) {
             throw 'Could not find participant';
@@ -380,7 +396,7 @@ class IO extends Event.EventEmitter {
         participant.mediasoup!.consumer[kind] = await MyInfo.mediasoup.transports.receiving!.consume({
             id: data.consumerId,
             producerId: data.producerId,
-            kind,
+            kind: kind === "screen" ? "video" : kind,
             rtpParameters: data.rtpParameters
         });
 
@@ -458,6 +474,26 @@ class IO extends Event.EventEmitter {
         }
         MyInfo.mediasoup.producers.audio = await MyInfo.mediasoup.transports.sending!.produce({track: stream.getAudioTracks()[0]});
         MyInfo.resume("audio");
+    }
+
+    async toggleScreen() {
+        if (MyInfo.mediasoup.producers.screen) {
+            if (MyInfo.mediasoup.producers.screen.paused) {
+                MyInfo.resume("screen");
+                this.socketRequest("producer-action", "screen", "resume");
+            } else {
+                MyInfo.pause("screen");
+                this.socketRequest("producer-action", "screen", "pause");
+            }
+            return;
+        }
+        const stream = await MyInfo.getStream("screen");
+        if (!stream) {
+            NotificationStore.add(new UINotification(`An error occurred accessing the screen`, NotificationType.Error));
+            return;
+        }
+        MyInfo.mediasoup.producers.screen = await MyInfo.mediasoup.transports.sending!.produce({track: stream.getVideoTracks()[0]});
+        MyInfo.resume("screen");
     }
 
     @action

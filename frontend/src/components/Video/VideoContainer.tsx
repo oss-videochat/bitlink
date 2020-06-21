@@ -12,8 +12,9 @@ import {LayoutSizeCalculation} from "../../util/LayoutSizeCalculation";
 import Participant from "../models/Participant";
 import IO from "../../controllers/IO";
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
-import {faMicrophone, faMicrophoneSlash, faPhone, faVideo, faVideoSlash} from '@fortawesome/free-solid-svg-icons'
+import {faDesktop, faMicrophone, faMicrophoneSlash, faPhone, faVideo, faVideoSlash} from '@fortawesome/free-solid-svg-icons'
 import RoomStore from "../../stores/RoomStore";
+import {ScreenParticipant} from "./ScreenParticipant";
 
 @observer
 export class VideoContainer extends React.Component<any, any> {
@@ -85,8 +86,10 @@ export class VideoContainer extends React.Component<any, any> {
     }
 
     render() {
-        const participants: Participant[] = ParticipantsStore.getLiving()
-            .filter(participant => participant.hasAudio || participant.hasVideo);
+        const participantsLiving: Participant[] = ParticipantsStore.getLiving();
+
+        const participantsMedia = participantsLiving.filter(participant => participant.hasAudio || participant.hasVideo);
+        const participantsScreen = participantsLiving.filter(participant => participant.hasScreen);
 
         return (
             <div ref={this.containerRef} className={"video-container"}>
@@ -100,12 +103,12 @@ export class VideoContainer extends React.Component<any, any> {
                 {
                     RoomStore.room ?
                         <div className={"controls-wrapper"}>
-                    <span onClick={() => IO.toggleVideo()}>
-                        {MyInfo.info?.mediaState.cameraEnabled ?
-                            <FontAwesomeIcon icon={faVideo}/> :
-                            <FontAwesomeIcon icon={faVideoSlash}/>
-                        }
-                    </span>
+                            <span onClick={() => IO.toggleVideo()}>
+                                {MyInfo.info?.mediaState.cameraEnabled ?
+                                    <FontAwesomeIcon icon={faVideo}/> :
+                                    <FontAwesomeIcon icon={faVideoSlash}/>
+                                }
+                            </span>
                             <span className={"controls-wrapper--leave-button"} onClick={() => {
                                 // eslint-disable-next-line no-restricted-globals
                                 const confirmed: boolean = confirm("Are you sure you would like to leave this room?");
@@ -113,22 +116,25 @@ export class VideoContainer extends React.Component<any, any> {
                                     IO.leave();
                                 }
                             }}>
-                       <FontAwesomeIcon icon={faPhone}/>
-                    </span>
+                                <FontAwesomeIcon icon={faPhone}/>
+                            </span>
                             <span onClick={() => IO.toggleAudio()}>
-                        {MyInfo.info?.mediaState.microphoneEnabled ?
-                            <FontAwesomeIcon icon={faMicrophone}/> :
-                            <FontAwesomeIcon icon={faMicrophoneSlash}/>
-                        }
-                    </span>
+                                {MyInfo.info?.mediaState.microphoneEnabled ?
+                                    <FontAwesomeIcon icon={faMicrophone}/> :
+                                    <FontAwesomeIcon icon={faMicrophoneSlash}/>
+                                }
+                            </span>
+                            <span onClick={() => IO.toggleScreen()}>
+                                 <FontAwesomeIcon icon={faDesktop}/>
+                            </span>
                         </div>
                         : null
                 }
 
                 <div data-private={""} className={"videos-list-wrapper"}>
                     {ParticipantsStore.participants.length > 3 ?
-                        participants
-                            .map((participant, i, arr) => {
+                        [
+                            ...participantsMedia.map((participant, i, arr) => {
                                 if (participant.hasVideo) {
                                     return <VideoParticipant flexBasis={this.state.basis} maxWidth={this.state.maxWidth}
                                                              key={participant.id}
@@ -137,7 +143,13 @@ export class VideoContainer extends React.Component<any, any> {
                                     return <AudioParticipant flexBasis={this.state.basis} key={participant.id}
                                                              participant={participant}/>
                                 }
-                            })
+                            }),
+                            ...participantsScreen.map(participant =>
+                                <ScreenParticipant flexBasis={this.state.basis} maxWidth={this.state.maxWidth}
+                                                   key={participant.id}
+                                                   participant={participant}/>
+                            )
+                        ]
                         : <VideoPlaceholder/>
                     }
                 </div>

@@ -5,6 +5,7 @@ import * as Events from "events";
 interface ProducerObj {
     video: types.Producer,
     audio: types.Producer,
+    screen: types.Producer
 }
 
 interface TransportObj {
@@ -19,7 +20,8 @@ export default class MediasoupPeer extends Events.EventEmitter{
     };
     public producers: ProducerObj = {
         video: null,
-        audio: null
+        audio: null,
+        screen: null
     };
     private consumers: Array<types.Consumer> = [];
     public rtcCapabilities;
@@ -69,7 +71,7 @@ export default class MediasoupPeer extends Events.EventEmitter{
         return Object.values(this.transports).find((transport => transport.id === transportId));
     }
 
-    addProducer(producer, kind: "video" | "audio") {
+    addProducer(producer, kind: "video" | "audio" | "screen") {
         this.producers[kind] = producer;
         this.emit("new-producer", kind)
     }
@@ -82,7 +84,7 @@ export default class MediasoupPeer extends Events.EventEmitter{
         return Object.values(this.producers).find((producer => producer.id === producerId));
     }
 
-    getProducersByKind(kind: "video" | "audio") {
+    getProducersByKind(kind: "video" | "audio" | "screen") {
         return this.producers[kind];
     }
 

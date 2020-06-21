@@ -6,7 +6,8 @@ import MediasoupPeer from "./MediasoupPeer";
 
 interface MediaState {
     cameraEnabled: boolean,
-    microphoneEnabled: boolean
+    microphoneEnabled: boolean,
+    screenShareEnabled: boolean
 }
 
 interface ParticipantSummary {
@@ -44,7 +45,8 @@ class Participant extends Event.EventEmitter {
     public readonly mediasoupPeer: MediasoupPeer;
     private readonly mediaState: MediaState = {
         cameraEnabled: false,
-        microphoneEnabled: false
+        microphoneEnabled: false,
+        screenShareEnabled: false
     };
 
     constructor(name: string, socket) {
@@ -75,17 +77,24 @@ class Participant extends Event.EventEmitter {
             this.mediaState.microphoneEnabled = state;
         });
 
-        this.mediasoupPeer.on("new-producer", (kind: "video" | "audio") => {
-            if (kind === "video") {
-                this.mediaState.cameraEnabled = true;
-            } else {
-                this.mediaState.microphoneEnabled = true;
-            }
-        });
-
         this.mediasoupPeer.on("video-toggle", (state: boolean) => {
             this.emit("media-state-update", "video", state ? "resume" : "pause");
             this.mediaState.cameraEnabled = state;
+        });
+
+        this.mediasoupPeer.on("screen-toggle", (state: boolean) => {
+            this.emit("media-state-update", "screen", state ? "resume" : "pause");
+            this.mediaState.screenShareEnabled = state;
+        });
+
+        this.mediasoupPeer.on("new-producer", (kind: "video" | "audio" | "screen") => {
+            if (kind === "video") {
+                this.mediaState.cameraEnabled = true;
+            } else if(kind === "audio") {
+                this.mediaState.microphoneEnabled = true;
+            } else {
+                this.mediaState.screenShareEnabled = true;
+            }
         });
     }
 

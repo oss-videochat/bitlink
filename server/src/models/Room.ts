@@ -418,7 +418,7 @@ class Room extends Event.EventEmitter {
                     return;
                 }
                 Object.keys(participantJoined.mediasoupPeer.producers).forEach(type => {
-                    this.createConsumerAndNotify(participantJoined, participant, type as "video" | "audio");
+                    this.createConsumerAndNotify(participantJoined, participant, type as "video" | "audio" | "screen");
                 });
             });
         });
@@ -434,7 +434,7 @@ class Room extends Event.EventEmitter {
                 });
                 return;
             }
-            if (kind !== "video" && kind !== "audio") {
+            if (!["audio", "video", "screen"].includes(kind)) {
                 cb({
                     success: false,
                     error: "Some error occurred. Probably your crappy input.",
@@ -467,7 +467,7 @@ class Room extends Event.EventEmitter {
         });
     }
 
-    _handleNewProducer(theParticipant, kind: "video" | "audio") {
+    _handleNewProducer(theParticipant, kind: "video" | "audio" | "screen") {
         this.getConnectedParticipants().forEach(aParticpant => {
             if (aParticpant.id === theParticipant.id) {
                 return;
@@ -593,7 +593,7 @@ class Room extends Event.EventEmitter {
         }
     }
 
-    async createConsumerAndNotify(producerPeer: Participant, consumerPeer: Participant, kind: "video" | "audio") {
+    async createConsumerAndNotify(producerPeer: Participant, consumerPeer: Participant, kind: "video" | "audio" | "screen") {
         log("New consumer creation { Producer: %s | Consumer: %s }", producerPeer.name, consumerPeer.name);
         const producer = producerPeer.mediasoupPeer.getProducersByKind(kind);
         if (

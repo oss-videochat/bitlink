@@ -1,6 +1,6 @@
 import React, {ChangeEvent} from 'react';
 import IO, {RoomSettingsObj} from "../../../../controllers/IO";
-import {Spinner} from "../../../Util/Spinner";
+import Spinner from "../../../Util/Spinner";
 
 export class RoomSettings extends React.Component<any, any> {
     constructor(props: any) {

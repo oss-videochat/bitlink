@@ -1,8 +1,8 @@
 import React from 'react';
 import {observer} from "mobx-react"
-import {SettingsPanel} from "./SettingsPanel";
+import SettingsPanel from "./SettingsPanel";
 import './SettingsModal.css';
-import {SettingsViewer} from "./SettingsViewer";
+import SettingsViewer from "./SettingsViewer";
 import {SettingsPanels} from "../../../enum/SettingsPanels";
 import UIStore from "../../../stores/UIStore";
 import * as Events from 'events';

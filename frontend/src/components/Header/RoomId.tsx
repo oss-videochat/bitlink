@@ -1,5 +1,4 @@
 import React from 'react';
-import {observer} from "mobx-react"
 import RoomStore from "../../stores/RoomStore";
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
 import {faExternalLinkSquareAlt} from '@fortawesome/free-solid-svg-icons'
@@ -7,19 +6,13 @@ import './RoomId.css';
 import NotificationStore, {NotificationType, UINotification} from "../../stores/NotificationStore";
 import MyInfo from "../../stores/MyInfo";
 
-@observer
-export class RoomId extends React.Component<any, any> {
-    constructor(props: any) {
-        super(props);
-        this.copyLink = this.copyLink.bind(this);
-    }
-
-    copyLink() {
+const RoomId: React.FunctionComponent = () => {
+    function copyLink() {
         if (navigator.clipboard) {
             navigator.clipboard.writeText(window.location.href);
             NotificationStore.add(new UINotification(`Link copied!`, NotificationType.Success));
         } else {
-            if (this.copyFallback(window.location.href)) {
+            if (copyFallback(window.location.href)) {
                 NotificationStore.add(new UINotification(`Link copied!`, NotificationType.Success));
             }
         }
@@ -33,17 +26,15 @@ export class RoomId extends React.Component<any, any> {
         }
     }
 
-    render() {
-        return (
-            <div onClick={this.copyLink} className={"room-info--id-wrapper"}>
-                <span className={"room-info--id"}>{RoomStore.room!.id}</span>
-                <span className={"room-info--share-icon"}><FontAwesomeIcon icon={faExternalLinkSquareAlt}/></span>
-            </div>
-        );
-    }
+    return (
+        <div onClick={copyLink} className={"room-info--id-wrapper"}>
+            <span className={"room-info--id"}>{RoomStore.room!.id}</span>
+            <span className={"room-info--share-icon"}><FontAwesomeIcon icon={faExternalLinkSquareAlt}/></span>
+        </div>
+    );
 
 
-    copyFallback(text: string) {
+    function copyFallback(text: string) {
         const textArea: any = document.createElement("textarea");
         textArea.style.position = 'fixed';
         textArea.style.top = 0;
@@ -68,3 +59,4 @@ export class RoomId extends React.Component<any, any> {
         }
     }
 }
+export default RoomId;

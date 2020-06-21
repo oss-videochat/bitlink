@@ -1,17 +1,20 @@
 import React from 'react';
-import {observer} from "mobx-react"
+import {useObserver} from "mobx-react"
 import './Header.css';
 import RoomStore from "../../stores/RoomStore";
 import IO from "../../controllers/IO";
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
 import {faCogs, faComments, faExpand, faUsers} from '@fortawesome/free-solid-svg-icons'
 import UIStore from "../../stores/UIStore";
-import {RoomId} from "./RoomId";
+import RoomId from "./RoomId";
 import MyInfo from "../../stores/MyInfo";
 
-@observer
-export class Header extends React.Component<any, any> {
-    render() {
+interface IHeaderProps {
+    toggleFullscreen: () => void
+}
+
+const Header: React.FunctionComponent<IHeaderProps> = ({toggleFullscreen}) => {
+    return useObserver(() => {
         return (
             <header className={"header"}>
                 <div className={"header--room-info"}>
@@ -57,12 +60,13 @@ export class Header extends React.Component<any, any> {
 
                     <span className={"divider"}/>
                     <ul>
-                        <li onClick={this.props.toggleFullscreen}>
+                        <li onClick={toggleFullscreen}>
                             <FontAwesomeIcon icon={faExpand}/>
                         </li>
                     </ul>
                 </nav>
             </header>
         );
-    }
+    });
 }
+export default Header;

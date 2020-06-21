@@ -1,40 +1,54 @@
 import React from 'react';
 import './SettingsViewer.css';
 import {SettingsPanels} from "../../../enum/SettingsPanels";
-import {MySettings} from "./SettingsViews/MySettings";
+import MySettings from "./SettingsViews/MySettings";
 import {RoomSettings} from "./SettingsViews/RoomSettings";
-import {ParticipantList} from "./SettingsViews/ParticipantList";
-import {Report} from "./SettingsViews/Report";
+import ParticipantList from "./SettingsViews/ParticipantList";
+import Report from "./SettingsViews/Report";
+import * as Events from 'events';
 
-export class SettingsViewer extends React.Component<any, any> {
-    getView() {
-        switch (this.props.selected) {
+interface ISettingsViewerProps {
+    selected: SettingsPanels,
+    events: Events.EventEmitter,
+    cancel: () => void,
+    save: () => void,
+    changesMade: boolean,
+    handleChangesMade: (isChangesMade: boolean) => void
+}
+
+export interface ISettingsPanelProps {
+    handleChangesMade: (isChangesMade: boolean) => void
+    changesMade: boolean
+    events: Events.EventEmitter
+}
+
+const SettingsViewer: React.FunctionComponent<ISettingsViewerProps> = ({selected, events, cancel, save, changesMade, handleChangesMade}) => {
+    function getView(): React.ComponentClass<ISettingsPanelProps> | React.FunctionComponent<ISettingsPanelProps> {
+        switch (selected) {
             case SettingsPanels.MySettings:
-                return <MySettings handleChangesMade={this.props.handleChangesMade} changesMade={this.props.changesMade}
-                                   events={this.props.events}/>;
+                return MySettings;
             case SettingsPanels.RoomSettings:
-                return <RoomSettings handleChangesMade={this.props.handleChangesMade}
-                                     changesMade={this.props.changesMade} events={this.props.events}/>;
+                return RoomSettings;
             case SettingsPanels.Participants:
-                return <ParticipantList handleChangesMade={this.props.handleChangesMade}
-                                        changesMade={this.props.changesMade} events={this.props.events}/>
+                return ParticipantList;
             case SettingsPanels.Report:
-                return <Report handleChangesMade={this.props.handleChangesMade} changesMade={this.props.changesMade}
-                               events={this.props.events}/>
+                return Report;
         }
     }
 
-    render() {
-        return (
-            <div className={"settings-viewer"}>
-                {this.getView()}
-                <div className={"settings--button-control"}>
-                    <input data-private={"lipsum"} onClick={this.props.cancel} type={"button"} value={"Cancel"}
-                           className={"modal--button cancel"}/>
-                    <input data-private={"lipsum"} onClick={this.props.save} type={"button"} value={"Save"}
-                           disabled={!this.props.changesMade} className={"modal--button save"}/>
-                </div>
+    const View = getView();
+
+    return (
+        <div className={"settings-viewer"}>
+            <View handleChangesMade={handleChangesMade} changesMade={changesMade}
+                  events={events}/>
+            <div className={"settings--button-control"}>
+                <input data-private={"lipsum"} onClick={cancel} type={"button"} value={"Cancel"}
+                       className={"modal--button cancel"}/>
+                <input data-private={"lipsum"} onClick={save} type={"button"} value={"Save"}
+                       disabled={!changesMade} className={"modal--button save"}/>
             </div>
-        );
-    }
+        </div>
+    )
 }
+export default SettingsViewer;

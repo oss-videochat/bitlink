@@ -15,8 +15,6 @@ import {ResetStores} from "../util/ResetStores";
 import * as mediasoupclient from 'mediasoup-client';
 import Participant, {ParticipantData} from "../components/models/Participant";
 import {MediaSource, MediaType} from "../../../common/interfaces/WebRTC";
-import {act} from "react-dom/test-utils";
-import app from "../../../server/app";
 
 const log = debug("IO");
 
@@ -176,10 +174,10 @@ class IO extends Event.EventEmitter {
             log("Adding transport");
 
             transport.on("connect", async ({dtlsParameters}, callback, errback) => {
-                log("transport connect event emitted");
+                log("Transport connect event emitted");
                 const response = await this.socketRequest("connect-transport", transport.id, dtlsParameters);
                 if (!response.success) {
-                    log("connect-transport request success");
+                    log("connect-transport request error");
                     NotificationStore.add(new UINotification(`An error occurred connecting to the transport: ${response.error}`, NotificationType.Error));
                     errback();
                     return;
@@ -189,6 +187,7 @@ class IO extends Event.EventEmitter {
             });
 
             transport.on("produce", async ({kind, rtpParameters, appData}, callback, errback) => {
+                log("Producing type: %s", appData.source);
                 try {
                     const response: APIResponse = await this.socketRequest("create-producer", transport.id, kind, appData.source, rtpParameters);
                     if (!response.success) {
@@ -308,7 +307,10 @@ class IO extends Event.EventEmitter {
         if (!participant) {
             return;
         }
-        participant.mediasoup.consumer[update.source]![update.action]();
+        log("Media state update %s: %s - %s", participant.name, update.source, update.action);
+        if(participant.mediasoup.consumer[update.source]){
+            participant.mediasoup.consumer[update.source]![update.action]();
+        }
         participant.mediaState[update.source] = update.action === "resume";
     }
 
@@ -360,6 +362,7 @@ class IO extends Event.EventEmitter {
         if (!participant) {
             throw 'Could not find participant';
         }
+        log("New Consumer for %s: %s", participant.name, source);
         participant.mediasoup!.consumer[source] = await MyInfo.mediasoup.transports.receiving!.consume({
             id: data.consumerId,
             producerId: data.producerId,
@@ -402,18 +405,23 @@ class IO extends Event.EventEmitter {
         }
     }
 
-    async toggleMedia(source: MediaSource){
-       if(MyInfo.mediasoup.producers[source]){
-           const action = MyInfo.mediasoup.producers[source]!.paused ? "resume" : "pause";
-           MyInfo[action](source);
-           this.socketRequest("producer-action", source, action);
-       }
-        const stream = await MyInfo.getStream(source);
-        if (!stream) {
-            NotificationStore.add(new UINotification(`An error occurred accessing the webcam`, NotificationType.Error));
+    async toggleMedia(source: MediaSource) {
+        if (MyInfo.mediasoup.producers[source]) {
+            const action = MyInfo.mediasoup.producers[source]!.paused ? "resume" : "pause";
+            MyInfo[action](source);
+            this.socketRequest("producer-action", source, action);
             return;
         }
-        MyInfo.mediasoup.producers[source] = await MyInfo.mediasoup.transports.sending!.produce({track: stream.getVideoTracks()[0], appData: {source}});
+        const stream = await MyInfo.getStream(source);
+        if (!stream) {
+            NotificationStore.add(new UINotification(`An error occurred accessing the ${source}`, NotificationType.Error));
+            return;
+        }
+        log("Producing media: %s", source);
+        MyInfo.mediasoup.producers[source] = await MyInfo.mediasoup.transports.sending!.produce({
+            track: stream.getVideoTracks()[0],
+            appData: {source}
+        });
         MyInfo.resume(source);
     }
 

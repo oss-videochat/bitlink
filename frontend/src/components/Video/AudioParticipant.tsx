@@ -19,7 +19,7 @@ export class AudioParticipant extends React.Component<any, any> {
                 <div className={"audio-participant--spacer"}>
                     <span className={"audio-participant--name"}>{this.props.participant.name}</span>
                 </div>
-                <AutoPlayAudio srcObject={new MediaStream([this.props.participant.mediasoup.consumer.audio.track])}/>
+                <AutoPlayAudio srcObject={new MediaStream([this.props.participant.mediasoup.consumer.microphone.track])}/>
             </div>
         );
     }

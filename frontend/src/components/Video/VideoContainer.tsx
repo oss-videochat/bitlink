@@ -59,18 +59,20 @@ export class VideoContainer extends React.Component<any, any> {
             this.previewRef!.current!.play();
         });
         this.updateBasis = reaction(() => {
+            const living = ParticipantsStore.getLiving();
+            const numSquares = living.filter(participant => participant.hasAudio || participant.hasVideo).length + living.filter(participant => participant.hasScreen).length;
+
             return {
                 height: this.windowSize.height,
                 width: this.windowSize.width,
                 chatPanel: UIStore.store.chatPanel,
-                numParticipants: ParticipantsStore.getLiving()
-                    .filter(participant => participant.hasAudio || participant.hasVideo).length
+                numSquares
             }
 
         }, (data) => {
             const div = this.containerRef.current!;
             const divWidth = UIStore.store.chatPanel ? data.width - 450 : data.width; // there's an animation with the chat panel so we need to figure out how large the div will be post animation
-            const result = LayoutSizeCalculation(divWidth, div.offsetHeight, data.numParticipants);
+            const result = LayoutSizeCalculation(divWidth, div.offsetHeight, data.numSquares);
             this.setState({basis: result.basis, maxWidth: result.maxWidth});
         });
 
@@ -137,17 +139,16 @@ export class VideoContainer extends React.Component<any, any> {
                             ...participantsMedia.map((participant, i, arr) => {
                                 if (participant.hasVideo) {
                                     return <VideoParticipant flexBasis={this.state.basis} maxWidth={this.state.maxWidth}
-                                                             key={participant.id}
+                                                             key={participant.id + "videop"}
                                                              participant={participant}/>
                                 } else {
-                                    return <AudioParticipant flexBasis={this.state.basis} key={participant.id}
+                                    return <AudioParticipant flexBasis={this.state.basis} key={participant.id + "audiop"}
                                                              participant={participant}/>
                                 }
                             }),
                             ...participantsScreen.map(participant => {
-                                console.log("here screen")
                                 return <ScreenParticipant flexBasis={this.state.basis} maxWidth={this.state.maxWidth}
-                                                   key={participant.id}
+                                                   key={participant.id + "screenp"}
                                                    participant={participant}/>
                             }
                             )

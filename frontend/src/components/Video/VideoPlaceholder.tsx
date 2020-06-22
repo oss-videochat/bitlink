@@ -1,6 +1,6 @@
 import React from 'react';
 import './VideoPlaceholder.css'
-import {RoomId} from "../Header/RoomId";
+import RoomId from "../Header/RoomId";
 import RoomStore from "../../stores/RoomStore";
 
 export class VideoPlaceholder extends React.Component<any, any> {

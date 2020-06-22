@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useState} from 'react';
 import './Dialog.css';
 import IO from "../../controllers/IO";
 import MyInfo from "../../stores/MyInfo";
@@ -9,92 +9,77 @@ import {prepareAudioBank} from "../Video/AutoPlayAudio";
 import logo from "../../assets/logo/logo.svg";
 import LegalText from "../LegalText";
 
-export class JoinDialog extends React.Component<any, any> {
-    constructor(props: any) {
-        super(props);
-        this.state = {
-            roomId: UIStore.store.preFillJoinValue || "",
-            userName: "",
-            RoomIdValidationEnabled: false,
-            UserNameValidationEnabled: false,
-        };
+const JoinDialog: React.FunctionComponent = () => {
+    const [roomId, setRoomId] = useState(UIStore.store.preFillJoinValue || "");
+    const [userName, setUserName] = useState("");
+    const [roomIdValidationEnabled, setRoomIdValidationEnabled] = useState(false);
+    const [userNameValidationEnabled, setUserNameValidationEnabled] = useState(false);
 
-
-        this.handleJoinRoom = this.handleJoinRoom.bind(this);
-        this.handleCancel = this.handleCancel.bind(this);
-        this.handlePaste = this.handlePaste.bind(this);
+    function userNameIsValid() {
+        return userName.length > 0;
     }
 
-    hasValidInput(): boolean {
-        return this.userNameIsValid() && this.roomIdIsValid();
+    function roomIdIsValid() {
+        return roomId.length > 0;
     }
 
-    userNameIsValid() {
-        return this.state.userName.length > 0;
+    function hasValidInput(): boolean {
+        return userNameIsValid() && roomIdIsValid();
     }
 
-    roomIdIsValid() {
-        return this.state.roomId.length > 0;
-    }
-
-    handleJoinRoom() {
+    function handleJoinRoom() {
         prepareAudioBank();
         NotificationStore.requestPermission();
         UIStore.store.modalStore.join = false;
-        MyInfo.chosenName = this.state.userName;
-        IO.joinRoom(this.state.roomId, this.state.userName);
-        this.setState({
-            roomId: "",
-            userName: "",
-            RoomIdValidationEnabled: false,
-            UserNameValidationEnabled: false,
-        });
+        MyInfo.chosenName = userName;
+        IO.joinRoom(roomId, userName);
+
+        setRoomId("");
+        setUserName("");
+        setRoomIdValidationEnabled(false);
+        setUserNameValidationEnabled(false)
     }
 
-    handleCancel() {
+    function handleCancel() {
         UIStore.store.modalStore.join = false;
         if (!RoomStore.room) {
             UIStore.store.modalStore.joinOrCreate = true;
         }
     }
 
-    handlePaste(e: any) {
+    function handlePaste(e: any) {
         const text = e.clipboardData.getData('text');
         const nums = text.match(/\/join\/(.+)$/);
         if (nums && nums[1]) {
             e.preventDefault();
-            this.setState({
-                roomId: nums[1]
-            })
+            setRoomId(nums[1]);
         }
-
     }
 
-    render() {
-        return (
-            <div className={"dialog-modal"}>
-                <img className={"dialog--logo"} src={logo}/>
-                <h2 className={"modal--title"}>Join Room</h2>
-                <input data-private={"lipsum"} onBlur={() => this.setState({RoomIdValidationEnabled: true})}
-                       value={this.state.roomId}
-                       className={"modal--input " + ((!this.state.RoomIdValidationEnabled || this.roomIdIsValid()) ? "" : "invalid")}
-                       onChange={(e) => this.setState({roomId: e.target.value, RoomIdValidationEnabled: true})}
-                       onPaste={this.handlePaste}
-                       type={"tel"}
-                       placeholder={"Room ID or Paste Link"}/>
-                <input data-private={"lipsum"} onBlur={() => this.setState({UserNameValidationEnabled: true})}
-                       value={this.state.userName}
-                       className={"modal--input " + ((!this.state.UserNameValidationEnabled || this.userNameIsValid()) ? "" : "invalid")}
-                       onChange={(e) => this.setState({userName: e.target.value, UserNameValidationEnabled: true})}
-                       placeholder={"Your Name"}/>
-                <div className={"modal--button-container"}>
-                    <input onClick={this.handleCancel} type={"button"} value={"Cancel"}
-                           className={"modal--button cancel"}/>
-                    <input onClick={this.handleJoinRoom} type={"button"} value={"Join"}
-                           disabled={!this.hasValidInput()} className={"modal--button confirm"}/>
-                </div>
-                <LegalText/>
+    return (
+        <div className={"dialog-modal"}>
+            <img className={"dialog--logo"} src={logo}/>
+            <h2 className={"modal--title"}>Join Room</h2>
+            <input data-private={"lipsum"} onBlur={() => setRoomIdValidationEnabled(true)}
+                   value={roomId}
+                   className={"modal--input " + ((!roomIdValidationEnabled || roomIdIsValid()) ? "" : "invalid")}
+                   onChange={(e) => { setRoomId(e.target.value); setRoomIdValidationEnabled(true)}}
+                   onPaste={handlePaste}
+                   type={"tel"}
+                   placeholder={"Room ID or Paste Link"}/>
+            <input data-private={"lipsum"} onBlur={() => {setUserNameValidationEnabled(true)}}
+                   value={userName}
+                   className={"modal--input " + ((!userNameValidationEnabled || userNameIsValid()) ? "" : "invalid")}
+                   onChange={(e) => {setUserName(e.target.value); setUserNameValidationEnabled(true)}}
+                   placeholder={"Your Name"}/>
+            <div className={"modal--button-container"}>
+                <input onClick={handleCancel} type={"button"} value={"Cancel"}
+                       className={"modal--button cancel"}/>
+                <input onClick={handleJoinRoom} type={"button"} value={"Join"}
+                       disabled={!hasValidInput()} className={"modal--button confirm"}/>
             </div>
-        );
-    }
+            <LegalText/>
+        </div>
+    );
 }
+export default JoinDialog;

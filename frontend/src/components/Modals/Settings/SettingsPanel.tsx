@@ -5,50 +5,42 @@ import {faDoorClosed, faExclamationCircle, faUserCog, faUsers} from '@fortawesom
 import MyInfo from "../../../stores/MyInfo";
 import {SettingsPanels} from "../../../enum/SettingsPanels";
 
+interface ISettingsPanelProps {
+    selected: SettingsPanels,
+    onSelect: (type: SettingsPanels) => void,
+}
 
-export class SettingsPanel extends React.Component<any, any> {
-    handleOnClick(type: SettingsPanels) {
-        this.props.onSelect(type);
-    }
-
-    handleOnClickGenerator(type: SettingsPanels) {
-        return (function (this: SettingsPanel) {
-            this.handleOnClick(type);
-        }).bind(this);
-    }
-
-    render() {
-        return (
-            <div className={"settings-panel"}>
-                {
-                    MyInfo.info?.isHost ?
-                        <div onClick={this.handleOnClickGenerator(SettingsPanels.RoomSettings)}
-                             className={"settings--item " + (this.props.selected === SettingsPanels.RoomSettings ? "selected" : "")}>
+const SettingsPanel: React.FunctionComponent<ISettingsPanelProps> = ({onSelect, selected}) => (
+    <div className={"settings-panel"}>
+        {
+            MyInfo.info?.isHost ?
+                <div onClick={() => onSelect(SettingsPanels.RoomSettings)}
+                     className={"settings--item " + (selected === SettingsPanels.RoomSettings ? "selected" : "")}>
                             <span className={"settings--item--icon"}>
                                 <FontAwesomeIcon icon={faDoorClosed}/>
                             </span>
-                        </div>
-                        : null
-                }
-                <div onClick={this.handleOnClickGenerator(SettingsPanels.Participants)}
-                     className={"settings--item " + (this.props.selected === SettingsPanels.Participants ? "selected" : "")}>
+                </div>
+                : null
+        }
+        <div onClick={() => onSelect(SettingsPanels.Participants)}
+             className={"settings--item " + (selected === SettingsPanels.Participants ? "selected" : "")}>
                     <span className={"settings--item--icon"}>
                         <FontAwesomeIcon icon={faUsers}/>
                     </span>
-                </div>
-                <div onClick={this.handleOnClickGenerator(SettingsPanels.MySettings)}
-                     className={"settings--item " + (this.props.selected === SettingsPanels.MySettings ? "selected" : "")}>
+        </div>
+        <div onClick={() => onSelect(SettingsPanels.MySettings)}
+             className={"settings--item " + (selected === SettingsPanels.MySettings ? "selected" : "")}>
                     <span className={"settings--item--icon"}>
                         <FontAwesomeIcon icon={faUserCog}/>
                     </span>
-                </div>
-                <div onClick={this.handleOnClickGenerator(SettingsPanels.Report)}
-                     className={"settings--item " + (this.props.selected === SettingsPanels.Report ? "selected" : "")}>
+        </div>
+        <div onClick={() => onSelect(SettingsPanels.Report)}
+             className={"settings--item " + (selected === SettingsPanels.Report ? "selected" : "")}>
                     <span className={"settings--item--icon"}>
                         <FontAwesomeIcon icon={faExclamationCircle}/>
                     </span>
-                </div>
-            </div>
-        );
-    }
-}
+        </div>
+    </div>
+);
+export default SettingsPanel;
+

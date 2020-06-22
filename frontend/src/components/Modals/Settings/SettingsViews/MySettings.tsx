@@ -1,27 +1,20 @@
-import React, {ChangeEvent} from 'react';
+import React, {ChangeEvent, useEffect, useState} from 'react';
 import MyInfo from "../../../../stores/MyInfo";
 import IO from "../../../../controllers/IO";
+import {ISettingsPanelProps} from '../SettingsViewer';
 
-export class MySettings extends React.Component<any, any> {
-    constructor(props: any) {
-        super(props);
-        this.state = {
-            nameInput: MyInfo.info!.name,
-            preferredAudio: MyInfo.preferredInputs.audio || undefined,
-            preferredVideo: MyInfo.preferredInputs.video || undefined,
-            deviceList: [],
-        };
-    }
+const MySettings: React.FunctionComponent<ISettingsPanelProps> = ({events, changesMade, handleChangesMade}) => {
+    const [nameInput, setNameInput] = useState(MyInfo.info!.name);
+    const [preferredAudio, setPreferredAudio] = useState(MyInfo.preferredInputs.audio || null);
+    const [preferredVideo, setPreferredVideo] = useState(MyInfo.preferredInputs.video || null);
+    const [deviceList, setDeviceList] = useState([]);
 
-
-    updateDeviceList() {
+    function updateDeviceList() {
         return new Promise(resolve => {
             const enumerate = () => {
                 navigator.mediaDevices.enumerateDevices()
                     .then(deviceList => {
-                        this.setState({
-                            deviceList
-                        });
+                        setDeviceList(deviceList as any)
                     });
             };
 
@@ -34,94 +27,95 @@ export class MySettings extends React.Component<any, any> {
 
     }
 
-    componentDidMount(): void {
-        this.props.events.on("save", (cb: () => void) => {
-            IO.changeName(this.state.nameInput).then(cb);
-            MyInfo.setPreferredInput("video", this.state.preferredVideo);
-            MyInfo.setPreferredInput("audio", this.state.preferredAudio);
-        });
-        this.updateDeviceList();
+    function onSave(cb: () => void) {
+        IO.changeName(nameInput).then(cb);
+        MyInfo.setPreferredInput("video", preferredVideo);
+        MyInfo.setPreferredInput("audio", preferredAudio);
     }
 
-    componentWillUnmount(): void {
-        this.props.events.removeAllListeners("save");
-    }
 
-    handleNameChange(e: ChangeEvent<HTMLInputElement>) {
-        this.setState({nameInput: e.target.value});
-    }
+    useEffect(() => {
+        updateDeviceList();
 
-    checkChanges() {
+    }, []);
+
+    useEffect(() => {
+        checkChanges();
+        events.on("save", onSave);
+        return () => {
+            events.removeListener("save", onSave)
+        };
+    });
+
+    function checkChanges() {
         let changes = false;
-        if (this.state.nameInput !== MyInfo.info?.name) {
+        if (nameInput !== MyInfo.info?.name) {
             changes = true;
         }
-        if (MyInfo.preferredInputs.audio !== this.state.preferredAudio) {
+        if (MyInfo.preferredInputs.audio !== preferredAudio) {
             changes = true;
         }
-        if (MyInfo.preferredInputs.video !== this.state.preferredVideo) {
+        if (MyInfo.preferredInputs.video !== preferredVideo) {
             changes = true;
         }
-        if (this.state.nameInput.length === 0) {
+        if (nameInput.length === 0) {
             changes = false;
         }
-        if (this.props.changesMade !== changes) {
-            this.props.handleChangesMade(changes);
+        if (changesMade !== changes) {
+            handleChangesMade(changes);
         }
     }
 
-    handleInputChange(kind: "video" | "audio", e: ChangeEvent<HTMLSelectElement>) {
+    function handleInputChange(kind: "video" | "audio", e: ChangeEvent<HTMLSelectElement>) {
         if (kind === "video") {
-            this.setState({preferredVideo: e.target.value ?? null});
+            setPreferredVideo(e.target.value ?? null);
         } else {
-            this.setState({preferredAudio: e.target.value ?? null});
+            setPreferredAudio(e.target.value ?? null);
         }
     }
 
-    componentDidUpdate(): void {
-        this.checkChanges();
-    }
+    return (
+        <div className={"settings-view"}>
+            <h2 className={"modal--title"}>My Settings</h2>
+            <label>
+                Name
+                <input data-private={"lipsum"} className={"modal--input"}
+                       onChange={e => {
+                           setNameInput(e.target.value);
+                       }}
+                       value={nameInput} placeholder={"Name"}/>
+            </label>
+            <label>
+                Camera Input
+                <select onChange={(e) => handleInputChange("video", e)} className={"modal--select"}
+                        value={preferredVideo ?? undefined}>
+                    {deviceList
+                        .filter((devicesInfo: MediaDeviceInfo) => devicesInfo.kind === "videoinput")
+                        .map((devicesInfo: MediaDeviceInfo, index: number) =>
+                            <option key={devicesInfo.deviceId}
+                                    value={devicesInfo.deviceId}>{devicesInfo.label || "camera " + (index + 1)}</option>
+                        )
+                    }
+                </select>
+            </label>
 
-
-    render() {
-        return (
-            <div className={"settings-view"}>
-                <h2 className={"modal--title"}>My Settings</h2>
-                <label>
-                    Name
-                    <input data-private={"lipsum"} className={"modal--input"} onChange={this.handleNameChange.bind(this)}
-                           value={this.state.nameInput} placeholder={"Name"}/>
-                </label>
-                <label>
-                    Camera Input
-                    <select onChange={(e) => this.handleInputChange("video", e)} className={"modal--select"}
-                            value={this.state.preferredVideo}>
-                        {this.state.deviceList
-                            .filter((devicesInfo: MediaDeviceInfo) => devicesInfo.kind === "videoinput")
-                            .map((devicesInfo: MediaDeviceInfo, index: number) =>
-                                <option key={devicesInfo.deviceId}
-                                        value={devicesInfo.deviceId}>{devicesInfo.label || "camera " + (index + 1)}</option>
-                            )
-                        }
-                    </select>
-                </label>
-
-                <label>
-                    Audio Input
-                    <select onChange={(e) => this.handleInputChange("audio", e)} className={"modal--select"}
-                            value={this.state.preferredAudio}>
-                        {this.state.deviceList
-                            .filter((devicesInfo: MediaDeviceInfo) => devicesInfo.kind === "audioinput")
-                            .map((devicesInfo: MediaDeviceInfo, index: number) =>
-                                <option
-                                    key={devicesInfo.deviceId}
-                                    value={devicesInfo.deviceId}>{devicesInfo.label || "microphone " + (index + 1)}
-                                </option>
-                            )
-                        }
-                    </select>
-                </label>
-            </div>
-        );
-    }
+            <label>
+                Audio Input
+                <select onChange={(e) => handleInputChange("audio", e)} className={"modal--select"}
+                        value={preferredAudio ?? undefined}>
+                    {deviceList
+                        .filter((devicesInfo: MediaDeviceInfo) => devicesInfo.kind === "audioinput")
+                        .map((devicesInfo: MediaDeviceInfo, index: number) =>
+                            <option
+                                key={devicesInfo.deviceId}
+                                value={devicesInfo.deviceId}>{devicesInfo.label || "microphone " + (index + 1)}
+                            </option>
+                        )
+                    }
+                </select>
+            </label>
+        </div>
+    );
 }
+
+export default MySettings;

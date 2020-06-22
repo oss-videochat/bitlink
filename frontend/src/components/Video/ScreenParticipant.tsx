@@ -1,8 +1,7 @@
 import React, {RefObject} from 'react';
 import './VideoParticipant.css';
+import './ScreenParticipant.css';
 import {observer} from 'mobx-react';
-import {reaction} from 'mobx';
-import {AutoPlayAudio} from "./AutoPlayAudio";
 
 @observer
 export class ScreenParticipant extends React.Component<any, any> {
@@ -25,7 +24,7 @@ export class ScreenParticipant extends React.Component<any, any> {
             <div className={"video-pad"} style={{flexBasis: this.props.flexBasis, maxWidth: this.props.maxWidth}}>
                 <div className={"video-participant-wrapper"}>
                     <video autoPlay={true} playsInline={true} muted={true} ref={this.videoRef}
-                           className={"video-participant--video"}/>
+                           className={"screen-participant--video"}/>
                     <span className={"video-participant--name"}>{this.props.participant.name}'s Screen</span>
                 </div>
             </div>

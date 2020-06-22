@@ -39,10 +39,10 @@ export class VideoContainer extends React.Component<any, any> {
     }
 
     async updateMedia() {
-        if (!MyInfo.info?.mediaState.cameraEnabled) {
+        if (!MyInfo.info?.mediaState.camera) {
             return;
         }
-        const stream = await MyInfo.getStream("video");
+        const stream = await MyInfo.getStream("camera");
         const srcObject: MediaStream | undefined = this.previewRef!.current!.srcObject as MediaStream | undefined;
         if (srcObject?.getVideoTracks()[0].id !== stream.getVideoTracks()[0].id) {
             this.previewRef!.current!.srcObject = stream;
@@ -94,7 +94,7 @@ export class VideoContainer extends React.Component<any, any> {
         return (
             <div ref={this.containerRef} className={"video-container"}>
 
-                <div data-private={""} className={"preview-video"} hidden={!MyInfo.info?.mediaState.cameraEnabled}>
+                <div data-private={""} className={"preview-video"} hidden={!MyInfo.info?.mediaState.camera}>
                     <div className={"preview-video-wrapper"}>
                         <video playsInline={true} muted={true} autoPlay={true} ref={this.previewRef}/>
                     </div>
@@ -103,8 +103,8 @@ export class VideoContainer extends React.Component<any, any> {
                 {
                     RoomStore.room ?
                         <div className={"controls-wrapper"}>
-                            <span onClick={() => IO.toggleVideo()}>
-                                {MyInfo.info?.mediaState.cameraEnabled ?
+                            <span onClick={() => IO.toggleMedia("camera")}>
+                                {MyInfo.info?.mediaState.camera ?
                                     <FontAwesomeIcon icon={faVideo}/> :
                                     <FontAwesomeIcon icon={faVideoSlash}/>
                                 }
@@ -118,13 +118,13 @@ export class VideoContainer extends React.Component<any, any> {
                             }}>
                                 <FontAwesomeIcon icon={faPhone}/>
                             </span>
-                            <span onClick={() => IO.toggleAudio()}>
-                                {MyInfo.info?.mediaState.microphoneEnabled ?
+                            <span onClick={() => IO.toggleMedia("microphone")}>
+                                {MyInfo.info?.mediaState.microphone ?
                                     <FontAwesomeIcon icon={faMicrophone}/> :
                                     <FontAwesomeIcon icon={faMicrophoneSlash}/>
                                 }
                             </span>
-                            <span onClick={() => IO.toggleScreen()}>
+                            <span onClick={() => IO.toggleMedia("screen")}>
                                  <FontAwesomeIcon icon={faDesktop}/>
                             </span>
                         </div>
@@ -144,10 +144,12 @@ export class VideoContainer extends React.Component<any, any> {
                                                              participant={participant}/>
                                 }
                             }),
-                            ...participantsScreen.map(participant =>
-                                <ScreenParticipant flexBasis={this.state.basis} maxWidth={this.state.maxWidth}
+                            ...participantsScreen.map(participant => {
+                                console.log("here screen")
+                                return <ScreenParticipant flexBasis={this.state.basis} maxWidth={this.state.maxWidth}
                                                    key={participant.id}
                                                    participant={participant}/>
+                            }
                             )
                         ]
                         : <VideoPlaceholder/>

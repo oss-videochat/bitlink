@@ -6,6 +6,8 @@ import * as mediasoup from 'mediasoup';
 import {config} from "../../config";
 import {UpdateRoomSettingsValidation} from "../helpers/validation/UpdateRoomSettings";
 import debug from "../helpers/debug";
+import {MediaAction, MediaSource, MediaType} from "../../../common/interfaces/WebRTC";
+import {MediaSourceToTypeMap} from "../../../common/helper/MediaSourceToTypeMap";
 
 const log = debug("Room");
 
@@ -138,13 +140,13 @@ class Room extends Event.EventEmitter {
     }
 
     addListeners(participant: Participant) {
-        participant.on("media-state-update", (kind, action) => {
-            log("Participant %s media state update %s:%S", participant.name, kind, action);
+        participant.on("media-state-update", (source: MediaSource, action: MediaAction) => {
+            log("Participant %s media state update %s:%S", participant.name, source, action);
 
             this.broadcast("participant-updated-media-state", [participant],
                 {
                     id: participant.id,
-                    kind,
+                    source,
                     action
                 }
             );
@@ -418,13 +420,13 @@ class Room extends Event.EventEmitter {
                     return;
                 }
                 Object.keys(participantJoined.mediasoupPeer.producers).forEach(type => {
-                    this.createConsumerAndNotify(participantJoined, participant, type as "video" | "audio" | "screen");
+                    this.createConsumerAndNotify(participantJoined, participant, type as MediaSource);
                 });
             });
         });
 
-        participant.socket.on("create-producer", async (transportId, kind, rtpParameters, cb: (response: APIResponse) => void) => {
-            log("Participant creating a producer %s:%s", participant.name, kind);
+        participant.socket.on("create-producer", async (transportId, kind: MediaType, source: MediaSource, rtpParameters, cb: (response: APIResponse) => void) => {
+            log("Participant creating a producer %s:%s", participant.name, source);
             const transport = participant.mediasoupPeer.getTransport(transportId);
             if (!transport) {
                 cb({
@@ -434,7 +436,15 @@ class Room extends Event.EventEmitter {
                 });
                 return;
             }
-            if (!["audio", "video", "screen"].includes(kind)) {
+            if (!["camera", "microphone", "screen"].includes(source)) {
+                cb({
+                    success: false,
+                    error: "Some error occurred. Probably your crappy input.",
+                    status: 400
+                });
+                return;
+            }
+            if (!["video", "audio"].includes(kind)) {
                 cb({
                     success: false,
                     error: "Some error occurred. Probably your crappy input.",
@@ -447,8 +457,8 @@ class Room extends Event.EventEmitter {
                     kind,
                     rtpParameters
                 });
-                participant.mediasoupPeer.addProducer(producer, kind);
-                this._handleNewProducer(participant, kind);
+                participant.mediasoupPeer.addProducer(producer, source);
+                this._handleNewProducer(participant, source);
                 cb({
                     success: true,
                     error: null,
@@ -467,12 +477,12 @@ class Room extends Event.EventEmitter {
         });
     }
 
-    _handleNewProducer(theParticipant, kind: "video" | "audio" | "screen") {
+    _handleNewProducer(theParticipant, source: MediaSource) {
         this.getConnectedParticipants().forEach(aParticpant => {
             if (aParticpant.id === theParticipant.id) {
                 return;
             }
-            this.createConsumerAndNotify(theParticipant, aParticpant, kind)
+            this.createConsumerAndNotify(theParticipant, aParticpant, source)
         });
     }
 
@@ -593,9 +603,9 @@ class Room extends Event.EventEmitter {
         }
     }
 
-    async createConsumerAndNotify(producerPeer: Participant, consumerPeer: Participant, kind: "video" | "audio" | "screen") {
+    async createConsumerAndNotify(producerPeer: Participant, consumerPeer: Participant, source: MediaSource) {
         log("New consumer creation { Producer: %s | Consumer: %s }", producerPeer.name, consumerPeer.name);
-        const producer = producerPeer.mediasoupPeer.getProducersByKind(kind);
+        const producer = producerPeer.mediasoupPeer.producers[source];
         if (
             !producer
             || !consumerPeer.mediasoupPeer.rtcCapabilities
@@ -620,7 +630,7 @@ class Room extends Event.EventEmitter {
 
         consumerPeer.mediasoupPeer.addConsumer(consumer);
 
-        consumerPeer.socket.emit("new-consumer", kind, producerPeer.id, {
+        consumerPeer.socket.emit("new-consumer", source, MediaSourceToTypeMap[source], producerPeer.id, {
             producerId: producer.id,
             consumerId: consumer.id,
             rtpParameters: consumer.rtpParameters,

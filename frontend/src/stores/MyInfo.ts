@@ -1,6 +1,8 @@
 import {observable} from "mobx";
 import {types} from 'mediasoup-client'
 import Participant, {ParticipantData} from "../components/models/Participant";
+import {MediaSource, MediaType} from "../../../common/interfaces/WebRTC";
+import {MediaSourceToTypeMap} from "@bitlink/common/helper/MediaSourceToTypeMap";
 
 export interface CurrentUserInformation extends ParticipantData {
     key: string
@@ -12,15 +14,15 @@ interface MediasoupObj {
         receiving: types.Transport | null
     },
     producers: {
-        video: types.Producer | null,
-        audio: types.Producer | null,
+        camera: types.Producer | null,
+        microphone: types.Producer | null,
         screen: types.Producer | null
     }
 }
 
 interface StreamsObject {
-    video: MediaStream | null,
-    audio: MediaStream | null,
+    camera: MediaStream | null,
+    microphone: MediaStream | null,
     screen: MediaStream | null,
 }
 
@@ -36,8 +38,8 @@ class CurrentUserInformationStore {
             receiving: null
         },
         producers: {
-            video: null,
-            audio: null,
+            camera: null,
+            microphone: null,
             screen: null
         },
     };
@@ -49,9 +51,9 @@ class CurrentUserInformationStore {
     };
 
     private cachedStreams: StreamsObject = {
-        video: null,
-        audio: null,
-        screen: null
+        screen: null,
+        camera: null,
+        microphone: null
     };
 
 
@@ -60,26 +62,14 @@ class CurrentUserInformationStore {
         this.info = undefined;
     }
 
-    pause(kind: "video" | "audio" | "screen") {
-        this.mediasoup.producers[kind]?.pause();
-        if (kind === "video") {
-            this.info!.mediaState.cameraEnabled = false;
-        } else if (kind === "audio") {
-            this.info!.mediaState.microphoneEnabled = false;
-        } else {
-            this.info!.mediaState.screenShareEnabled = false;
-        }
+    pause(source: MediaSource) {
+        this.mediasoup.producers[source]?.pause();
+        this.info!.mediaState[source] = false;
     }
 
-    resume(kind: "video" | "audio" | "screen") {
-        this.mediasoup.producers[kind]?.resume();
-        if (kind === "video") {
-            this.info!.mediaState.cameraEnabled = true;
-        } else if (kind === "audio") {
-            this.info!.mediaState.microphoneEnabled = true;
-        } else {
-            this.info!.mediaState.screenShareEnabled = true;
-        }
+    resume(source: MediaSource) {
+        this.mediasoup.producers[source]?.resume();
+        this.info!.mediaState[source] = true;
     }
 
     setPreferredInput(kind: "video" | "audio", deviceId: string | null) {
@@ -91,14 +81,16 @@ class CurrentUserInformationStore {
         localStorage.setItem(`preferred-${kind}-input`, deviceId);
     }
 
-    async getStream(type: "video" | "audio" | "screen"): Promise<MediaStream> {
-        if(type === "screen"){
-            if(!this.cachedStreams[type]){
+    async getStream(source: MediaSource): Promise<MediaStream> {
+        if(source === "screen"){
+            if(!this.cachedStreams[source]){
                 // @ts-ignore
-                this.cachedStreams[type] = await navigator.mediaDevices.getDisplayMedia().catch(e => console.error(e.toString()));
+                this.cachedStreams[source] = await navigator.mediaDevices.getDisplayMedia().catch(e => console.error(e.toString()));
             }
-            return this.cachedStreams[type]!;
+            return this.cachedStreams[source]!;
         }
+
+        const mediaType = MediaSourceToTypeMap[source] as MediaType;
 
         const options = {
             video: {video: {facingMode: {ideal: "user"}, width: {ideal: 960}, height: {ideal: 640}}},
@@ -106,31 +98,31 @@ class CurrentUserInformationStore {
         };
 
         const setPreferredInput = async () => {
-            const stream: MediaStream = await navigator.mediaDevices.getUserMedia(options[type]);
+            const stream: MediaStream = await navigator.mediaDevices.getUserMedia(options[mediaType]);
             if (!stream) {
-                throw `No ${type} device available`;
+                throw `No ${source} device available`;
             }
-            this.setPreferredInput(type, stream ? stream.getTracks()[0].getSettings().deviceId! : null);
-            this.cachedStreams[type] = stream;
+            this.setPreferredInput(mediaType, stream ? stream.getTracks()[0].getSettings().deviceId! : null);
+            this.cachedStreams[source] = stream;
         }
 
-        if (!this.preferredInputs[type]) {
+        if (!this.preferredInputs[mediaType]) {
             await setPreferredInput()
-            return this.cachedStreams[type]!;
+            return this.cachedStreams[source]!;
         }
 
         // we have a previously selected preferred
-        if (!this.cachedStreams[type] || this.cachedStreams[type]!.getTracks()[0].getSettings().deviceId !== this.preferredInputs[type]) {
-            this.cachedStreams[type] = await navigator.mediaDevices.getUserMedia({[type]: {deviceId: this.preferredInputs[type]!}});
+        if (!this.cachedStreams[source] || this.cachedStreams[source]!.getTracks()[0].getSettings().deviceId !== this.preferredInputs[mediaType]) {
+            this.cachedStreams[source] = await navigator.mediaDevices.getUserMedia({[mediaType]: {deviceId: this.preferredInputs[mediaType]!}});
         }
 
-        if (!this.cachedStreams[type]) { // if its still not filled then that means that the preferredInputs is outdated
+        if (!this.cachedStreams[source]) { // if its still not filled then that means that the preferredInputs is outdated
             await setPreferredInput();
         }
 
-        this.preferredInputs[type] = this.cachedStreams[type]!.getTracks()[0].getSettings().deviceId!;
+        this.preferredInputs[mediaType] = this.cachedStreams[source]!.getTracks()[0].getSettings().deviceId!;
 
-        return this.cachedStreams[type]!;
+        return this.cachedStreams[source]!;
     }
 }
 

@@ -1,26 +1,25 @@
 import {types} from "mediasoup";
 import {APIResponse} from "./APIResponse";
 import * as Events from "events";
+import {MediaAction, MediaSource, MediaState} from "@bitlink/common/interfaces/WebRTC";
 
-interface ProducerObj {
-    video: types.Producer,
-    audio: types.Producer,
-    screen: types.Producer
-}
+type ProducerObj = {
+    [key in keyof MediaState]: types.Producer;
+};
 
 interface TransportObj {
     sending: types.Transport,
     receiving: types.Transport,
 }
 
-export default class MediasoupPeer extends Events.EventEmitter{
+export default class MediasoupPeer extends Events.EventEmitter {
     public transports: TransportObj = {
         sending: null,
         receiving: null,
     };
     public producers: ProducerObj = {
-        video: null,
-        audio: null,
+        microphone: null,
+        camera: null,
         screen: null
     };
     private consumers: Array<types.Consumer> = [];
@@ -28,8 +27,8 @@ export default class MediasoupPeer extends Events.EventEmitter{
 
     constructor(socket) {
         super();
-        socket.on("producer-action", (type, action, cb: (response: APIResponse) => void) => {
-            const producer: types.Producer = this.producers[type];
+        socket.on("producer-action", (source: MediaSource, action: MediaAction, cb: (response: APIResponse) => void) => {
+            const producer: types.Producer = this.producers[source];
             if (!producer) {
                 cb({
                     success: false,
@@ -39,18 +38,13 @@ export default class MediasoupPeer extends Events.EventEmitter{
                 return;
             }
             switch (action) {
-                case "pause":
-                    producer.pause().then(() => this.emit(type + '-toggle', false));
-                    cb({success: true, status: 200, error: null});
-                    break;
-                case "resume":
-                    producer.resume().then(() => this.emit(type + '-toggle', true));
+                case "pause" || "resume":
+                    producer.pause().then(() => this.emit("media-state-update", source, action));
                     cb({success: true, status: 200, error: null});
                     break;
                 case "close":
                     producer.close();
-                    this.emit(type + '-toggle', false);
-                    producer[type] = null;
+                    producer[source] = null;
                     cb({success: true, status: 200, error: null});
                     break;
                 default:
@@ -71,9 +65,9 @@ export default class MediasoupPeer extends Events.EventEmitter{
         return Object.values(this.transports).find((transport => transport.id === transportId));
     }
 
-    addProducer(producer, kind: "video" | "audio" | "screen") {
-        this.producers[kind] = producer;
-        this.emit("new-producer", kind)
+    addProducer(producer: types.Producer, mediaSource: MediaSource) {
+        this.producers[mediaSource] = producer;
+        this.emit("new-producer", mediaSource)
     }
 
     addConsumer(consumer) {
@@ -84,15 +78,11 @@ export default class MediasoupPeer extends Events.EventEmitter{
         return Object.values(this.producers).find((producer => producer.id === producerId));
     }
 
-    getProducersByKind(kind: "video" | "audio" | "screen") {
-        return this.producers[kind];
-    }
-
     getConsumersByKind(kind) {
         return this.consumers.filter((consumer => consumer.kind === kind));
     }
 
-    destroy(){
+    destroy() {
         this.transports.receiving?.close();
         this.transports.sending?.close();
     }

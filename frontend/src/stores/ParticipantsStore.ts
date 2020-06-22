@@ -10,12 +10,12 @@ class ParticipantsStore {
         isMe: false,
         name: "System",
         mediasoup: {
-            consumer: {video: null, audio: null, screen: null}
+            consumer: {camera: null, microphone: null, screen: null}
         },
         mediaState: {
-            cameraEnabled: false,
-            microphoneEnabled: false,
-            screenShareEnabled: false
+            camera: false,
+            microphone: false,
+            screen: false
         }
     });
 
@@ -24,12 +24,12 @@ class ParticipantsStore {
         isAlive: true,
         isHost: false, isMe: false, name: "everyone",
         mediasoup: {
-            consumer: {video: null, audio: null, screen: null}
+            consumer: {camera: null, screen: null, microphone: null}
         },
         mediaState: {
-            cameraEnabled: false,
-            microphoneEnabled: false,
-            screenShareEnabled: false
+            camera: false,
+            microphone: false,
+            screen: false
         }
     });
 

@@ -12,9 +12,17 @@ import {LayoutSizeCalculation} from "../../util/LayoutSizeCalculation";
 import Participant from "../models/Participant";
 import IO from "../../controllers/IO";
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
-import {faDesktop, faMicrophone, faMicrophoneSlash, faPhone, faVideo, faVideoSlash} from '@fortawesome/free-solid-svg-icons'
+import {
+    faDesktop,
+    faMicrophone,
+    faMicrophoneSlash,
+    faPhone,
+    faVideo,
+    faVideoSlash
+} from '@fortawesome/free-solid-svg-icons'
 import RoomStore from "../../stores/RoomStore";
 import {ScreenTile} from "./ScreenTile";
+import ScreenShareSlash from "./ScreenshareSlash";
 
 @observer
 export class TileContainer extends React.Component<any, any> {
@@ -126,9 +134,15 @@ export class TileContainer extends React.Component<any, any> {
                                     <FontAwesomeIcon icon={faMicrophoneSlash}/>
                                 }
                             </span>
-                            <span onClick={() => IO.toggleMedia("screen")}>
-                                 <FontAwesomeIcon icon={faDesktop}/>
-                            </span>
+                            {window.matchMedia('(max-width: 600px)').matches ?
+                                null :
+                                <span onClick={() => IO.toggleMedia("screen")}>
+                                    {MyInfo.info?.mediaState.screen ?
+                                        <FontAwesomeIcon icon={faDesktop}/> :
+                                        <ScreenShareSlash/>
+                                    }
+                                </span>
+                            }
                         </div>
                         : null
                 }
@@ -147,10 +161,10 @@ export class TileContainer extends React.Component<any, any> {
                                 }
                             }),
                             ...participantsScreen.map(participant => {
-                                return <ScreenTile flexBasis={this.state.basis} maxWidth={this.state.maxWidth}
-                                                   key={participant.id + "screenp"}
-                                                   participant={participant}/>
-                            }
+                                    return <ScreenTile flexBasis={this.state.basis} maxWidth={this.state.maxWidth}
+                                                       key={participant.id + "screenp"}
+                                                       participant={participant}/>
+                                }
                             )
                         ]
                         : <TilePlaceholder/>

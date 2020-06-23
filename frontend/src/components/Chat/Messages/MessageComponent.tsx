@@ -1,124 +1,120 @@
-import React from 'react';
+import React, {KeyboardEvent, useState} from 'react';
 import {ReactionsDisplayer} from "./ReactionsDisplayer";
 import './MessageComponent.css';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
 import {faPencilAlt, faTrashAlt} from '@fortawesome/free-solid-svg-icons'
 import IO from "../../../controllers/IO";
-import {observer} from "mobx-react"
-import {computed} from 'mobx';
+import {useObserver} from "mobx-react"
 import UIStore from "../../../stores/UIStore";
 import ChatStore from "../../../stores/ChatStore";
 import MessageContent from "./MessageContent";
+import {Message} from "../../../stores/MessagesStore";
 
-@observer
-export class MessageComponent extends React.Component<any, any> {
-    private userIsTyping = false;
+//  startGroup={lastParticipant !== message.from.id || message.created - lastTime > 1000 * 60 * 5}
+//                                         key={message.id}
+//                                         messageId={message.id}
+//                                         fromMe={message.from.id === MyInfo.info!.id}
+//                                         message={message}
 
-    constructor(props: any) {
-        super(props);
-        this.state = {
-            editValue: null,
-        };
+interface IMessageComponentProps {
+    startGroup: boolean,
+    messageId: string,
+    fromMe: boolean,
+    message: Message
+}
 
-        this.handleEditButton = this.handleEditButton.bind(this);
-        this.handleTrash = this.handleTrash.bind(this);
-        this.cancelEdit = this.cancelEdit.bind(this);
-    }
+const MessageComponent: React.FunctionComponent<IMessageComponentProps> = ({startGroup, message, fromMe, messageId}) => {
+    const [userIsTyping, setUserIsTyping] = useState(false);
+    const [editValue, setEditValue] = useState<null | string>(null);
 
-    @computed
-    get textareaValue(): string {
-        return this.state.editValue ?? this.props.message.content;
-    }
-
-    handleEditButton() {
-        UIStore.store.messageIdEditControl = this.props.messageId;
-    }
-
-    handleKeyDown(e: any) {
+    function handleKeyDown(e: KeyboardEvent<HTMLTextAreaElement>) {
         if (e.key === "Enter" && !e.shiftKey) {
             e.preventDefault();
-            if (this.state.editValue.trim().length > 0) {
-                this.cancelEdit();
-                IO.edit(this.props.messageId, this.state.editValue);
+            if (editValue!.trim().length > 0) {
+                cancelEdit();
+                IO.edit(messageId, editValue!);
             }
         }
-        if (e.key === "ArrowUp" && !this.userIsTyping) {
-            this.cancelEdit();
-            ChatStore.editNextMessage({messageId: this.props.messageId});
+        if (e.key === "ArrowUp" && !userIsTyping) {
+            cancelEdit();
+            ChatStore.editNextMessage({messageId: messageId});
             return;
         }
 
-        if (e.key === "ArrowDown" && !this.userIsTyping) {
-            this.cancelEdit();
-            ChatStore.editPreviewMessage(this.props.messageId);
+        if (e.key === "ArrowDown" && !userIsTyping) {
+            cancelEdit();
+            ChatStore.editPreviewMessage(messageId);
             return;
         }
 
         if (e.key === "Escape") {
-            this.cancelEdit();
+            cancelEdit();
             return;
         }
-
-        this.userIsTyping = true;
+        setUserIsTyping(true);
     }
 
-    handleTrash() {
-        console.log(this.props.messageId);
-        IO.delete(this.props.messageId);
-    }
 
-    cancelEdit() {
+    function cancelEdit() {
         UIStore.store.messageIdEditControl = null;
-        this.userIsTyping = false;
-        this.setState({editValue: null});
+        setUserIsTyping(false);
+        setEditValue(null);
     }
 
-    render() {
+    return useObserver(() => {
+
+        function textareaValue(): string {
+            return editValue ?? message.content;
+        }
+
         return (
             <div className={
                 "message "
-                + (this.props.startGroup ? "group-start " : "")
-                + (this.props.fromMe ? "from-me " : "from-them ")
+                + (startGroup ? "group-start " : "")
+                + (fromMe ? "from-me " : "from-them ")
             }>
-                {this.props.startGroup ?
+                {startGroup ?
                     <div className={"message--meta"}>
-                        <span data-private={"lipsum"} className={"message--name"}>{this.props.message.from.name}</span>
+                        <span data-private={"lipsum"} className={"message--name"}>{message.from.name}</span>
                         <span
-                            className={"message--date"}>{(new Date(this.props.message.created)).toLocaleString()}</span>
+                            className={"message--date"}>{(new Date(message.created)).toLocaleString()}</span>
                     </div>
                     :
                     null
                 }
                 {
-                    this.props.fromMe && UIStore.store.messageIdEditControl !== this.props.messageId ?
+                    fromMe && UIStore.store.messageIdEditControl !== messageId ?
                         <div className={"message--options-container"}>
-                            <span onClick={this.handleEditButton} className={"message--option"}><FontAwesomeIcon
+                            <span onClick={() => UIStore.store.messageIdEditControl = messageId}
+                                  className={"message--option"}><FontAwesomeIcon
                                 icon={faPencilAlt}/></span>
-                            <span onClick={this.handleTrash} className={"message--option"}><FontAwesomeIcon
+                            <span onClick={() => IO.delete(messageId)}
+                                  className={"message--option"}><FontAwesomeIcon
                                 icon={faTrashAlt}/></span>
                         </div>
                         : null
                 }
                 <div className={"message--content-container"}>
                     {
-                        UIStore.store.messageIdEditControl !== this.props.messageId ?
-                            <MessageContent content={this.props.message.content}/>
+                        UIStore.store.messageIdEditControl !== messageId ?
+                            <MessageContent content={message.content}/>
                             :
                             <React.Fragment>
-                              <textarea data-private={"lipsum"} autoFocus={true} onKeyDown={e => this.handleKeyDown(e)}
+                              <textarea data-private={"lipsum"} autoFocus={true} onKeyDown={handleKeyDown}
                                         placeholder={"Say something..."}
-                                        className={"message--content--edit-input"} value={this.textareaValue}
-                                        onChange={(e) => this.setState({editValue: e.target.value})}/>
-                                <span onClick={this.cancelEdit} className={"message--content-edit-cancel"}>cancel</span>
+                                        className={"message--content--edit-input"} value={textareaValue()}
+                                        onChange={(e) => setEditValue(e.target.value)}/>
+                                <span onClick={cancelEdit} className={"message--content-edit-cancel"}>cancel</span>
                             </React.Fragment>
 
                     }
                 </div>
 
                 <div className={"message--reaction-wrapper"}>
-                    <ReactionsDisplayer reactions={this.props.message.reactions}/>
+                    <ReactionsDisplayer reactions={message.reactions}/>
                 </div>
             </div>
         );
-    }
+    })
 }
+export default MessageComponent;

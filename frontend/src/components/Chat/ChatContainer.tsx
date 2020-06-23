@@ -1,7 +1,7 @@
 import React, {useState} from 'react';
 import {useObserver} from "mobx-react"
-import {ChatParticipantList} from "./ParticipantList/ChatParticipantList";
-import {MessagesContainer} from "./Messages/MessagesContainer";
+import ChatParticipantList from "./ParticipantList/ChatParticipantList";
+import MessagesContainer from "./Messages/MessagesContainer";
 import './ChatContainer.css';
 import UIStore from "../../stores/UIStore";
 

@@ -1,11 +1,11 @@
 import React from 'react';
 import {observer} from "mobx-react"
 import {observable, reaction} from "mobx"
-import './VideoContainer.css';
+import './TileContainer.css';
 import ParticipantsStore from "../../stores/ParticipantsStore";
-import {VideoParticipant} from "./VideoParticipant";
-import {AudioParticipant} from "./AudioParticipant";
-import {VideoPlaceholder} from "./VideoPlaceholder";
+import {VideoTile} from "./VideoTile";
+import {AudioTile} from "./AudioTile";
+import {TilePlaceholder} from "./TilePlaceholder";
 import MyInfo from "../../stores/MyInfo";
 import UIStore from "../../stores/UIStore";
 import {LayoutSizeCalculation} from "../../util/LayoutSizeCalculation";
@@ -14,10 +14,10 @@ import IO from "../../controllers/IO";
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
 import {faDesktop, faMicrophone, faMicrophoneSlash, faPhone, faVideo, faVideoSlash} from '@fortawesome/free-solid-svg-icons'
 import RoomStore from "../../stores/RoomStore";
-import {ScreenParticipant} from "./ScreenParticipant";
+import {ScreenTile} from "./ScreenTile";
 
 @observer
-export class VideoContainer extends React.Component<any, any> {
+export class TileContainer extends React.Component<any, any> {
     @observable
     windowSize = {
         height: window.innerHeight,
@@ -138,22 +138,22 @@ export class VideoContainer extends React.Component<any, any> {
                         [
                             ...participantsMedia.map((participant, i, arr) => {
                                 if (participant.hasVideo) {
-                                    return <VideoParticipant flexBasis={this.state.basis} maxWidth={this.state.maxWidth}
-                                                             key={participant.id + "videop"}
-                                                             participant={participant}/>
+                                    return <VideoTile flexBasis={this.state.basis} maxWidth={this.state.maxWidth}
+                                                      key={participant.id + "videop"}
+                                                      participant={participant}/>
                                 } else {
-                                    return <AudioParticipant flexBasis={this.state.basis} key={participant.id + "audiop"}
-                                                             participant={participant}/>
+                                    return <AudioTile flexBasis={this.state.basis} key={participant.id + "audiop"}
+                                                      participant={participant}/>
                                 }
                             }),
                             ...participantsScreen.map(participant => {
-                                return <ScreenParticipant flexBasis={this.state.basis} maxWidth={this.state.maxWidth}
+                                return <ScreenTile flexBasis={this.state.basis} maxWidth={this.state.maxWidth}
                                                    key={participant.id + "screenp"}
                                                    participant={participant}/>
                             }
                             )
                         ]
-                        : <VideoPlaceholder/>
+                        : <TilePlaceholder/>
                     }
                 </div>
             </div>

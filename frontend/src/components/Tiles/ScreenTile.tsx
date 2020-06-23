@@ -1,10 +1,10 @@
 import React, {RefObject} from 'react';
-import './VideoParticipant.css';
-import './ScreenParticipant.css';
+import './VideoTile.css';
+import './ScreenTile.css';
 import {observer} from 'mobx-react';
 
 @observer
-export class ScreenParticipant extends React.Component<any, any> {
+export class ScreenTile extends React.Component<any, any> {
     private videoRef: RefObject<HTMLVideoElement> = React.createRef();
 
     componentDidMount() {

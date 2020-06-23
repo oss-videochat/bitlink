@@ -1,11 +1,11 @@
 import React, {RefObject} from 'react';
-import './VideoParticipant.css';
+import './VideoTile.css';
 import {observer} from 'mobx-react';
 import {reaction} from 'mobx';
 import {AutoPlayAudio} from "./AutoPlayAudio";
 
 @observer
-export class VideoParticipant extends React.Component<any, any> {
+export class VideoTile extends React.Component<any, any> {
     private videoRef: RefObject<HTMLVideoElement> = React.createRef();
     private audioRef: RefObject<HTMLVideoElement> = React.createRef();
     private oldTrackId = {

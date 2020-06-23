@@ -1,9 +1,9 @@
 import React from 'react';
-import './VideoPlaceholder.css'
+import './TilePlaceholder.css'
 import RoomId from "../Header/RoomId";
 import RoomStore from "../../stores/RoomStore";
 
-export class VideoPlaceholder extends React.Component<any, any> {
+export class TilePlaceholder extends React.Component<any, any> {
     render() {
         return (
             <div className={"video-placeholder"}>

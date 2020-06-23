@@ -1,16 +1,16 @@
 import React, {RefObject} from 'react';
-import './VideoParticipant.css';
+import './VideoTile.css';
 import {observer} from 'mobx-react';
 import {reaction} from 'mobx';
 import {AutoPlayAudio} from "./AutoPlayAudio";
 
 @observer
-export class VideoParticipant extends React.Component<any, any> {
+export class VideoTile extends React.Component<any, any> {
     private videoRef: RefObject<HTMLVideoElement> = React.createRef();
     private audioRef: RefObject<HTMLVideoElement> = React.createRef();
     private oldTrackId = {
-        video: null,
-        audio: null
+        camera: null,
+        microphone: null
     };
     private detectAudioChange: any = null;
 
@@ -23,7 +23,7 @@ export class VideoParticipant extends React.Component<any, any> {
 
     componentDidMount() {
         this.detectAudioChange = reaction(() => {
-            return this.props.participant.mediaState.microphoneEnabled
+            return this.props.participant.mediaState.microphone
         }, () => {
             this.updateMedia();
         });
@@ -35,20 +35,20 @@ export class VideoParticipant extends React.Component<any, any> {
 
 
     updateMedia() {
-        this.videoRef.current!.srcObject = new MediaStream([this.props.participant.mediasoup.consumer.video.track]);
+        this.videoRef.current!.srcObject = new MediaStream([this.props.participant.mediasoup.consumer.camera.track]);
 
         if (this.props.participant.hasAudio) {
-            this.setState({audioSrcObject: new MediaStream([this.props.participant.mediasoup.consumer.audio.track])})
+            this.setState({audioSrcObject: new MediaStream([this.props.participant.mediasoup.consumer.microphone.track])})
         }
     };
 
 
     componentDidUpdate(): void { // TODO this is horribleish. Probably a better way to do this. Basically reinventing React's componentShouldUpdate but with a custom method and custom state tracking. Pretty crappy if you ask me.
-        if (this.oldTrackId.video !== this.props.participant.mediasoup.consumer.video.track.id
-            || this.oldTrackId.audio !== this.props.participant.mediasoup.consumer.audio?.track.id
+        if (this.oldTrackId.camera !== this.props.participant.mediasoup.consumer.camera.track.id
+            || this.oldTrackId.microphone !== this.props.participant.mediasoup.consumer.microphone?.track.id
         ) {
-            this.oldTrackId.video = this.props.participant.mediasoup.consumer.video.track.id;
-            this.oldTrackId.audio = this.props.participant.mediasoup.consumer.audio?.track.id;
+            this.oldTrackId.camera = this.props.participant.mediasoup.consumer.camera.track.id;
+            this.oldTrackId.microphone = this.props.participant.mediasoup.consumer.microphone?.track.id;
             this.updateMedia();
         }
     }

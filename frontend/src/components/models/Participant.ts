@@ -1,10 +1,7 @@
 import {types} from "mediasoup-client";
 import {computed, observable} from 'mobx';
+import {MediaState, MediaSource} from "@bitlink/common/interfaces/WebRTC";
 
-export interface MediaState {
-    cameraEnabled: boolean,
-    microphoneEnabled: boolean,
-}
 
 export interface ParticipantData {
     id: string,
@@ -15,8 +12,7 @@ export interface ParticipantData {
     mediaState: MediaState,
     mediasoup: {
         consumer: {
-            video: types.Consumer | null,
-            audio: types.Consumer | null
+            [key in MediaSource]: types.Consumer | null
         }
     }
 }
@@ -30,8 +26,7 @@ export default class Participant {
     @observable mediaState: MediaState;
     @observable mediasoup: {
         consumer: {
-            video: types.Consumer | null,
-            audio: types.Consumer | null
+            [key in MediaSource]: types.Consumer | null
         }
     };
 
@@ -47,11 +42,16 @@ export default class Participant {
 
     @computed
     get hasVideo(): boolean {
-        return this.mediaState.cameraEnabled && !!this.mediasoup.consumer.video
+        return this.mediaState.camera && !!this.mediasoup.consumer.camera
     }
 
     @computed
     get hasAudio(): boolean {
-        return this.mediaState.microphoneEnabled && !!this.mediasoup.consumer.audio
+        return this.mediaState.microphone && !!this.mediasoup.consumer.microphone
+    }
+
+    @computed
+    get hasScreen(): boolean {
+        return this.mediaState.screen && !!this.mediasoup.consumer.screen
     }
 }

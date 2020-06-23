@@ -18,7 +18,7 @@ const MySettings: React.FunctionComponent<ISettingsPanelProps> = ({events, chang
                     });
             };
 
-            MyInfo.getStream("video")
+            MyInfo.getStream("camera")
                 .then((stream) => {
                     enumerate();
                 })

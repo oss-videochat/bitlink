@@ -5,7 +5,7 @@ import MyInfo from "../../stores/MyInfo";
 import UIStore from "../../stores/UIStore";
 import RoomStore from "../../stores/RoomStore";
 import NotificationStore from "../../stores/NotificationStore";
-import {prepareAudioBank} from "../Video/AutoPlayAudio";
+import {prepareAudioBank} from "../Tiles/AutoPlayAudio";
 import logo from "../../assets/logo/logo.svg";
 import LegalText from "../LegalText";
 

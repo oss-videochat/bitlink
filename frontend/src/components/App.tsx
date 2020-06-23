@@ -1,6 +1,6 @@
 import React, {useRef, useEffect} from 'react';
 
-import {VideoContainer} from "./Video/VideoContainer";
+import {TileContainer} from "./Tiles/TileContainer";
 import Header from './Header/Header';
 import './App.css';
 import ChatContainer from "./Chat/ChatContainer";
@@ -63,7 +63,7 @@ const App: React.FunctionComponent = () => {
             <Header toggleFullscreen={toggleFullscreen}/>
             <div className={"main-container"}>
                 <ChatContainer/>
-                <VideoContainer/>
+                <TileContainer/>
             </div>
             <Footer/>
         </div>

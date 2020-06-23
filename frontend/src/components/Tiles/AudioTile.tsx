@@ -1,11 +1,11 @@
 import React from 'react';
-import './AudioParticipant.css';
+import './AudioTile.css';
 
 import {observer} from 'mobx-react';
 import {AutoPlayAudio} from "./AutoPlayAudio";
 
 @observer
-export class AudioParticipant extends React.Component<any, any> {
+export class AudioTile extends React.Component<any, any> {
     private audioRef: any = React.createRef();
 
     constructor(props: any) {
@@ -19,7 +19,7 @@ export class AudioParticipant extends React.Component<any, any> {
                 <div className={"audio-participant--spacer"}>
                     <span className={"audio-participant--name"}>{this.props.participant.name}</span>
                 </div>
-                <AutoPlayAudio srcObject={new MediaStream([this.props.participant.mediasoup.consumer.audio.track])}/>
+                <AutoPlayAudio srcObject={new MediaStream([this.props.participant.mediasoup.consumer.microphone.track])}/>
             </div>
         );
     }

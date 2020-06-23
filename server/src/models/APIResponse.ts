@@ -1,7 +1,7 @@
-export interface APIResponse {
+export interface APIResponse<T = any> {
     success: boolean,
     error: string | null,
-    data?: any,
+    data?: T | any,
     status: number
 }
 

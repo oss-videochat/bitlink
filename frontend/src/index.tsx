@@ -5,8 +5,13 @@ import App from './components/App';
 import {autorun} from 'mobx';
 import RoomStore from "./stores/RoomStore";
 import UIStore from "./stores/UIStore";
+import debug from 'debug';
 
-if(process.env.NODE_ENV !== "development"){
+
+
+if(process.env.NODE_ENV === "development"){
+    debug.enable("BitLink:*")
+} else {
     LogRocket.init('wbok98/bitlink');
 }
 

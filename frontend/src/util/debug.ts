@@ -1,7 +1,5 @@
-import {debug} from 'debug';
-
-const log = debug('BitLink');
+import debug from 'debug';
 
 export default function (name: string) {
-    return log.extend(name);
+    return debug(`BitLink:${name}`);
 }

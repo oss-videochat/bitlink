@@ -14,6 +14,7 @@ import UIStore from "../stores/UIStore";
 import {ResetStores} from "../util/ResetStores";
 import * as mediasoupclient from 'mediasoup-client';
 import Participant, {ParticipantData} from "../components/models/Participant";
+import {MediaAction, MediaSource, MediaType} from "../../../common/interfaces/WebRTC";
 
 const log = debug("IO");
 
@@ -26,8 +27,8 @@ interface APIResponse {
 
 interface MediaStateUpdate {
     id: string,
-    kind: "video" | "audio",
-    action: "resume" | "pause";
+    source: MediaSource,
+    action: MediaAction;
 }
 
 export interface RoomSettingsObj {
@@ -80,31 +81,32 @@ class IO extends Event.EventEmitter {
             return {
                 audio: MyInfo.preferredInputs.audio,
                 video: MyInfo.preferredInputs.video
+                // no screen because we don't have a default
             }
 
         }, (_) => {
             log("Preferred input changed detected");
             if (
                 MyInfo.preferredInputs.audio
-                && MyInfo.mediasoup.producers.audio
-                && MyInfo.mediasoup.producers.audio.track?.getSettings().deviceId !== MyInfo.preferredInputs.audio
+                && MyInfo.mediasoup.producers.microphone
+                && MyInfo.mediasoup.producers.microphone.track?.getSettings().deviceId !== MyInfo.preferredInputs.audio
             ) {
                 log("Preferred audio input changed detected");
-                (MyInfo.mediasoup.producers.audio.track as MediaStreamTrack).stop();
-                MyInfo.getStream("audio").then((stream) => {
-                    MyInfo.mediasoup.producers.audio?.replaceTrack({track: stream.getAudioTracks()[0]});
+                (MyInfo.mediasoup.producers.microphone.track as MediaStreamTrack).stop();
+                MyInfo.getStream("microphone").then((stream) => {
+                    MyInfo.mediasoup.producers.microphone?.replaceTrack({track: stream.getAudioTracks()[0]});
                 });
             }
             if (
                 MyInfo.preferredInputs.video
-                && MyInfo.mediasoup.producers.video
-                && MyInfo.mediasoup.producers.video.track?.getSettings().deviceId !== MyInfo.preferredInputs.video
+                && MyInfo.mediasoup.producers.camera
+                && MyInfo.mediasoup.producers.camera.track?.getSettings().deviceId !== MyInfo.preferredInputs.video
             ) {
                 log("Preferred video input changed detected");
-                (MyInfo.mediasoup.producers.video.track as MediaStreamTrack).stop();
+                (MyInfo.mediasoup.producers.camera.track as MediaStreamTrack).stop();
 
-                MyInfo.getStream("video").then((stream) => {
-                    MyInfo.mediasoup.producers.video!.replaceTrack({track: stream.getVideoTracks()[0]});
+                MyInfo.getStream("camera").then((stream) => {
+                    MyInfo.mediasoup.producers.camera!.replaceTrack({track: stream.getVideoTracks()[0]});
                 });
             }
         });
@@ -172,10 +174,10 @@ class IO extends Event.EventEmitter {
             log("Adding transport");
 
             transport.on("connect", async ({dtlsParameters}, callback, errback) => {
-                log("transport connect event emitted");
+                log("Transport connect event emitted");
                 const response = await this.socketRequest("connect-transport", transport.id, dtlsParameters);
                 if (!response.success) {
-                    log("connect-transport request success");
+                    log("connect-transport request error");
                     NotificationStore.add(new UINotification(`An error occurred connecting to the transport: ${response.error}`, NotificationType.Error));
                     errback();
                     return;
@@ -185,14 +187,15 @@ class IO extends Event.EventEmitter {
             });
 
             transport.on("produce", async ({kind, rtpParameters, appData}, callback, errback) => {
+                log("Producing type: %s", appData.source);
                 try {
-                    const response: APIResponse = await this.socketRequest("create-producer", transport.id, kind, rtpParameters);
+                    const response: APIResponse = await this.socketRequest("create-producer", transport.id, kind, appData.source, rtpParameters);
                     if (!response.success) {
                         errback(response.error);
                         errback(response.error);
                         return;
                     }
-                    this.socketRequest("producer-action", kind, "resume");
+                    this.socketRequest("producer-action", appData.source, "resume");
                     callback({id: response.data.id});
                 } catch (error) {
                     errback(error);
@@ -231,8 +234,9 @@ class IO extends Event.EventEmitter {
         roomSummary.participants.forEach((participant: ParticipantData) => {
             participant.mediasoup = {
                 consumer: {
-                    video: null,
-                    audio: null
+                    camera: null,
+                    microphone: null,
+                    screen: null
                 }
             };
 
@@ -274,14 +278,16 @@ class IO extends Event.EventEmitter {
         ParticipantsStore.removeFromWaitingRoom(participantSummary.id);
 
         participantSummary.mediaState = {
-            cameraEnabled: false,
-            microphoneEnabled: false
+            camera: false,
+            screen: false,
+            microphone: false
         };
 
         participantSummary.mediasoup = {
             consumer: {
-                video: null,
-                audio: null
+                camera: null,
+                screen: null,
+                microphone: null
             }
         };
         const participant = new Participant(participantSummary);
@@ -301,32 +307,14 @@ class IO extends Event.EventEmitter {
         if (!participant) {
             return;
         }
-        if (update.kind === "video") {
-            if (update.action === "resume") {
-                if (participant.mediasoup?.consumer.video) {
-                    participant.mediasoup.consumer.video.resume();
-                }
-                participant.mediaState.cameraEnabled = true;
-
-            } else {
-                if (participant.mediasoup?.consumer.video) {
-                    participant.mediasoup.consumer.video.pause();
-                }
-                participant.mediaState.cameraEnabled = false;
-            }
-        } else if (update.kind === "audio") {
-            if (update.action === "resume") {
-                if (participant.mediasoup?.consumer.audio) {
-                    participant.mediasoup.consumer.audio.resume();
-                }
-                participant.mediaState!.microphoneEnabled = true;
-            } else {
-                if (participant.mediasoup?.consumer.audio) {
-                    participant.mediasoup.consumer.audio.pause();
-                }
-                participant.mediaState.microphoneEnabled = false;
+        log("Media state update %s: %s - %s", participant.name, update.source, update.action);
+        if(participant.mediasoup.consumer[update.source]){
+            participant.mediasoup.consumer[update.source]![update.action]();
+            if(update.action === "close"){
+                participant.mediasoup.consumer[update.source] = null;
             }
         }
+        participant.mediaState[update.source] = update.action === "resume";
     }
 
     _handleParticipantLeft(participantId: string) {
@@ -372,24 +360,25 @@ class IO extends Event.EventEmitter {
         ChatStore.removeMessage(messageSummary.id);
     }
 
-    async _handleNewConsumer(kind: "video" | "audio", participantId: string, data: any, cb: Function) {
+    async _handleNewConsumer(source: MediaSource, kind: MediaType, participantId: string, data: any, cb: Function) {
         const participant = ParticipantsStore.getById(participantId);
         if (!participant) {
             throw 'Could not find participant';
         }
-        participant.mediasoup!.consumer[kind] = await MyInfo.mediasoup.transports.receiving!.consume({
+        log("New Consumer for %s: %s", participant.name, source);
+        participant.mediasoup!.consumer[source] = await MyInfo.mediasoup.transports.receiving!.consume({
             id: data.consumerId,
             producerId: data.producerId,
-            kind,
+            kind: kind,
             rtpParameters: data.rtpParameters
         });
 
-        participant.mediasoup!.consumer[kind]!.on("transportclose", () => {
-            participant.mediasoup!.consumer[kind] = null;
+        participant.mediasoup!.consumer[source]!.on("transportclose", () => {
+            participant.mediasoup!.consumer[source] = null;
         });
 
         cb(true);
-        participant.mediasoup!.consumer[kind]?.resume();
+        participant.mediasoup!.consumer[source]?.resume();
     }
 
     _handleWaitingRoomInformation(info: any) {
@@ -419,45 +408,27 @@ class IO extends Event.EventEmitter {
         }
     }
 
-    async toggleVideo() {
-        if (MyInfo.mediasoup.producers.video) {
-            if (MyInfo.mediasoup.producers.video.paused) {
-                MyInfo.resume("video");
-                this.socketRequest("producer-action", "video", "resume");
-            } else {
-                MyInfo.pause("video");
-                this.socketRequest("producer-action", "video", "pause");
+    async toggleMedia(source: MediaSource) {
+        if (MyInfo.mediasoup.producers[source]) {
+            let action: "resume" | "pause" | "close" = MyInfo.mediasoup.producers[source]!.paused ? "resume" : "pause";
+            if(action === "pause" && source === "screen"){
+                action = "close";
             }
+            MyInfo[action](source);
+            this.socketRequest("producer-action", source, action);
             return;
         }
-
-        const stream = await MyInfo.getStream("video");
+        const stream = await MyInfo.getStream(source);
         if (!stream) {
-            NotificationStore.add(new UINotification(`An error occurred accessing the webcam`, NotificationType.Error));
+            NotificationStore.add(new UINotification(`An error occurred accessing the ${source}`, NotificationType.Error));
             return;
         }
-        MyInfo.mediasoup.producers.video = await MyInfo.mediasoup.transports.sending!.produce({track: stream.getVideoTracks()[0]});
-        MyInfo.resume("video");
-    }
-
-    async toggleAudio() {
-        if (MyInfo.mediasoup.producers.audio) {
-            if (MyInfo.mediasoup.producers.audio.paused) {
-                MyInfo.resume("audio");
-                this.socketRequest("producer-action", "audio", "resume");
-            } else {
-                MyInfo.pause("audio");
-                this.socketRequest("producer-action", "audio", "pause");
-            }
-            return;
-        }
-        const stream = await MyInfo.getStream("audio");
-        if (!stream) {
-            NotificationStore.add(new UINotification(`An error occurred accessing the microphone`, NotificationType.Error));
-            return;
-        }
-        MyInfo.mediasoup.producers.audio = await MyInfo.mediasoup.transports.sending!.produce({track: stream.getAudioTracks()[0]});
-        MyInfo.resume("audio");
+        log("Producing media: %s", source);
+        MyInfo.mediasoup.producers[source] = await MyInfo.mediasoup.transports.sending!.produce({
+            track: stream.getVideoTracks()[0],
+            appData: {source}
+        });
+        MyInfo.resume(source);
     }
 
     @action

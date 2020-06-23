@@ -103,7 +103,12 @@ export class TileContainer extends React.Component<any, any> {
 
         return (
             <div ref={this.containerRef} className={"video-container"}>
-
+                {
+                    MyInfo.info?.mediaState.screen &&
+                        <div className={"screen-sharing-warning"}>
+                            <span>You are sharing your screen</span>
+                        </div>
+                }
                 <div data-private={""} className={"preview-video"} hidden={!MyInfo.info?.mediaState.camera}>
                     <div className={"preview-video-wrapper"}>
                         <video playsInline={true} muted={true} autoPlay={true} ref={this.previewRef}/>

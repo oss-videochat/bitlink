@@ -14,7 +14,7 @@ import UIStore from "../stores/UIStore";
 import {ResetStores} from "../util/ResetStores";
 import * as mediasoupclient from 'mediasoup-client';
 import Participant, {ParticipantData} from "../components/models/Participant";
-import {MediaSource, MediaType} from "../../../common/interfaces/WebRTC";
+import {MediaAction, MediaSource, MediaType} from "../../../common/interfaces/WebRTC";
 
 const log = debug("IO");
 
@@ -28,7 +28,7 @@ interface APIResponse {
 interface MediaStateUpdate {
     id: string,
     source: MediaSource,
-    action: "resume" | "pause";
+    action: MediaAction;
 }
 
 export interface RoomSettingsObj {
@@ -310,6 +310,9 @@ class IO extends Event.EventEmitter {
         log("Media state update %s: %s - %s", participant.name, update.source, update.action);
         if(participant.mediasoup.consumer[update.source]){
             participant.mediasoup.consumer[update.source]![update.action]();
+            if(update.action === "close"){
+                participant.mediasoup.consumer[update.source] = null;
+            }
         }
         participant.mediaState[update.source] = update.action === "resume";
     }
@@ -407,7 +410,10 @@ class IO extends Event.EventEmitter {
 
     async toggleMedia(source: MediaSource) {
         if (MyInfo.mediasoup.producers[source]) {
-            const action = MyInfo.mediasoup.producers[source]!.paused ? "resume" : "pause";
+            let action: "resume" | "pause" | "close" = MyInfo.mediasoup.producers[source]!.paused ? "resume" : "pause";
+            if(action === "pause" && source === "screen"){
+                action = "close";
+            }
             MyInfo[action](source);
             this.socketRequest("producer-action", source, action);
             return;

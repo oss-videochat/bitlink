@@ -23,7 +23,6 @@ interface MediasoupObj {
 interface StreamsObject {
     camera: MediaStream | null,
     microphone: MediaStream | null,
-    screen: MediaStream | null,
 }
 
 
@@ -51,7 +50,6 @@ class CurrentUserInformationStore {
     };
 
     private cachedStreams: StreamsObject = {
-        screen: null,
         camera: null,
         microphone: null
     };
@@ -72,6 +70,12 @@ class CurrentUserInformationStore {
         this.info!.mediaState[source] = true;
     }
 
+    close(source: MediaSource){
+        this.mediasoup.producers[source]?.close();
+        this.mediasoup.producers[source] = null;
+        this.info!.mediaState[source] = false;
+    }
+
     setPreferredInput(kind: "video" | "audio", deviceId: string | null) {
         this.preferredInputs[kind] = deviceId;
         if (!deviceId) {
@@ -83,11 +87,8 @@ class CurrentUserInformationStore {
 
     async getStream(source: MediaSource): Promise<MediaStream> {
         if(source === "screen"){
-            if(!this.cachedStreams[source]){
-                // @ts-ignore
-                this.cachedStreams[source] = await navigator.mediaDevices.getDisplayMedia().catch(e => console.error(e.toString()));
-            }
-            return this.cachedStreams[source]!;
+            // @ts-ignore
+            return await navigator.mediaDevices.getDisplayMedia().catch(e => console.error(e.toString()));
         }
 
         const mediaType = MediaSourceToTypeMap[source] as MediaType;

@@ -40,12 +40,12 @@ export default class MediasoupPeer extends Events.EventEmitter {
             switch (action) {
                 case "resume":
                 case "pause":
-                    console.log(source, action);
                     producer[action]().then(() => this.emit("media-state-update", source, action));
                     cb({success: true, status: 200, error: null});
                     break;
                 case "close":
                     producer.close();
+                    this.emit("media-state-update", source, action)
                     producer[source] = null;
                     cb({success: true, status: 200, error: null});
                     break;

@@ -1,33 +1,32 @@
-import React, {RefObject} from 'react';
+import React, {useEffect, useRef} from 'react';
 import './VideoTile.css';
 import './ScreenTile.css';
-import {observer} from 'mobx-react';
+import {ITileProps} from "./TileContainer";
+import { useObserver } from 'mobx-react';
 
-@observer
-export class ScreenTile extends React.Component<any, any> {
-    private videoRef: RefObject<HTMLVideoElement> = React.createRef();
+const ScreenTile: React.FunctionComponent<ITileProps> = ({participant, flexBasis, maxWidth}) => {
+    const videoRef = useRef<HTMLVideoElement>(null);
 
-    componentDidMount() {
-        this.videoRef.current!.addEventListener("canplay", () => {
-            this.videoRef.current?.play().catch(e => console.error(e.toString()));
+    useEffect(() => {
+        videoRef.current?.addEventListener("canplay", () => {
+            videoRef.current!.play().catch(e => console.error(e.toString()));
         });
-        this.updateMedia();
+        updateMedia();
+    }, [])
+
+
+    function updateMedia() {
+        videoRef.current!.srcObject = new MediaStream([participant.mediasoup.consumer.screen!.track]);
     }
 
-
-    updateMedia() {
-        this.videoRef.current!.srcObject = new MediaStream([this.props.participant.mediasoup.consumer.screen.track]);
-    };
-
-    render() {
-        return (
-            <div className={"video-pad"} style={{flexBasis: this.props.flexBasis, maxWidth: this.props.maxWidth}}>
-                <div className={"video-participant-wrapper"}>
-                    <video autoPlay={true} playsInline={true} muted={true} ref={this.videoRef}
-                           className={"screen-participant--video"}/>
-                    <span className={"video-participant--name"}>{this.props.participant.name}'s Screen</span>
-                </div>
+    return useObserver(() => (
+        <div className={"video-pad"} style={{flexBasis: flexBasis, maxWidth: maxWidth}}>
+            <div className={"video-participant-wrapper"}>
+                <video autoPlay={true} playsInline={true} muted={true} ref={videoRef}
+                       className={"screen-participant--video"}/>
+                <span className={"video-participant--name"}>{participant.name}'s Screen</span>
             </div>
-        );
-    }
+        </div>
+    ));
 }
+export default ScreenTile;

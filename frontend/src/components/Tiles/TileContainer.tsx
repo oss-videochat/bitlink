@@ -3,9 +3,9 @@ import {observer} from "mobx-react"
 import {observable, reaction} from "mobx"
 import './TileContainer.css';
 import ParticipantsStore from "../../stores/ParticipantsStore";
-import {VideoTile} from "./VideoTile";
-import {AudioTile} from "./AudioTile";
-import {TilePlaceholder} from "./TilePlaceholder";
+import VideoTile from "./VideoTile";
+import AudioTile from "./AudioTile";
+import TilePlaceholder from "./TilePlaceholder";
 import MyInfo from "../../stores/MyInfo";
 import UIStore from "../../stores/UIStore";
 import {LayoutSizeCalculation} from "../../util/LayoutSizeCalculation";
@@ -21,8 +21,14 @@ import {
     faVideoSlash
 } from '@fortawesome/free-solid-svg-icons'
 import RoomStore from "../../stores/RoomStore";
-import {ScreenTile} from "./ScreenTile";
+import ScreenTile from "./ScreenTile";
 import ScreenShareSlash from "./ScreenshareSlash";
+
+export interface ITileProps {
+    flexBasis: string,
+    participant: Participant,
+    maxWidth: string
+}
 
 @observer
 export class TileContainer extends React.Component<any, any> {
@@ -161,7 +167,8 @@ export class TileContainer extends React.Component<any, any> {
                                                       key={participant.id + "videop"}
                                                       participant={participant}/>
                                 } else {
-                                    return <AudioTile flexBasis={this.state.basis} key={participant.id + "audiop"}
+                                    return <AudioTile flexBasis={this.state.basis} maxWidth={this.state.maxWidth}
+                                                      key={participant.id + "audiop"}
                                                       participant={participant}/>
                                 }
                             }),

@@ -10,7 +10,7 @@ technically only have 100 participant's at once (`Array.from({length: 100})`) bu
 don't tell the nonexistent marketing team.
  */
 
-import React from 'react';
+import React, {useEffect, useRef} from 'react';
 
 const audioBank: HTMLAudioElement[] = Array.from({length: 100}, el => document.createElement('audio') as unknown as HTMLAudioElement);
 let prepared = false;
@@ -34,33 +34,31 @@ export function prepareAudioBank() {
     prepared = true;
 }
 
-export class AutoPlayAudio extends React.Component<any, any> {
-    private audioElement: HTMLAudioElement = audioBank.pop() || document.createElement("audio"); // if the bank runs out, we just create another audio element. This will work for non-mobile/non-ios devices. But for those devices, we kind of screw them over here.
+interface IAutoPlayAudioProps {
+    srcObject?: MediaStream
+}
 
-    constructor(props: any) {
-        super(props);
+const AutoPlayAudio: React.FunctionComponent<IAutoPlayAudioProps> = ({srcObject}) => {
+    const audioElement = useRef<HTMLAudioElement>(audioBank.pop() || document.createElement("audio")); // if the bank runs out, we just create another audio element. This will work for non-mobile/non-ios devices. But for those devices, we kind of screw them over here.
+
+    useEffect(() => {
         if (!prepared) {
             throw 'Audios are not prepared';
         }
-        this.audioElement.addEventListener("canplay", () => {
-            return this.audioElement.play();
+        audioElement.current.addEventListener("canplay", () => {
+            return audioElement.current.play();
         });
-        if (this.props.srcObject) {
-            this.audioElement.srcObject = this.props.srcObject;
+
+        if (srcObject) {
+            audioElement.current.srcObject = srcObject;
         }
-    }
+        return () => {
+            audioElement.current.pause();
+            audioElement.current.srcObject = null;
+            audioBank.push(audioElement.current); // recycling is good for the owlrd
+        }
+    }, [srcObject]);
 
-    componentDidUpdate() {
-        this.audioElement.srcObject = this.props.srcObject;
-    }
-
-    componentWillUnmount() {
-        this.audioElement.pause();
-        this.audioElement.srcObject = null;
-        audioBank.push(this.audioElement);
-    }
-
-    render() {
-        return <div ref={(el) => el && el.appendChild(this.audioElement)}/>;
-    }
+    return <div ref={(el) => el && el.appendChild(audioElement.current)}/>;
 }
+export default AutoPlayAudio;

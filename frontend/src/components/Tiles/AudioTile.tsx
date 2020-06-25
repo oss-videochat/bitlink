@@ -1,26 +1,17 @@
 import React from 'react';
 import './AudioTile.css';
+import {useObserver} from 'mobx-react';
+import AutoPlayAudio from "./AutoPlayAudio";
+import Participant from "../models/Participant";
+import {ITileProps} from "./TileContainer";
 
-import {observer} from 'mobx-react';
-import {AutoPlayAudio} from "./AutoPlayAudio";
-
-@observer
-export class AudioTile extends React.Component<any, any> {
-    private audioRef: any = React.createRef();
-
-    constructor(props: any) {
-        super(props);
-    }
-
-
-    render() {
-        return (
-            <div className={"video-participant-wrapper audio video-pad"} style={{"flexBasis": this.props.flexBasis}}>
-                <div className={"audio-participant--spacer"}>
-                    <span className={"audio-participant--name"}>{this.props.participant.name}</span>
-                </div>
-                <AutoPlayAudio srcObject={new MediaStream([this.props.participant.mediasoup.consumer.microphone.track])}/>
+const AudioTile: React.FunctionComponent<ITileProps> = ({flexBasis, participant, maxWidth}) => useObserver(() => (
+        <div className={"video-participant-wrapper audio video-pad"} style={{flexBasis, maxWidth}}>
+            <div className={"audio-participant--spacer"}>
+                <span className={"audio-participant--name"}>{participant.name}</span>
             </div>
-        );
-    }
-}
+            <AutoPlayAudio srcObject={new MediaStream([participant.mediasoup.consumer.microphone!.track])}/>
+        </div>
+    )
+)
+export default AudioTile;

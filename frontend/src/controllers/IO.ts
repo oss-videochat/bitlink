@@ -425,7 +425,7 @@ class IO extends Event.EventEmitter {
         }
         log("Producing media: %s", source);
         MyInfo.mediasoup.producers[source] = await MyInfo.mediasoup.transports.sending!.produce({
-            track: stream.getVideoTracks()[0],
+            track: stream.getTracks()[0],
             appData: {source}
         });
         MyInfo.resume(source);

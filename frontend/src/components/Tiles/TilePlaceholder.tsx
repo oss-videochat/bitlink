@@ -2,11 +2,10 @@ import React from 'react';
 import './TilePlaceholder.css'
 import RoomId from "../Header/RoomId";
 import RoomStore from "../../stores/RoomStore";
+import {useObserver} from 'mobx-react';
 
-export class TilePlaceholder extends React.Component<any, any> {
-    render() {
-        return (
-            <div className={"video-placeholder"}>
+const TilePlaceholder: React.FunctionComponent = () => useObserver(() => (
+        <div className={"video-placeholder"}>
                 <span className={"video-placeholder--message"}>
                       Click the button to invite others.
                     {RoomStore.room ?
@@ -14,7 +13,7 @@ export class TilePlaceholder extends React.Component<any, any> {
                         : null
                     }
                 </span>
-            </div>
-        );
-    }
-}
+        </div>
+    )
+);
+export default TilePlaceholder;

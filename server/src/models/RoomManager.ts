@@ -1,40 +1,52 @@
 import Room from './Room';
 import Participant from './Participant';
-import {SocketWrapper} from "./SocketWrapper";
-
+import * as http from 'http';
 import * as cryptoRandomString from 'crypto-random-string';
 import * as crypto from 'crypto';
 import {APIResponseCallback} from "./APIResponse";
 import {MediasoupWorkersGroup} from "./MediasoupWorkersGroup";
 import * as Events from "events";
 import debug from "../helpers/debug";
+import * as socketio from 'socket.io';
 
 const log = debug("RoomManger");
 
-interface roomObject {
+interface RoomObject {
     [id: string]: Room,
 }
 
 class RoomManager extends Events.EventEmitter {
-    private rooms: roomObject = {};
-    private socketWrapper: SocketWrapper;
+    private rooms: RoomObject = {};
+    private io: socketio.Server;
+    private clientSockets: socketio.Socket[] = [];
     private msWorkerGroup: MediasoupWorkersGroup;
 
-    constructor(socketWrapper: SocketWrapper) {
+    private constructor(server: http.Server, msWorkerGroup) {
         super();
-        this.socketWrapper = socketWrapper;
-        this.socketWrapper.allSockets.on("create-room", this.handleCreateRoom.bind(this));
-        this.socketWrapper.allSockets.on("join-room", this.handleJoinRoom.bind(this));
-        this.socketWrapper.allSockets.on("get-rtp-capabilities", this.handleGetRTPCapabilities.bind(this));
-        MediasoupWorkersGroup.create().then((msWG) => {
-            this.msWorkerGroup = msWG;
-            this.emit("ready");
-            log("Mediasoup workers setup");
-        });
+        this.io = socketio(server);
+        this.io.on("connection", this.addSocket.bind(this));
+        this.msWorkerGroup = msWorkerGroup;
     }
 
+    static async create(server: http.Server){
+        const msWorkerGroup = await MediasoupWorkersGroup.create();
+        log("Mediasoup workers setup");
+        return new RoomManager(server, msWorkerGroup);
+    }
 
-    addRoom(room: Room) {
+    private addSocket(socket){
+        this.clientSockets.push(socket);
+        socket.on("get-rtp-capabilities", (roomId: string, cb: APIResponseCallback) => this.handleGetRTPCapabilities(socket, roomId, cb));
+        socket.on("create-room", (name: string) => this.handleCreateRoom(socket, name));
+        socket.on("join-room", (roomId: string, name: string, rtpCapabilities: string, cb: APIResponseCallback) => this.handleJoinRoom(socket, roomId, name, rtpCapabilities, cb) );
+        socket.on("disconnect", () => this.removeSocket(socket));
+    }
+
+    private removeSocket(socket){
+        this.clientSockets.splice(this.clientSockets.indexOf(socket), 1);
+    }
+
+    private addRoom(room: Room) {
         log("Adding new room with name %s" + room.settings.name);
         room.id = this.getUniqueName();
         room.idHash = crypto.createHash('md5').update(room.id).digest("hex");
@@ -45,7 +57,7 @@ class RoomManager extends Events.EventEmitter {
         this.rooms[room.id] = (room);
     }
 
-    getUniqueName(): string {
+    private getUniqueName(): string {
         let unique: string;
         while (!unique || this.rooms.hasOwnProperty(unique)) {
             unique = cryptoRandomString({length: 9, type: 'numeric'});
@@ -53,7 +65,7 @@ class RoomManager extends Events.EventEmitter {
         return unique;
     }
 
-    async handleCreateRoom(socket, name) {
+    private async handleCreateRoom(socket, name) {
         log("Creating new room");
         const router = await this.msWorkerGroup.getGoodRouter();
         const room = new Room(name, router);
@@ -61,15 +73,7 @@ class RoomManager extends Events.EventEmitter {
         socket.emit("join-room", room.id);
     }
 
-    handleGetRTPCapabilities(socket, roomId: string, cb: APIResponseCallback){
-        const room: Room = this.rooms[roomId];
-        if (!room) {
-            return  cb({success: false, error: "The room doesn't exist", status: 404});
-        }
-        return  cb({success: true, error: null, data: room.router.rtpCapabilities ,status: 200});
-    }
-
-    handleJoinRoom(socket, roomId: string, name: string, rtpCapabilities: string, cb: APIResponseCallback) {
+    private handleJoinRoom(socket, roomId: string, name: string, rtpCapabilities: string, cb: APIResponseCallback) {
         log("New participant joining room %s with name ", roomId, name);
         const participant = new Participant(name, socket);
         participant.mediasoupPeer.rtcCapabilities = rtpCapabilities;
@@ -82,10 +86,18 @@ class RoomManager extends Events.EventEmitter {
         participant.on("leave", () =>{ // TODO is this necessary? i'm not sure
             log("Participant left %s", participant.name);
             socket.removeAllListeners();
-            this.socketWrapper.addSocket(socket);
+            this.removeSocket(socket);
+            this.addSocket(socket);
         });
     }
 
+    private handleGetRTPCapabilities(socket, roomId: string, cb: APIResponseCallback){
+        const room: Room = this.rooms[roomId];
+        if (!room) {
+            return  cb({success: false, error: "The room doesn't exist", status: 404});
+        }
+        return  cb({success: true, error: null, data: room.router.rtpCapabilities ,status: 200});
+    }
 }
 
 export default RoomManager;

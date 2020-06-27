@@ -22,13 +22,6 @@ interface RoomSettings {
 }
 
 class Room extends Event.EventEmitter {
-    get settings(): RoomSettings {
-        return this._settings;
-    }
-    get router(): mediasoup.types.Router {
-        return this._router;
-    }
-
     private static defaultSettings: RoomSettings = {
         waitingRoom: false,
         name: undefined
@@ -38,19 +31,18 @@ class Room extends Event.EventEmitter {
     public idHash: string;
     private readonly participants: Array<Participant> = [];
     private readonly waitingRoom: Array<Participant> = [];
-
     private readonly messages: Array<Message> = []; // TODO mongodb
     private readonly latestMessage = {};
-    private _settings: RoomSettings = {...Room.defaultSettings};
     public readonly created;
-    private _router: mediasoup.types.Router;
+    public readonly router: mediasoup.types.Router;
+    public settings: RoomSettings = {...Room.defaultSettings};
 
     constructor(name: string = "Untitled Room", router: mediasoup.types.Router) {
         super();
         log("New room with name %s", name)
-        this._settings.name = name;
+        this.settings.name = name;
         this.created = new Date();
-        this._router = router;
+        this.router = router;
 
         setTimeout(() => {
             if (this.getConnectedParticipants().length === 0) {
@@ -80,11 +72,11 @@ class Room extends Event.EventEmitter {
             participant.isHost = true;
         }
 
-        if (this._settings.waitingRoom && !participant.isHost) {
+        if (this.settings.waitingRoom && !participant.isHost) {
             this.waitingRoom.push(participant);
             cb({
                 success: false, error: "In waiting room", status: 403, data: {
-                    name: this._settings.name
+                    name: this.settings.name
                 }
             });
 
@@ -100,7 +92,7 @@ class Room extends Event.EventEmitter {
         cb({
             success: true, error: null, status: 200, data: {
                 summary: this.getSummary(participant),
-                rtcCapabilities: this._router.rtpCapabilities
+                rtcCapabilities: this.router.rtpCapabilities
             }
         });
 
@@ -179,7 +171,7 @@ class Room extends Event.EventEmitter {
                     this._addParticipant(patientParticipant);
                     patientParticipant.socket.emit("waiting-room-accept", {
                         summary: this.getSummary(patientParticipant),
-                        rtcCapabilities: this._router.rtpCapabilities
+                        rtcCapabilities: this.router.rtpCapabilities
                     });
                     cb({
                         success: true,
@@ -220,7 +212,7 @@ class Room extends Event.EventEmitter {
                 status: 200,
                 error: null,
                 data: {
-                    settings: this._settings
+                    settings: this.settings
                 }
             });
         });
@@ -254,18 +246,18 @@ class Room extends Event.EventEmitter {
                 });
                 return;
             }
-            if (newSettings.name !== this._settings.name) {
+            if (newSettings.name !== this.settings.name) {
                 this.broadcast("update-room-settings", this.getConnectedParticipants().filter(participant1 => participant1.isHost), this.makeSettingsSafe(newSettings));
                 this.broadcast("update-room-settings-host", this.getConnectedParticipants().filter(participant1 => participant1.isHost), newSettings);
             }
 
-            this._settings = newSettings;
+            this.settings = newSettings;
             cb({
                 success: true,
                 status: 200,
                 error: null,
                 data: {
-                    settings: this._settings
+                    settings: this.settings
                 }
             });
         });
@@ -296,7 +288,7 @@ class Room extends Event.EventEmitter {
                     status: 401,
                     error: "You cannot kick a host",
                     data: {
-                        settings: this._settings
+                        settings: this.settings
                     }
                 });
                 return;
@@ -344,10 +336,10 @@ class Room extends Event.EventEmitter {
             let transport;
             switch (type) {
                 case "webrtc":
-                    transport = await this._router.createWebRtcTransport(config.mediasoup.webRtcTransportOptions);
+                    transport = await this.router.createWebRtcTransport(config.mediasoup.webRtcTransportOptions);
                     break;
                 case "plain":
-                    transport = await this._router.createPlainTransport(config.mediasoup.plainTransportOptions);
+                    transport = await this.router.createPlainTransport(config.mediasoup.plainTransportOptions);
                     break;
                 default:
                     cb({
@@ -501,14 +493,13 @@ class Room extends Event.EventEmitter {
     }
 
     destroy() {
-        console.log("Destroyed");
         this.router.close();
         this.broadcast("destroy");
         this.emit("destroy");
     }
 
     sendMessage(from: Participant, toId: string, content): APIResponse {
-        let message;
+        let message: Message;
         if (toId === "everyone") {
             message = new Message(from, toId, content);
         } else {
@@ -577,7 +568,7 @@ class Room extends Event.EventEmitter {
         return {
             id: this.id,
             idHash: this.idHash,
-            name: this._settings.name,
+            name: this.settings.name,
             participants: this.participants.map(participantInRoom => {
                 const obj: any = {
                     isMe: participantInRoom.id === currentParticipant.id,
@@ -609,7 +600,7 @@ class Room extends Event.EventEmitter {
         if (
             !producer
             || !consumerPeer.mediasoupPeer.rtcCapabilities
-            || !this._router.canConsume({
+            || !this.router.canConsume({
                 producerId: producer.id,
                 rtpCapabilities: consumerPeer.mediasoupPeer.rtcCapabilities
             })

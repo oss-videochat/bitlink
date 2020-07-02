@@ -13,8 +13,8 @@ import UIStore from "../stores/UIStore";
 import {ResetStores} from "../util/ResetStores";
 import * as mediasoupclient from 'mediasoup-client';
 import Participant, {ParticipantData} from "../components/models/Participant";
-import {MediaAction, MediaSource, MediaType} from "@bitlink/common/interfaces/WebRTC";
-import {ParticipantSummary} from "@bitlink/common/interfaces/Summaries";
+import {MediaAction, MediaSource, MediaType} from "@bitlink/common";
+import {ParticipantSummary} from "@bitlink/common";
 
 const log = debug("IO");
 

@@ -1,7 +1,7 @@
 import {types} from "mediasoup-client";
 import {computed, observable} from 'mobx';
-import {MediaState, MediaSource} from "@bitlink/common/interfaces/WebRTC";
-import {ParticipantRole} from "@bitlink/common/enum/ParticipantRole";
+import {MediaState, MediaSource} from "@bitlink/common";
+import {ParticipantRole} from "@bitlink/common";
 
 
 export interface ParticipantData {

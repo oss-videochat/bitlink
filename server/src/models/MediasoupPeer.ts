@@ -1,7 +1,7 @@
 import {types} from "mediasoup";
 import {APIResponse} from "./APIResponse";
 import * as Events from "events";
-import {MediaAction, MediaSource, MediaState} from "@bitlink/common/interfaces/WebRTC";
+import {MediaAction, MediaSource, MediaState} from "@bitlink/common";
 
 type ProducerObj = {
     [key in keyof MediaState]: types.Producer;

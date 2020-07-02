@@ -6,9 +6,9 @@ import * as mediasoup from 'mediasoup';
 import {config} from "../../config";
 import {UpdateRoomSettingsValidation} from "../helpers/validation/UpdateRoomSettings";
 import debug from "../helpers/debug";
-import {MediaAction, MediaSource, MediaType} from "@bitlink/common/interfaces/WebRTC";
-import {MediaSourceToTypeMap} from "@bitlink/common/helper/MediaSourceToTypeMap";
-import {ParticipantRole} from "@bitlink/common/enum/ParticipantRole";
+import {MediaAction, MediaSource, MediaType} from "@bitlink/common";
+import {MediaSourceToTypeMap} from "@bitlink/common";
+import {ParticipantRole} from "@bitlink/common";
 
 const log = debug("Room");
 

@@ -1,5 +1,13 @@
 {
   "name": "@bitlink/common",
   "version": "0.3.0",
-  "private": true
+  "private": true,
+  "main": "./build/index.js",
+  "scripts": {
+    "build": "tsc",
+    "postinstall": "npm run build"
+  },
+  "dependencies": {
+    "typescript": "^3.9.6"
+  }
 }

@@ -1,8 +1,8 @@
 import {observable} from "mobx";
 import {types} from 'mediasoup-client'
 import Participant, {ParticipantData} from "../components/models/Participant";
-import {MediaSource, MediaType} from "@bitlink/common/interfaces/WebRTC";
-import {MediaSourceToTypeMap} from "@bitlink/common/helper/MediaSourceToTypeMap";
+import {MediaSource, MediaType} from "@bitlink/common";
+import {MediaSourceToTypeMap} from "@bitlink/common";
 
 export interface CurrentUserInformation extends ParticipantData {
     key: string

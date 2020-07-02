@@ -6,8 +6,9 @@ import * as mediasoup from 'mediasoup';
 import {config} from "../../config";
 import {UpdateRoomSettingsValidation} from "../helpers/validation/UpdateRoomSettings";
 import debug from "../helpers/debug";
-import {MediaAction, MediaSource, MediaType} from "../../../common/interfaces/WebRTC";
-import {MediaSourceToTypeMap} from "../../../common/helper/MediaSourceToTypeMap";
+import {MediaAction, MediaSource, MediaType} from "@bitlink/common/interfaces/WebRTC";
+import {MediaSourceToTypeMap} from "@bitlink/common/helper/MediaSourceToTypeMap";
+import {ParticipantRole} from "@bitlink/common/enum/ParticipantRole";
 
 const log = debug("Room");
 
@@ -69,7 +70,7 @@ class Room extends Event.EventEmitter {
         });
 
         if (this.getConnectedParticipants().length === 0) {
-            participant.isHost = true;
+            participant.role = ParticipantRole.HOST;
         }
 
         if (this.settings.waitingRoom && !participant.isHost) {
@@ -102,7 +103,7 @@ class Room extends Event.EventEmitter {
         this.addListeners(participant);
 
         if (this.getConnectedParticipants().length === 0) {
-            participant.isHost = true;
+            participant.role = ParticipantRole.HOST;
         }
 
         this.participants.push(participant);
@@ -117,7 +118,7 @@ class Room extends Event.EventEmitter {
         this.broadcast("participant-left", [], participant.id);
     }
 
-    kickParticipant(participant: Participant){
+    kickParticipant(participant: Participant) {
         log("Participant kicked", participant.name)
         this.leaveParticipant(participant);
         participant.socket.emit("kicked");
@@ -569,22 +570,18 @@ class Room extends Event.EventEmitter {
             id: this.id,
             idHash: this.idHash,
             name: this.settings.name,
-            participants: this.participants.map(participantInRoom => {
-                const obj: any = {
-                    isMe: participantInRoom.id === currentParticipant.id,
-                    ...participantInRoom.toSummary()
-                };
-                if (obj.isMe) {
-                    obj.key = participantInRoom.key
-                }
-                return obj;
-            }),
-            messages: this.messages.filter(message => message.isToEveryone
-                || (currentParticipant
-                    && message.from.id === currentParticipant.id
-                    || message.to.id === currentParticipant.id
+            participants: this.participants.map(participantInRoom => participantInRoom.toSummary()),
+            myId: currentParticipant.id,
+            messages: this.messages
+                .filter(message =>
+                    message.isToEveryone
+                    || (
+                        currentParticipant
+                        && message.from.id === currentParticipant.id
+                        || message.to.id === currentParticipant.id
+                    )
                 )
-            ).map(message => message.toSummary())
+                .map(message => message.toSummary())
         }
     }
 

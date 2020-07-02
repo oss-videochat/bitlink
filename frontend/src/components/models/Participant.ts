@@ -1,6 +1,7 @@
 import {types} from "mediasoup-client";
 import {computed, observable} from 'mobx';
 import {MediaState, MediaSource} from "@bitlink/common/interfaces/WebRTC";
+import {ParticipantRole} from "@bitlink/common/enum/ParticipantRole";
 
 
 export interface ParticipantData {
@@ -20,8 +21,7 @@ export interface ParticipantData {
 export default class Participant {
     @observable id: string;
     @observable name: string;
-    @observable isHost: boolean;
-    @observable isMe: boolean;
+    @observable role: ParticipantRole;
     @observable isAlive: boolean;
     @observable mediaState: MediaState;
     @observable mediasoup: {
@@ -29,15 +29,18 @@ export default class Participant {
             [key in MediaSource]: types.Consumer | null
         }
     };
+    constructor(data: Partial<Participant>) {
+        this.id = data.id!;
+        this.name = data.name!;
+        this.role = data.role!;
+        this.isAlive = data.isAlive!;
+        this.mediaState = data.mediaState!;
+        this.mediasoup = data.mediasoup!;
+    }
 
-    constructor(data: ParticipantData) {
-        this.id = data.id;
-        this.name = data.name;
-        this.isHost = data.isHost;
-        this.isMe = data.isMe;
-        this.isAlive = data.isAlive;
-        this.mediaState = data.mediaState;
-        this.mediasoup = data.mediasoup;
+    @computed
+    get isHost(){
+        return this.role === ParticipantRole.HOST;
     }
 
     @computed

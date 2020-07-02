@@ -1,7 +1,7 @@
 import {observable} from "mobx";
 import {types} from 'mediasoup-client'
 import Participant, {ParticipantData} from "../components/models/Participant";
-import {MediaSource, MediaType} from "../../../common/interfaces/WebRTC";
+import {MediaSource, MediaType} from "@bitlink/common/interfaces/WebRTC";
 import {MediaSourceToTypeMap} from "@bitlink/common/helper/MediaSourceToTypeMap";
 
 export interface CurrentUserInformation extends ParticipantData {
@@ -29,7 +29,6 @@ interface StreamsObject {
 class CurrentUserInformationStore {
     @observable
     public info?: Participant;
-
     public chosenName?: string;
     public mediasoup: MediasoupObj = {
         transports: {

@@ -7,6 +7,7 @@ export interface RoomSummary {
     id: string,
     idHash: string,
     name: string,
+    myId: string
     participants: Array<Participant>,
     messages: Array<MessageSummary>,
 }

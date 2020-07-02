@@ -1,12 +1,13 @@
 import {observable} from "mobx"
 import Participant from "../components/models/Participant";
+import {ParticipantRole} from "@bitlink/common/enum/ParticipantRole";
 
 class ParticipantsStore {
 
     public system: Participant = new Participant({
         id: "system",
         isAlive: true,
-        isHost: false,
+        role: ParticipantRole.MEMBER,
         isMe: false,
         name: "System",
         mediasoup: {
@@ -22,7 +23,9 @@ class ParticipantsStore {
     public everyone: Participant = new Participant({
         id: "everyone",
         isAlive: true,
-        isHost: false, isMe: false, name: "everyone",
+        role: ParticipantRole.MEMBER,
+        isMe: false,
+        name: "everyone",
         mediasoup: {
             consumer: {camera: null, screen: null, microphone: null}
         },

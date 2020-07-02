@@ -4,14 +4,8 @@ import * as cryptoRandomString from 'crypto-random-string';
 import Message from "./Message";
 import MediasoupPeer from "./MediasoupPeer";
 import {MediaAction, MediaSource, MediaState} from '@bitlink/common/interfaces/WebRTC';
-
-interface ParticipantSummary {
-    id: string,
-    name: string,
-    isHost: boolean,
-    isAlive: boolean,
-    mediaState: MediaState
-}
+import {ParticipantSummary} from "@bitlink/common/interfaces/Summaries";
+import {ParticipantRole} from "@bitlink/common/enum/ParticipantRole";
 
 class Participant extends Event.EventEmitter {
     public readonly id;
@@ -25,14 +19,23 @@ class Participant extends Event.EventEmitter {
     };
 
     public name;
-    isConnected = true;
-    public isHost = false;
+    public isConnected = true;
+    public role = ParticipantRole.MEMBER;
 
     constructor(name: string, socket) {
         super();
         this.id = uuidv4();
         this.socket = socket;
         this.name = name || this.id;
+        this.mediasoupPeer = new MediasoupPeer(this.socket);
+        this.setupListeners();
+    }
+
+    get isHost(){
+        return this.role === ParticipantRole.HOST;
+    }
+
+    setupListeners(){
         this.socket.on("disconnect", () => {
             this.isConnected = false;
             this.emit("disconnect");
@@ -45,8 +48,6 @@ class Participant extends Event.EventEmitter {
         this.socket.on("update-name", (name) => {
             this.name = name;
         });
-
-        this.mediasoupPeer = new MediasoupPeer(this.socket);
 
         this.mediasoupPeer.on("media-state-update", (source: MediaSource, action: MediaAction) => {
             this.emit("media-state-update", source, action);
@@ -72,7 +73,7 @@ class Participant extends Event.EventEmitter {
         return {
             id: this.id,
             name: this.name,
-            isHost: this.isHost,
+            role: this.role,
             isAlive: this.isConnected,
             mediaState: this.mediaState
         }

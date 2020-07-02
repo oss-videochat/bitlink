@@ -2,7 +2,6 @@ import debug from "../util/debug";
 import io from 'socket.io-client';
 import ParticipantsStore from "../stores/ParticipantsStore";
 import {action, reaction} from 'mobx';
-import * as Event from 'events';
 
 import CurrentUserInformationStore from "../stores/MyInfo";
 import MyInfo from "../stores/MyInfo";
@@ -14,7 +13,8 @@ import UIStore from "../stores/UIStore";
 import {ResetStores} from "../util/ResetStores";
 import * as mediasoupclient from 'mediasoup-client';
 import Participant, {ParticipantData} from "../components/models/Participant";
-import {MediaAction, MediaSource, MediaType} from "../../../common/interfaces/WebRTC";
+import {MediaAction, MediaSource, MediaType} from "@bitlink/common/interfaces/WebRTC";
+import {ParticipantSummary} from "@bitlink/common/interfaces/Summaries";
 
 const log = debug("IO");
 
@@ -36,11 +36,10 @@ export interface RoomSettingsObj {
     waitingRoom: boolean,
 }
 
-class IO extends Event.EventEmitter {
+class IO {
     private io: SocketIOClient.Socket;
 
     constructor(ioAddress: string) {
-        super();
         this.io = io(ioAddress);
 
         this.io.on("kicked", this._handleKick.bind(this));
@@ -228,27 +227,26 @@ class IO extends Event.EventEmitter {
 
     @action
     _handleRoomSummary(data: { summary: RoomSummary, rtcCapabilities: any }) {
+        const roomSummary = data.summary;
 
-        const roomSummary: RoomSummary = data.summary;
-
-        roomSummary.participants.forEach((participant: ParticipantData) => {
-            participant.mediasoup = {
-                consumer: {
-                    camera: null,
-                    microphone: null,
-                    screen: null
+        const participants = roomSummary.participants.map((participantSummary: ParticipantSummary) => {
+            const participant = new Participant({
+                ...participantSummary,
+                mediasoup: {
+                    consumer: {
+                        camera: null,
+                        microphone: null,
+                        screen: null
+                    }
                 }
-            };
-
-            if (participant.isMe) {
-                CurrentUserInformationStore.info = new Participant(participant);
+            });
+            if (participant.id === roomSummary.myId) {
+                CurrentUserInformationStore.info = participant;
             }
+            return participant;
         });
-
-        roomSummary.participants = roomSummary.participants.map((data) => new Participant(data));
-
-        ParticipantsStore.replace(roomSummary.participants);
-        ChatStore.addParticipant(...roomSummary.participants);
+        ParticipantsStore.replace(participants);
+        ChatStore.addParticipant(...participants);
 
         roomSummary.messages.forEach((message: MessageSummary) => {
             const realMessage = this.convertMessageSummaryToMessage(message);
@@ -258,8 +256,6 @@ class IO extends Event.EventEmitter {
         RoomStore.room = roomSummary;
         RoomStore.mediasoup.rtcCapabilities = data.rtcCapabilities;
         UIStore.store.joinedDate = new Date();
-
-        this.emit("room-summary", roomSummary);
     }
 
 
@@ -274,26 +270,27 @@ class IO extends Event.EventEmitter {
         return Object.assign({}, message, replacementObj) as Message;
     }
 
-    _handleNewParticipant(participantSummary: ParticipantData) {
+    _handleNewParticipant(participantSummary: ParticipantSummary) {
         ParticipantsStore.removeFromWaitingRoom(participantSummary.id);
 
-        participantSummary.mediaState = {
+       /* participantSummary.mediaState = {
             camera: false,
             screen: false,
             microphone: false
-        };
+        };*/
 
-        participantSummary.mediasoup = {
-            consumer: {
-                camera: null,
-                screen: null,
-                microphone: null
+        const participant = new Participant({
+            ...participantSummary,
+            mediasoup: {
+                consumer: {
+                    camera: null,
+                    screen: null,
+                    microphone: null
+                }
             }
-        };
-        const participant = new Participant(participantSummary);
+        });
         ParticipantsStore.participants.push(participant);
         NotificationStore.add(new UINotification(`${participant.name} joined!`, NotificationType.Alert));
-        this.emit("new-participant", participant);
         ChatStore.addSystemMessage({content: `${participant.name} joined`});
     }
 
@@ -338,7 +335,6 @@ class IO extends Event.EventEmitter {
         NotificationStore.add(new UINotification(`Room was closed!`, NotificationType.Warning));
         ResetStores();
         UIStore.store.modalStore.joinOrCreate = true;
-        this.emit("room-closure");
     }
 
     _handleNewMessage(messageSummary: MessageSummary) {

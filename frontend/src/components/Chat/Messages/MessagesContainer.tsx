@@ -5,12 +5,12 @@ import {Message} from "../../../stores/MessagesStore";
 import MyInfo from "../../../stores/MyInfo";
 import MessageComponent from "./MessageComponent";
 import './MessageContainer.css'
-import IO from "../../../controllers/IO";
 import ParticipantsStore from "../../../stores/ParticipantsStore";
 import SystemMessage from "./SystemMessage";
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
 import {faChevronLeft} from '@fortawesome/free-solid-svg-icons'
 import UIStore from "../../../stores/UIStore";
+import ChatInput from "../ChatInput";
 
 interface IMessagesContainerProps {
     selectedUser: string
@@ -19,20 +19,6 @@ interface IMessagesContainerProps {
 const MessagesContainer: React.FunctionComponent<IMessagesContainerProps> = ({selectedUser}) => {
     const list = React.createRef<HTMLDivElement>();
     const [shouldScroll, setShouldScroll] = useState(true);
-    const [inputValue, setInputValue] = useState("");
-
-    function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
-        if (e.key === "Enter" && !e.shiftKey) {
-            e.preventDefault();
-            if (inputValue.trim().length > 0) {
-                IO.send(selectedUser, inputValue);
-                setInputValue("");
-            }
-        }
-        if (e.key === "ArrowUp" && inputValue === "") {
-            ChatStore.editNextMessage({selectedUser: selectedUser});
-        }
-    }
 
     useEffect(() => {
         scrollToBottom()
@@ -93,14 +79,7 @@ const MessagesContainer: React.FunctionComponent<IMessagesContainerProps> = ({se
                         </div>
                     </div>
                     {ParticipantsStore.getById(selectedUser)?.isAlive || selectedUser === "everyone" ?
-                        (
-                            <div className={"chat--input-container"}>
-                            <textarea data-private={"lipsum"} onKeyDown={e => handleKeyDown(e)}
-                                      placeholder={"Say something..."}
-                                      className={"chat--input"} value={inputValue}
-                                      onChange={(e) => setInputValue(e.target.value)}/>
-                            </div>
-                        )
+                        <ChatInput selectedUser={selectedUser}/>
                         : null
                     }
                 </div>

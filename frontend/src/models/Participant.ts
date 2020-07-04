@@ -39,6 +39,11 @@ export default class Participant {
     }
 
     @computed
+    get mentionString(){
+        return this.name.replace(/\s+/g, '');
+    }
+
+    @computed
     get isHost(){
         return this.role === ParticipantRole.HOST;
     }

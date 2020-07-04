@@ -3,7 +3,7 @@ import {action, observable} from "mobx";
 import {Message} from "./MessagesStore";
 import MyInfo from "./MyInfo";
 import UIStore from "./UIStore";
-import Participant from "../components/models/Participant";
+import Participant from "../models/Participant";
 
 export interface ChatStoreObj {
     [key: string]: Array<Message>

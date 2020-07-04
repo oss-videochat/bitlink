@@ -1,5 +1,5 @@
 import {observable} from "mobx"
-import Participant from "../components/models/Participant";
+import Participant from "../models/Participant";
 import {ParticipantRole} from "@bitlink/common";
 
 class ParticipantsStore {
@@ -8,7 +8,7 @@ class ParticipantsStore {
         id: "system",
         isAlive: true,
         role: ParticipantRole.MEMBER,
-        name: "System",
+        name: "system",
         mediasoup: {
             consumer: {camera: null, microphone: null, screen: null}
         },
@@ -64,6 +64,21 @@ class ParticipantsStore {
         if (waitingRoomIndex >= 0) {
             this.waitingRoom.splice(waitingRoomIndex, 1)
         }
+    }
+
+    filterByMentionString(mentionString: string): Participant[] {
+        mentionString = mentionString.toLowerCase();
+        if (mentionString[0] === "@") {
+            mentionString = mentionString.substring(1);
+        }
+        return this.participants
+            .slice(2)
+            .filter(participant =>
+                participant
+                    .mentionString
+                    .toLowerCase()
+                    .startsWith(mentionString)
+            );
     }
 
 }

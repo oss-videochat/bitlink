@@ -4,7 +4,7 @@ import './ChatParticipant.css'
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
 import {faMicrophoneSlash, faVideoSlash} from '@fortawesome/free-solid-svg-icons'
 import ParticipantsStore from "../../../stores/ParticipantsStore";
-import Participant from "../../models/Participant";
+import Participant from "../../../models/Participant";
 
 interface IChatParticipantProps {
     onChosen: (chosen: string) => void,

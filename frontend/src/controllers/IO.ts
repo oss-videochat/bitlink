@@ -12,7 +12,7 @@ import NotificationStore, {NotificationType, UINotification} from "../stores/Not
 import UIStore from "../stores/UIStore";
 import {ResetStores} from "../util/ResetStores";
 import * as mediasoupclient from 'mediasoup-client';
-import Participant, {ParticipantData} from "../components/models/Participant";
+import Participant, {ParticipantData} from "../models/Participant";
 import {MediaAction, MediaSource, MediaType} from "@bitlink/common";
 import {ParticipantSummary} from "@bitlink/common";
 

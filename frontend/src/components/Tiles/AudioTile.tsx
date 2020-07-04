@@ -2,7 +2,7 @@ import React from 'react';
 import './AudioTile.css';
 import {useObserver} from 'mobx-react';
 import AutoPlayAudio from "./AutoPlayAudio";
-import Participant from "../models/Participant";
+import Participant from "../../models/Participant";
 import {ITileProps} from "./TileContainer";
 
 const AudioTile: React.FunctionComponent<ITileProps> = ({flexBasis, participant, maxWidth}) => useObserver(() => (

@@ -36,7 +36,7 @@ class UIStore {
         joinedDate: null,
         title: "BitLink"
     };
-    @observable public store: UIStoreInterface = UIStore.defaultProperties;
+    @observable public store: UIStoreInterface = JSON.parse(JSON.stringify(UIStore.defaultProperties));
 
     reset() {
         this.store = UIStore.defaultProperties;

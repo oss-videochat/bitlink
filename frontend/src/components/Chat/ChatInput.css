@@ -1,0 +1,44 @@
+.chat-input {
+    border-top: solid 1px #d8d8d8;
+    padding: 10px;
+    position: relative;
+}
+
+.chat-input__input {
+    border: 1px solid #d8d8d8;
+    width: 100%;
+    padding: 7px 7px 7px 10px;
+    border-radius: 5px;
+    resize: none;
+}
+
+.mention-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    transform: translateY(-100%);
+    width: 100%;
+    padding: 10px;
+    max-width: 100%;
+}
+
+.mention-wrapper {
+    border: 1px solid #d8d8d8;
+    width: 100%;
+    max-width: 100%;
+    border-radius: 4px;
+    background: white;
+}
+
+.mention-container__mention::before {
+    content: '@';
+}
+
+.mention-container__mention {
+    padding: 3px 8px;
+    margin: 2px 0;
+    max-width: 100%;
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}

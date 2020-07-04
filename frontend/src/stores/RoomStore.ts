@@ -1,7 +1,7 @@
 import {observable} from "mobx";
 import {MessageSummary} from "./MessagesStore";
 import * as mediasoupclient from 'mediasoup-client';
-import Participant from "../components/models/Participant";
+import Participant from "../models/Participant";
 
 export interface RoomSummary {
     id: string,

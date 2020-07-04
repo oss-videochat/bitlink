@@ -1,7 +1,7 @@
 import React from 'react';
 import './WaitingRoomListParticipant.css';
 import IO from "../../../../controllers/IO";
-import Participant from "../../../models/Participant";
+import Participant from "../../../../models/Participant";
 import {useObserver} from 'mobx-react';
 
 interface IWaitingRoomListParticipantProps {

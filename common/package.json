@@ -4,6 +4,7 @@
   "private": true,
   "main": "./build/index.js",
   "scripts": {
+    "start": "tsc -w",
     "build": "tsc",
     "postinstall": "npm run build"
   },

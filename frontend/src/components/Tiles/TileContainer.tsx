@@ -9,7 +9,7 @@ import TilePlaceholder from "./TilePlaceholder";
 import MyInfo from "../../stores/MyInfo";
 import UIStore from "../../stores/UIStore";
 import {LayoutSizeCalculation} from "../../util/LayoutSizeCalculation";
-import Participant from "../models/Participant";
+import Participant from "../../models/Participant";
 import IO from "../../controllers/IO";
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
 import {

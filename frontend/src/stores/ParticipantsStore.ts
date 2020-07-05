@@ -77,8 +77,18 @@ class ParticipantsStore {
                 participant
                     .mentionString
                     .toLowerCase()
-                    .startsWith(mentionString)
+                    .startsWith(mentionString) // we need to sort
             );
+    }
+
+    getByMentionString(mentionString: string){
+        mentionString = mentionString.toLowerCase();
+        if (mentionString[0] === "@") {
+            mentionString = mentionString.substring(1);
+        }
+        return this.participants
+            .slice(2)
+            .filter(participant => participant.mentionString.toLowerCase() === mentionString);
     }
 
 }

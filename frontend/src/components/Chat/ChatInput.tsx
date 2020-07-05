@@ -60,9 +60,13 @@ const ChatInput: React.FunctionComponent<IChatInputProps> = ({selectedUser}) => 
         const textArea = textAreaRef.current;
         const latestAtIndex = inputValue.lastIndexOf("@", textArea.selectionStart - 1);
         const indexOfNextSpace = inputValue.indexOf(" ", latestAtIndex);
-        setInputValue(`${inputValue.substring(0, latestAtIndex + 1)}${participant.mentionString}${inputValue.substring(indexOfNextSpace > 0 ? indexOfNextSpace : latestAtIndex + 1)}`);
-        setSelectionLocation(`${inputValue.substring(0, latestAtIndex)}${participant.mentionString}`.length + 2);
-        handleSelectionChange();
+        const firstPart = `${inputValue.substring(0, latestAtIndex + 1)}${participant.mentionString}`;
+        if(indexOfNextSpace > 0){
+            setInputValue(firstPart + inputValue.substring(indexOfNextSpace));
+        } else {
+            setInputValue(firstPart);
+        }
+        setSelectionLocation(firstPart.length + 1);
     }
 
     useEffect(() => {
@@ -71,6 +75,7 @@ const ChatInput: React.FunctionComponent<IChatInputProps> = ({selectedUser}) => 
         }
         textAreaRef.current.focus();
         textAreaRef.current.setSelectionRange(selectionLocation, selectionLocation);
+        handleSelectionChange();
     }, [selectionLocation])
 
     return (

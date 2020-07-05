@@ -1,0 +1,7 @@
+.participant-mention {
+    display: inline-block;
+    padding: 2px 6px;
+    color: rgb(73, 114, 255);
+    background: rgba(134, 151, 255, 0.5);
+    border-radius: 5px;
+}

@@ -1,25 +1,65 @@
 import React from "react";
+import ParticipantsStore from "../../../stores/ParticipantsStore";
+import './MessageContent.css'
 
 interface IMessageContentProps {
     content: string
 }
 
-const MessageContent: React.FunctionComponent<IMessageContentProps> = ({content}) => {
-    const text: string = content;
-    const linkRe: RegExp = /https?:\/\/[^\s]+/g;
-    const matches: string[] = Array.from(text.matchAll(linkRe)).map((arr: string[]) => arr[0]);
-    const splits = text.split(linkRe);
-    const jsx: Array<React.ClassicElement<any>> = [];
+type matcherArray = [RegExp, (before: string | undefined, match: string[], after: string | undefined) => React.ReactElement | React.ReactElement[] | void][];
 
-    splits.forEach((split: string, index: number) => {
-        jsx.push(<span key={split}>{split}</span>);
-        if (matches.length - 1 >= index) {
-            jsx.push(<a target={"_blank"} key={split} href={matches[index]}>{matches[index]}</a>)
+
+const MessageContent: React.FunctionComponent<IMessageContentProps> = ({content}) => {
+    let id = 0;
+
+    const matchers: matcherArray = [
+        [/https?:\/\/[^\s]+/g, (_, match) => {
+            return <a key={id++} target={"_blank"} href={match[0]}>{match[0]}</a>
+        }],
+        [/@[^\s]+/g, (_, match) => {
+            const participants = ParticipantsStore.getByMentionString(match[0]);
+            if(participants[0]) {
+                return <span key={id++} className={"participant-mention"}>@{participants[0].mentionString}</span>
+            }
+            return <span key={id++}>{match[0]}</span>;
+        }],
+    ];
+
+
+    function parse(text: string, matcherArray: matcherArray) {
+        if (text.length === 0) {
+            return;
         }
-    });
+        if (matcherArray.length === 0) {
+            return [<span key={id++}>{text}</span>];
+        }
+
+        const arr: React.ReactElement[] = [];
+
+        function addValue(val: React.ReactElement | React.ReactElement[] | undefined | void) { // this just allows us to return anything from an array of elements to a single element to no elements
+            if (val) {
+                if (Array.isArray(val)) {
+                    arr.push(...val);
+                } else {
+                    arr.push(val);
+                }
+            }
+        }
+
+        const [regExp, callback] = matcherArray[0];
+        const matches = Array.from(text.matchAll(regExp));
+        const splits = text.split(regExp);
+        splits.forEach((split: string, index: number) => {
+            addValue(parse(split, matcherArray.slice(1))); // this text obv didn't match the first one so check the next one
+            if (matches[index]) {
+                addValue(callback(split, matches[index], splits[index + 1]))
+            }
+        });
+        return arr;
+    }
 
     return (
-        <span data-private={""} className={"message--content"}>{jsx}</span>
+        <span data-private={""} className={"message--content"}>{parse(content, matchers)!}</span>
     )
 }
 export default MessageContent;

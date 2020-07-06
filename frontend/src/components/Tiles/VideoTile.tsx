@@ -1,4 +1,4 @@
-import React, {RefObject, useEffect, useRef, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import './VideoTile.css';
 import {useObserver} from 'mobx-react';
 import {autorun} from 'mobx';

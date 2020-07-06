@@ -8,7 +8,6 @@ import UIStore from "./stores/UIStore";
 import debug from 'debug';
 
 
-
 if(process.env.NODE_ENV === "development"){
     debug.enable("BitLink:*")
 } else {

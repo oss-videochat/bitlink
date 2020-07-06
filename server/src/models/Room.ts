@@ -6,9 +6,7 @@ import * as mediasoup from 'mediasoup';
 import {config} from "../../config";
 import {UpdateRoomSettingsValidation} from "../helpers/validation/UpdateRoomSettings";
 import debug from "../helpers/debug";
-import {MediaAction, MediaSource, MediaType} from "@bitlink/common";
-import {MediaSourceToTypeMap} from "@bitlink/common";
-import {ParticipantRole} from "@bitlink/common";
+import {MediaAction, MediaSource, MediaSourceToTypeMap, MediaType, ParticipantRole} from "@bitlink/common";
 
 const log = debug("Room");
 

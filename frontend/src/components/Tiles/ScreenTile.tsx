@@ -2,7 +2,7 @@ import React, {useEffect, useRef} from 'react';
 import './VideoTile.css';
 import './ScreenTile.css';
 import {ITileProps} from "./TileContainer";
-import { useObserver } from 'mobx-react';
+import {useObserver} from 'mobx-react';
 
 const ScreenTile: React.FunctionComponent<ITileProps> = ({participant, flexBasis, maxWidth}) => {
     const videoRef = useRef<HTMLVideoElement>(null);

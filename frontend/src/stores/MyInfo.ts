@@ -1,8 +1,7 @@
 import {observable} from "mobx";
 import {types} from 'mediasoup-client'
 import Participant, {ParticipantData} from "../models/Participant";
-import {MediaSource, MediaType} from "@bitlink/common";
-import {MediaSourceToTypeMap} from "@bitlink/common";
+import {MediaSource, MediaSourceToTypeMap, MediaType} from "@bitlink/common";
 
 export interface CurrentUserInformation extends ParticipantData {
     key: string

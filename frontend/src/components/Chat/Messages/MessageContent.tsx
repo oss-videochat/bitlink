@@ -52,7 +52,7 @@ const MessageContent: React.FunctionComponent<IMessageContentProps> = ({content}
         splits.forEach((split: string, index: number) => {
             addValue(parse(split, matcherArray.slice(1))); // this text obv didn't match the first one so check the next one
             if (matches[index]) {
-                addValue(callback(split, matches[index], splits[index + 1]))
+                addValue(callback(split, matches[index], splits[index + 1])) // run the callback passing the before string, match array, and the after string
             }
         });
         return arr;

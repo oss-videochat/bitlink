@@ -1,7 +1,6 @@
 import {types} from "mediasoup-client";
 import {computed, observable} from 'mobx';
-import {MediaState, MediaSource} from "@bitlink/common";
-import {ParticipantRole} from "@bitlink/common";
+import {MediaSource, MediaState, ParticipantRole} from "@bitlink/common";
 
 
 export interface ParticipantData {

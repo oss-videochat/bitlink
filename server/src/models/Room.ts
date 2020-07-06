@@ -6,8 +6,7 @@ import * as mediasoup from 'mediasoup';
 import {config} from "../../config";
 import {UpdateRoomSettingsValidation} from "../helpers/validation/UpdateRoomSettings";
 import debug from "../helpers/debug";
-import {MediaAction, MediaSource, MediaSourceToTypeMap, MediaType, ParticipantRole} from "@bitlink/common";
-
+import {MediaAction, MediaSource, MediaSourceToTypeMap, MediaType, ParticipantRole, RoomSummary} from "@bitlink/common";
 const log = debug("Room");
 
 interface ParticipantAuthObj {
@@ -563,7 +562,7 @@ class Room extends Event.EventEmitter {
         return this.messages.findIndex(message => message.id === messageId);
     }
 
-    getSummary(currentParticipant: Participant) {
+    getSummary(currentParticipant: Participant): RoomSummary {
         return {
             id: this.id,
             idHash: this.idHash,

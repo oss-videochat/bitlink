@@ -5,15 +5,15 @@ import {action, reaction} from 'mobx';
 
 import CurrentUserInformationStore from "../stores/MyInfo";
 import MyInfo from "../stores/MyInfo";
-import RoomStore, {RoomSummary} from "../stores/RoomStore";
+import RoomStore from "../stores/RoomStore";
 import ChatStore from "../stores/ChatStore";
-import {Message, MessageSummary} from "../stores/MessagesStore";
+import {Message} from "../stores/MessagesStore";
 import NotificationStore, {NotificationType, UINotification} from "../stores/NotificationStore";
 import UIStore from "../stores/UIStore";
 import {ResetStores} from "../util/ResetStores";
 import * as mediasoupclient from 'mediasoup-client';
 import Participant, {ParticipantData} from "../models/Participant";
-import {MediaAction, MediaSource, MediaType, ParticipantSummary} from "@bitlink/common";
+import {MediaAction, MediaSource, MediaType, ParticipantSummary, MessageSummary, RoomSummary} from "@bitlink/common";
 
 const log = debug("IO");
 

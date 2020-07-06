@@ -1,4 +1,4 @@
-import {Reactions} from "../enum/Reactions";
+import {Reactions} from "@bitlink/common";
 import Participant from "../models/Participant";
 
 export interface Reaction {
@@ -12,19 +12,5 @@ export interface Message {
     to: Participant,
     content: string,
     reactions: Array<Reaction>,
-    created: number,
-}
-
-export interface ReactionSummary {
-    type: Reactions,
-    participant: string;
-}
-
-export interface MessageSummary {
-    id: string,
-    from: string,
-    to: string | "everyone";
-    content: string,
-    reactions: Array<ReactionSummary>,
     created: number,
 }

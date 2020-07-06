@@ -1,6 +1,6 @@
 import React from 'react';
 import {observer} from "mobx-react"
-import {Reactions} from "../../../enum/Reactions";
+import {Reactions} from "@bitlink/common";
 import {Reaction} from "../../../stores/MessagesStore";
 
 interface ReactionArrayObj {

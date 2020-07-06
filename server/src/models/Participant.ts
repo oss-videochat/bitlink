@@ -3,7 +3,7 @@ import {v4 as uuidv4} from 'uuid';
 import * as cryptoRandomString from 'crypto-random-string';
 import Message from "./Message";
 import MediasoupPeer from "./MediasoupPeer";
-import {MediaAction, MediaSource, MediaState} from '@bitlink/common/src/interfaces/WebRTC';
+import {MediaAction, MediaSource, MediaState} from '@bitlink/common';
 import {ParticipantRole, ParticipantSummary} from "@bitlink/common";
 
 class Participant extends Event.EventEmitter {

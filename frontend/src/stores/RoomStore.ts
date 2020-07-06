@@ -1,16 +1,7 @@
 import {observable} from "mobx";
-import {MessageSummary} from "./MessagesStore";
+import {MessageSummary, RoomSummary} from "@bitlink/common";
 import * as mediasoupclient from 'mediasoup-client';
 import Participant from "../models/Participant";
-
-export interface RoomSummary {
-    id: string,
-    idHash: string,
-    name: string,
-    myId: string
-    participants: Array<Participant>,
-    messages: Array<MessageSummary>,
-}
 
 class RoomStore {
     @observable public room?: RoomSummary;

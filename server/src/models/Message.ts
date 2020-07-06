@@ -1,25 +1,11 @@
 import Participant from "./Participant";
-import Reactions from "./enums/Reactions";
+import {Reactions, MessageSummary, ReactionSummary} from "@bitlink/common";
 import * as Event from 'events'
 import {v4 as uuidv4} from 'uuid';
 
 interface Reaction {
     type: Reactions,
     participant: Participant,
-}
-interface ReactionSummary {
-    type: Reactions,
-    participant: string,
-}
-
-interface MessageJSONSummary {
-    id: string, // message id for editing, deleting, and reactions
-    from: string, // id of participant
-    to: string, // id of participant
-    message: string, // id of message
-    content: string,
-    reactions: Array<ReactionSummary>,
-    created: number
 }
 
 class Message extends Event.EventEmitter {
@@ -64,7 +50,7 @@ class Message extends Event.EventEmitter {
         this.emit("delete");
     }
 
-    toSummary(): MessageJSONSummary {
+    toSummary(): MessageSummary {
         return {
             id: this.id,
             from: this.from.id,

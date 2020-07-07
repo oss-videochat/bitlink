@@ -28,7 +28,10 @@ const Header: React.FunctionComponent<IHeaderProps> = ({toggleFullscreen}) => {
                 </div>
                 <nav className={"header--nav"}>
                     <ul>
-                        <li onClick={() => UIStore.toggle('participantPanel')}><FontAwesomeIcon icon={faUsers}/></li>
+                        <li onClick={() => {
+                            UIStore.toggle('participantPanel');
+                            UIStore.store.chatPanel = true;
+                        }}><FontAwesomeIcon icon={faUsers}/></li>
                         <li onClick={() => UIStore.toggle('chatPanel')}><FontAwesomeIcon icon={faComments}/></li>
                         {
                             MyInfo.info ?

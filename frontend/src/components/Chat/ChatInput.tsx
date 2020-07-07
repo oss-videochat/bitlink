@@ -49,7 +49,7 @@ const ChatInput: React.FunctionComponent<IChatInputProps> = ({selectedUser}) => 
             return;
         }
         const searchString = inputValue.substring(latestAtIndex, indexOfNextSpace > 0 ? indexOfNextSpace : undefined);
-        setMentions(ParticipantsStore.filterByMentionString(searchString));
+        setMentions(ParticipantsStore.filterByMentionString(searchString).slice(0, 5));
     }
 
     function handleMentionSelection(participant: Participant){

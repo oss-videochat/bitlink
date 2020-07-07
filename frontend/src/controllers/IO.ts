@@ -125,11 +125,19 @@ class IO {
 
     createRoom(name: string) {
         log("Creating room with name %s", name);
+        if(!this.io.connected){
+            log("IO is not connected");
+            throw "Could not connect to server";
+        }
         this.io.emit("create-room", name);
     }
 
     joinRoom(id: string, name?: string) {
         log("Joining room with id: %s", id);
+        if(!this.io.connected){
+            log("IO is not connected");
+            throw "Could not connect to server";
+        }
         UIStore.store.modalStore.joiningRoom = true;
         this.socketRequest("get-rtp-capabilities", id)
             .then((response: APIResponse) => {

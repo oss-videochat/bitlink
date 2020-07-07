@@ -4,7 +4,7 @@ import IO from "../../controllers/IO";
 import MyInfo from "../../stores/MyInfo";
 import UIStore from "../../stores/UIStore";
 import RoomStore from "../../stores/RoomStore";
-import NotificationStore from "../../stores/NotificationStore";
+import NotificationStore, {NotificationType, UINotification} from "../../stores/NotificationStore";
 import {prepareAudioBank} from "../Tiles/AutoPlayAudio";
 import logo from "../../assets/logo/logo.svg";
 import LegalText from "../LegalText";
@@ -34,12 +34,16 @@ const CreateDialog: React.FunctionComponent = () => {
         NotificationStore.requestPermission();
         UIStore.store.modalStore.create = false;
         MyInfo.chosenName = userName;
-        IO.createRoom(roomName);
-
-        setRoomName("");
-        setUserName("");
-        setRoomNameValidationEnabled(false);
-        setUserNameValidationEnabled(false)
+        try {
+            IO.createRoom(roomName)
+            setRoomName("");
+            setUserName("");
+            setRoomNameValidationEnabled(false);
+            setUserNameValidationEnabled(false)
+        } catch (e) {
+            UIStore.store.modalStore.create = true;
+            NotificationStore.add(new UINotification(e, NotificationType.Error));
+        }
     }
 
     function handleCancel() {
@@ -55,7 +59,9 @@ const CreateDialog: React.FunctionComponent = () => {
             <h2 className={"modal--title"}>Create Room</h2>
             <input data-private={"lipsum"} onBlur={() => setRoomNameValidationEnabled(true)}
                    className={"modal--input " + ((!roomNameValidationEnabled || roomNameIsValid()) ? "" : "invalid")}
-                   onChange={(e) => {setRoomName(e.target.value)}}
+                   onChange={(e) => {
+                       setRoomName(e.target.value)
+                   }}
                    placeholder={"Room Name"}/>
             <input data-private={"lipsum"} onBlur={() => setUserNameValidationEnabled(true)}
                    className={"modal--input " + ((!userNameValidationEnabled || userNameIsValid()) ? "" : "invalid")}

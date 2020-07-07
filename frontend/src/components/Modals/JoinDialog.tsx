@@ -4,7 +4,7 @@ import IO from "../../controllers/IO";
 import MyInfo from "../../stores/MyInfo";
 import UIStore from "../../stores/UIStore";
 import RoomStore from "../../stores/RoomStore";
-import NotificationStore from "../../stores/NotificationStore";
+import NotificationStore, {NotificationType, UINotification} from "../../stores/NotificationStore";
 import {prepareAudioBank} from "../Tiles/AutoPlayAudio";
 import logo from "../../assets/logo/logo.svg";
 import LegalText from "../LegalText";
@@ -32,12 +32,17 @@ const JoinDialog: React.FunctionComponent = () => {
         NotificationStore.requestPermission();
         UIStore.store.modalStore.join = false;
         MyInfo.chosenName = userName;
-        IO.joinRoom(roomId, userName);
 
-        setRoomId("");
-        setUserName("");
-        setRoomIdValidationEnabled(false);
-        setUserNameValidationEnabled(false)
+        try {
+            IO.joinRoom(roomId, userName);
+            setRoomId("");
+            setUserName("");
+            setRoomIdValidationEnabled(false);
+            setUserNameValidationEnabled(false)
+        } catch (e) {
+            UIStore.store.modalStore.join = true;
+            NotificationStore.add(new UINotification(e, NotificationType.Error));
+        }
     }
 
     function handleCancel() {

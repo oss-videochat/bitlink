@@ -8,23 +8,35 @@ import {ITileProps} from "./TileContainer";
 
 const VideoTile: React.FunctionComponent<ITileProps> = ({participant, flexBasis, maxWidth}) => {
     const videoRef = useRef<HTMLVideoElement>(null);
-    const [audioSrcObject,setAudioSrcObject] = useState<MediaStream | null>(null);
+    const [audioSrcObject, setAudioSrcObject] = useState<MediaStream | null>(null);
 
     useEffect(() => {
-        videoRef.current?.addEventListener("canplay", () => {
-            videoRef.current!.play().catch(e => console.error(e.toString()));
-        });
-        return autorun(updateMedia);
-    }, []);
-
-    function updateMedia() {
-        console.log("update media");
-        videoRef.current!.srcObject = new MediaStream([participant.mediasoup.consumer.camera!.track]);
-
-        if (participant.hasAudio) {
-            setAudioSrcObject(new MediaStream([participant.mediasoup.consumer.microphone!.track]));
+        if (!videoRef.current) {
+            return;
         }
-    }
+        const element = videoRef.current;
+
+        function canplay() {
+            element.play().catch(e => console.error(e.toString()));
+        }
+
+        element.addEventListener("canplay", canplay);
+        return () => element.removeEventListener("canplay", canplay);
+    }, [videoRef]);
+
+    useEffect(() => {
+        return autorun(() => {
+            if (!videoRef.current) {
+                return;
+            }
+
+            videoRef.current.srcObject = new MediaStream([participant.mediasoup.consumer.camera!.track]);
+
+            if (participant.hasAudio) {
+                setAudioSrcObject(new MediaStream([participant.mediasoup.consumer.microphone!.track]));
+            }
+        });
+    }, [participant])
 
     return useObserver(() => (
         <div className={"video-pad"} style={{flexBasis, maxWidth}}>

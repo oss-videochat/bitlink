@@ -8,16 +8,22 @@ const ScreenTile: React.FunctionComponent<ITileProps> = ({participant, flexBasis
     const videoRef = useRef<HTMLVideoElement>(null);
 
     useEffect(() => {
-        videoRef.current?.addEventListener("canplay", () => {
-            videoRef.current!.play().catch(e => console.error(e.toString()));
-        });
-        updateMedia();
-    }, [])
+        if (!videoRef.current) {
+            return;
+        }
+        const element = videoRef.current;
 
+        function canplay() {
+            element.play().catch(e => console.error(e.toString()));
+        }
 
-    function updateMedia() {
-        videoRef.current!.srcObject = new MediaStream([participant.mediasoup.consumer.screen!.track]);
-    }
+        element.addEventListener("canplay", canplay);
+
+        videoRef.current.srcObject = new MediaStream([participant.mediasoup.consumer.screen!.track]);
+
+        return () => element.removeEventListener("canplay", canplay);
+    }, [videoRef, participant]);
+
 
     return useObserver(() => (
         <div className={"video-pad"} style={{flexBasis: flexBasis, maxWidth: maxWidth}}>

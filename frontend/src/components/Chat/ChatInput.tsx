@@ -1,4 +1,4 @@
-import React, {useEffect, useRef, useState} from "react";
+import React, {useCallback, useEffect, useRef, useState} from "react";
 import IO from "../../controllers/IO";
 import ChatStore from "../../stores/ChatStore";
 import './ChatInput.css';
@@ -28,7 +28,7 @@ const ChatInput: React.FunctionComponent<IChatInputProps> = ({selectedUser}) => 
         }
     }
 
-    function handleSelectionChange() {
+    const handleSelectionChange = useCallback(() => {
         if(!textAreaRef.current){
             setMentions([]);
             return;
@@ -50,7 +50,7 @@ const ChatInput: React.FunctionComponent<IChatInputProps> = ({selectedUser}) => 
         }
         const searchString = inputValue.substring(latestAtIndex, indexOfNextSpace > 0 ? indexOfNextSpace : undefined);
         setMentions(ParticipantsStore.filterByMentionString(searchString).slice(0, 5));
-    }
+    }, [inputValue, textAreaRef]);
 
     function handleMentionSelection(participant: Participant){
         if(!textAreaRef.current){
@@ -76,6 +76,7 @@ const ChatInput: React.FunctionComponent<IChatInputProps> = ({selectedUser}) => 
         textAreaRef.current.focus();
         textAreaRef.current.setSelectionRange(selectionLocation, selectionLocation);
         handleSelectionChange();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectionLocation])
 
     return (

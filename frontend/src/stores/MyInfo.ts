@@ -99,7 +99,7 @@ class CurrentUserInformationStore {
         const setPreferredInput = async () => {
             const stream: MediaStream = await navigator.mediaDevices.getUserMedia(options[mediaType]);
             if (!stream) {
-                throw `No ${source} device available`;
+                throw new Error(`No ${source} device available`);
             }
             this.setPreferredInput(mediaType, stream ? stream.getTracks()[0].getSettings().deviceId! : null);
             this.cachedStreams[source] = stream;

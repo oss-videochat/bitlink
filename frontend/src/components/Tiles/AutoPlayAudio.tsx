@@ -12,18 +12,29 @@ don't tell the nonexistent marketing team.
 
 import React, {useEffect, useRef} from 'react';
 
-const audioBank: HTMLAudioElement[] = Array.from({length: 100}, el => document.createElement('audio') as unknown as HTMLAudioElement);
+const isiOS = (/iPad|iPhone|iPod/.test(navigator.platform) ||
+    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)) &&
+    !window.MSStream;
+
+let audioBank: HTMLAudioElement[];
+
+if (isiOS) {
+    audioBank = Array.from({length: 100}, el => document.createElement('audio') as unknown as HTMLAudioElement);
+} else {
+    audioBank = [];
+}
+
 let prepared = false;
 
 export function prepareAudioBank() {
-    if (prepared) {
+    if (prepared || !isiOS) {
         return;
     }
 
     audioBank.forEach((audioElement: HTMLAudioElement) => {
         try {
             audioElement.play().catch(() => {
-                // this will defiantly error, but that's ok
+                // this will error, but that's ok
             });
             audioElement.pause()
         } catch (e) {
@@ -42,20 +53,28 @@ const AutoPlayAudio: React.FunctionComponent<IAutoPlayAudioProps> = ({srcObject}
     const audioElement = useRef<HTMLAudioElement>(audioBank.pop() || document.createElement("audio")); // if the bank runs out, we just create another audio element. This will work for non-mobile/non-ios devices. But for those devices, we kind of screw them over here.
 
     useEffect(() => {
-        if (!prepared) {
-            throw 'Audios are not prepared';
+        if (!prepared && isiOS) {
+            throw new Error('Audios are not prepared');
         }
-        audioElement.current.addEventListener("canplay", () => {
-            return audioElement.current.play();
-        });
+        if (!srcObject) {
+            return;
+        }
+        const element = audioElement.current;
 
-        if (srcObject) {
-            audioElement.current.srcObject = srcObject;
+        function canplay() {
+            return element.play();
         }
+
+        element.addEventListener("canplay", canplay);
+        element.srcObject = srcObject;
+
         return () => {
-            audioElement.current.pause();
-            audioElement.current.srcObject = null;
-            audioBank.push(audioElement.current); // recycling is good for the owlrd
+            element.pause();
+            element.removeEventListener("canplay", canplay);
+            element.srcObject = null;
+            if(isiOS){
+                audioBank.push(element); // recycling is good for the world
+            }
         }
     }, [srcObject]);
 

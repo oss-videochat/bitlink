@@ -4,7 +4,7 @@ import ChatStore from "../../../stores/ChatStore";
 import {Message} from "../../../stores/MessagesStore";
 import MyInfo from "../../../stores/MyInfo";
 import MessageComponent from "./MessageComponent";
-import './MessageContainer.css'
+import './MessagesContainer.css'
 import ParticipantsStore from "../../../stores/ParticipantsStore";
 import SystemMessage from "./SystemMessage";
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
@@ -21,24 +21,25 @@ const MessagesContainer: React.FunctionComponent<IMessagesContainerProps> = ({se
     const [shouldScroll, setShouldScroll] = useState(true);
 
     useEffect(() => {
-        scrollToBottom()
-    });
-
-    useEffect(() => {
-        const el: HTMLDivElement = list.current!;
-        el.addEventListener("scroll", e => {
-            setShouldScroll(el.scrollHeight - (el.scrollTop + el.clientHeight) <= 15);
-        });
-    }, []);
-
-
-    function scrollToBottom() {
         if (shouldScroll && list.current) {
-            const el: HTMLDivElement = list.current;
+            const el = list.current;
             el.scrollTop = el.scrollHeight;
         }
-    }
+    }, [shouldScroll, list]);
 
+    useEffect(() => {
+        if(!list.current){
+            return;
+        }
+        const el = list.current;
+
+        function scroll(){
+            setShouldScroll(el.scrollHeight - (el.scrollTop + el.clientHeight) <= 15);
+        }
+
+        el.addEventListener("scroll", scroll);
+        return () => el.removeEventListener("scroll", scroll);
+    }, [list]);
 
         return useObserver(() => {
             let lastParticipant = "";

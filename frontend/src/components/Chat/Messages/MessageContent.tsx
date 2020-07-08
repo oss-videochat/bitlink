@@ -14,7 +14,7 @@ const MessageContent: React.FunctionComponent<IMessageContentProps> = ({content}
 
     const matchers: matcherArray = [
         [/https?:\/\/[^\s]+/g, (_, match) => {
-            return <a key={id++} target={"_blank"} href={match[0]}>{match[0]}</a>
+            return <a key={id++} rel="noopener noreferrer" target={"_blank"} href={match[0]}>{match[0]}</a>
         }],
         [/@[^\s]+/g, (_, match) => {
             const participants = ParticipantsStore.getByMentionString(match[0]);

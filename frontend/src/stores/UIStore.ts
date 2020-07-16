@@ -9,7 +9,8 @@ interface UIStoreInterface {
         joiningRoom: boolean,
         waitingRoom: boolean,
         create: boolean,
-        settings: boolean
+        settings: boolean,
+        leaveMenu: boolean
     },
     preFillJoinValue: null | string,
     messageIdEditControl: null | string,
@@ -29,7 +30,8 @@ class UIStore {
             joiningRoom: false,
             waitingRoom: false,
             create: false,
-            settings: false
+            settings: false,
+            leaveMenu: true
         },
         preFillJoinValue: null,
         messageIdEditControl: null,

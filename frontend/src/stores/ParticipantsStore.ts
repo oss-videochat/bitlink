@@ -1,6 +1,7 @@
 import {observable} from "mobx"
 import Participant from "../models/Participant";
 import {ParticipantRole} from "@bitlink/common";
+import MyInfo from "./MyInfo";
 
 class ParticipantsStore {
 
@@ -38,9 +39,8 @@ class ParticipantsStore {
 
     public waitingRoom = observable<Participant>([]);
 
-
-    getLiving() {
-        return this.participants.filter(participant => participant.isAlive);
+    getLiving(excludeSelf = false) {
+        return this.participants.filter(participant => participant.isAlive && (excludeSelf ? participant.id !== MyInfo.info?.id : true));
     }
 
     reset() {

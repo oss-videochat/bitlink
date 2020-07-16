@@ -6,6 +6,8 @@ import {autorun} from 'mobx';
 import RoomStore from "./stores/RoomStore";
 import UIStore from "./stores/UIStore";
 import debug from 'debug';
+import MyInfo from "./stores/MyInfo";
+import IO from "./controllers/IO";
 
 
 if(process.env.NODE_ENV === "development"){
@@ -39,3 +41,11 @@ if (!window.navigator.standalone) { // ios is stupid. If i try to change url bar
         window.history.replaceState({}, "BitLink | Join " + RoomStore.room.name, '/join/' + RoomStore.room.id);
     });
 }
+
+window.addEventListener("beforeunload", (e => {
+    if(RoomStore.room){
+        e.preventDefault();
+        e.returnValue = '';
+        IO.leave();
+    }
+}));

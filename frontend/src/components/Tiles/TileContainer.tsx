@@ -73,7 +73,7 @@ export class TileContainer extends React.Component<any, any> {
             this.previewRef!.current!.play();
         });
         this.updateBasis = reaction(() => {
-            const living = ParticipantsStore.getLiving();
+            const living = ParticipantsStore.getLiving(true);
             const numSquares = living.filter(participant => participant.hasAudio || participant.hasVideo).length + living.filter(participant => participant.hasScreen).length;
 
             return {

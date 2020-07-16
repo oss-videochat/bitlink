@@ -112,9 +112,29 @@ class IO {
     }
 
     leave() {
+        if(RoomStore.room && MyInfo.info?.isHost && ParticipantsStore.getLiving(true).length > 0){
+            UIStore.store.modalStore.leaveMenu = true;
+        } else {
+            // eslint-disable-next-line no-restricted-globals
+            const confirmed = confirm("Are you sure you would like to leave this room?");
+            if (confirmed) {
+                this._leave();
+            }
+        }
+    }
+
+    _leave(){
         log("Leaving room");
         this.io.emit("leave");
         this.reset();
+    }
+
+    endRoomForAll(){
+      return this.socketRequest("end-room");
+    }
+
+    async transferHost(participant: Participant){
+        // TODO
     }
 
     reset() {

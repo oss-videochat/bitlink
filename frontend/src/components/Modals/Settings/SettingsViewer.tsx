@@ -3,7 +3,7 @@ import './SettingsViewer.css';
 import {SettingsPanels} from "../../../enum/SettingsPanels";
 import MySettings from "./SettingsViews/MySettings";
 import {RoomSettings} from "./SettingsViews/RoomSettings";
-import ParticipantList from "./SettingsViews/ParticipantList";
+import Participants from "./SettingsViews/Participants";
 import Report from "./SettingsViews/Report";
 import * as Events from 'events';
 
@@ -30,7 +30,7 @@ const SettingsViewer: React.FunctionComponent<ISettingsViewerProps> = ({selected
             case SettingsPanels.RoomSettings:
                 return RoomSettings;
             case SettingsPanels.Participants:
-                return ParticipantList;
+                return Participants;
             case SettingsPanels.Report:
                 return Report;
         }

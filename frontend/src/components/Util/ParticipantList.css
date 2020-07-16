@@ -24,15 +24,17 @@
     overflow: hidden;
     font-weight: 800;
     text-overflow: ellipsis;
+    flex: 1;
 }
 
-.participant--kick-button {
+.participant--action-button {
     color: #d04e53;
     cursor: pointer;
     user-select: none;
     -webkit-user-select: none;
+    margin: 0 10px;
 }
 
-.participant--kick-button:hover {
+.participant--action-button:hover {
     color: #9e3b40;
 }

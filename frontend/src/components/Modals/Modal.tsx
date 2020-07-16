@@ -8,6 +8,7 @@ import JoinOrCreate from "./JoinOrCreate";
 import Joining from "./Joining";
 import WaitingRoom from "./WaitingRoom";
 import {SettingsModal} from "./Settings/SettingsModal";
+import LeaveDialog from "./LeaveDialog";
 
 const Modal: React.FunctionComponent = () => {
     function getModalElements(): ReactNode | null {
@@ -29,6 +30,9 @@ const Modal: React.FunctionComponent = () => {
         }
         if (modalStore.settings) {
             return <SettingsModal/>
+        }
+        if (modalStore.leaveMenu) {
+            return <LeaveDialog/>
         }
         return null;
     }

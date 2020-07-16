@@ -47,13 +47,7 @@ const Header: React.FunctionComponent<IHeaderProps> = ({toggleFullscreen}) => {
                         <React.Fragment>
                             <span className={"divider"}/>
                             <ul>
-                                <li className={"leave-button"} onClick={() => {
-                                    // eslint-disable-next-line no-restricted-globals
-                                    const confirmed: boolean = confirm("Are you sure you would like to leave this room?");
-                                    if (confirmed) {
-                                        IO.leave();
-                                    }
-                                }}>Leave Room
+                                <li className={"leave-button"} onClick={() => IO.leave()}>Leave Room
                                 </li>
                             </ul>
                         </React.Fragment>

@@ -16,12 +16,10 @@ const isiOS = (/iPad|iPhone|iPod/.test(navigator.platform) ||
     (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)) &&
     !window.MSStream;
 
-let audioBank: HTMLAudioElement[];
+let audioBank: HTMLAudioElement[] = [];
 
 if (isiOS) {
     audioBank = Array.from({length: 100}, el => document.createElement('audio') as unknown as HTMLAudioElement);
-} else {
-    audioBank = [];
 }
 
 let prepared = false;

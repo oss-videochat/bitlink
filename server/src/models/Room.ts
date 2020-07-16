@@ -324,6 +324,54 @@ class Room extends Event.EventEmitter {
             cb(response);
         });
 
+        participant.socket.on("end-room", (cb) => {
+            if (!participant.isHost) {
+                cb({
+                    success: false,
+                    status: 401,
+                    error: "You must be a host to end the room.",
+                });
+                return;
+            }
+            this.destroy();
+            cb({
+                success: true,
+                status: 200,
+                error: null,
+            });
+
+        });
+
+        participant.socket.on("transfer-host", (participantId, cb) => {
+            if (!participant.isHost) {
+                cb({
+                    success: false,
+                    status: 401,
+                    error: "You must be a host to end the room.",
+                });
+                return;
+            }
+            const participantToHostify = this.participants.find(participant => participant.id === participantId);
+            if (!participantToHostify || !participantToHostify.isConnected) {
+                cb({
+                    success: false,
+                    status: 404,
+                    error: "Could not find that participant",
+                });
+                return;
+            }
+            log("Transfer host: %s --> %s<%s>", participant.name, participantToHostify.name, participantToHostify.role);
+            participant.role = ParticipantRole.MEMBER;
+            participantToHostify.role = ParticipantRole.HOST;
+            this.broadcast('participant-update-role', [],participantToHostify.id, ParticipantRole.HOST);
+            this.broadcast('participant-update-role', [],participant.id, ParticipantRole.MEMBER);
+            cb({
+                success: true,
+                status: 200,
+                error: null,
+            });
+        });
+
         // ##################
         // ## WebRTC stuff ## ASCII Art, Yey! :D
         // ##################

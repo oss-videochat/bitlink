@@ -13,7 +13,7 @@ import UIStore from "../stores/UIStore";
 import {ResetStores} from "../util/ResetStores";
 import * as mediasoupclient from 'mediasoup-client';
 import Participant, {ParticipantData} from "../models/Participant";
-import {MediaAction, MediaSource, MediaType, ParticipantSummary, MessageSummary, RoomSummary} from "@bitlink/common";
+import {MediaAction, MediaSource, MediaType, ParticipantSummary, MessageSummary, RoomSummary, ParticipantRole} from "@bitlink/common";
 
 const log = debug("IO");
 
@@ -55,6 +55,7 @@ class IO {
         this.io.on("participant-updated-media-state", this._handleMediaStateUpdate.bind(this));
         this.io.on("participant-left", this._handleParticipantLeft.bind(this));
         this.io.on("participant-changed-name", this._handleParticipantNameChange.bind(this));
+        this.io.on("participant-update-role", this._handleParticipantUpdateRole.bind(this));
 
         this.io.on("update-room-settings", this._handleUpdatedRoomSettings.bind(this));
         this.io.on("update-room-settings-host", this._handleUpdatedRoomSettings.bind(this));
@@ -112,7 +113,7 @@ class IO {
     }
 
     leave() {
-        if(RoomStore.room && MyInfo.info?.isHost && ParticipantsStore.getLiving(true).length > 0){
+        if(RoomStore.room && MyInfo.info?.isHost && ParticipantsStore.getLiving(true).slice(2).length > 0){
             UIStore.store.modalStore.leaveMenu = true;
         } else {
             // eslint-disable-next-line no-restricted-globals
@@ -133,8 +134,8 @@ class IO {
       return this.socketRequest("end-room");
     }
 
-    async transferHost(participant: Participant){
-        // TODO
+    transferHost(participant: Participant){
+        return this.socketRequest("transfer-host", participant.id);
     }
 
     reset() {
@@ -355,6 +356,23 @@ class IO {
         const participant = ParticipantsStore.getById(participantId);
         if (participant) {
             participant.name = newName;
+        }
+    }
+
+    _handleParticipantUpdateRole(participantId: string, newRole: ParticipantRole){
+        const roleLookup = {
+            [ParticipantRole.HOST]: 'host',
+            [ParticipantRole.MANAGER]: 'manager',
+            [ParticipantRole.MEMBER]: 'member'
+        }
+
+        const participant = ParticipantsStore.getById(participantId);
+        if (participant) {
+            ChatStore.addSystemMessage({content: `${participant.name} new role is ${roleLookup[participant.role]}`})
+            participant.role = newRole;
+        }
+        if(participantId === MyInfo.info?.id){
+            MyInfo.info.role = newRole;
         }
     }
 

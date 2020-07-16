@@ -31,7 +31,7 @@ class UIStore {
             waitingRoom: false,
             create: false,
             settings: false,
-            leaveMenu: true
+            leaveMenu: false
         },
         preFillJoinValue: null,
         messageIdEditControl: null,

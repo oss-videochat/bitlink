@@ -2,6 +2,7 @@ import {observable} from "mobx";
 import {types} from 'mediasoup-client'
 import Participant, {ParticipantData} from "../models/Participant";
 import {MediaSource, MediaSourceToTypeMap, MediaType} from "@bitlink/common";
+import runEffects from "../util/CameraStreamEffects";
 
 export interface CurrentUserInformation extends ParticipantData {
     key: string
@@ -120,6 +121,10 @@ class CurrentUserInformationStore {
         }
 
         this.preferredInputs[mediaType] = this.cachedStreams[source]!.getTracks()[0].getSettings().deviceId!;
+
+        if(source === "camera" && this.cachedStreams[source]){
+            this.cachedStreams[source] = await runEffects(this.cachedStreams[source] as MediaStream)
+        }
 
         return this.cachedStreams[source]!;
     }

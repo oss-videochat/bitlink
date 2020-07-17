@@ -1,6 +1,6 @@
 export * from './enum/ParticipantRole'
 export * from './enum/Reactions'
-export * from './enum/MessageTypes'
+export * from './enum/MessageType'
 
 export * from './interfaces/WebRTC'
 export * from './interfaces/Summaries'

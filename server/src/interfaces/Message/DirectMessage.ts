@@ -1,9 +1,9 @@
 import {Message} from "./Message";
 import {Participant} from "../Participant";
-import {MesssgeType} from '@bitlink/common';
+import {MessageType} from '@bitlink/common';
 
 export interface DirectMessage extends Message {
-    type: MesssgeType.DIRECT,
+    type: MessageType.DIRECT,
     to: Participant,
     from: Participant,
 }

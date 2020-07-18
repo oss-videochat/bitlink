@@ -11,7 +11,7 @@ export interface RoomSettings {
 export interface Room {
     id: string,
     idHash: string,
-    messageGroups: MessageGroup,
+    messageGroups: MessageGroup[],
     participants: Participant[],
     waitingRoom: Participant[],
     messages: Message[];

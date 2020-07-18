@@ -4,7 +4,12 @@
     "target": "es5",
     "sourceMap": true,
     "outDir": "build",
-    "downlevelIteration": true
+    "downlevelIteration": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "isolatedModules": true,
+    "noImplicitAny": true,
+    "skipLibCheck": true
   },
   "include": [
     "public/**/*",

@@ -89,15 +89,6 @@ class RoomManager extends Events.EventEmitter {
             this.removeSocket(socket);
             this.addSocket(socket);
         });
-    }
-
-    private handleGetRTPCapabilities(socket, roomId: string, cb: APIResponseCallback){
-        const room: Room = this.rooms[roomId];
-        if (!room) {
-            return  cb({success: false, error: "The room doesn't exist", status: 404});
-        }
-        return  cb({success: true, error: null, data: room.router.rtpCapabilities ,status: 200});
-    }
 }
 
 export default RoomManager;

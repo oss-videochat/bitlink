@@ -1,16 +1,10 @@
-import * as Events from "events";
-import * as mediasoup from "mediasoup";
 import {config} from "../../config";
+import * as mediasoup from "mediasoup";
+import WorkerStore from "../stores/WorkerStore";
 import * as pidusage from 'pidusage';
 
-export class MediasoupWorkersGroup extends Events.EventEmitter {
-    private msWorkers: Array<mediasoup.types.Worker> = [];
-
-    constructor() {
-        super();
-    }
-
-    async init() {
+class WorkerService {
+    static async init(){
         for (let i = 0; i < config.mediasoup.numWorkers; i++) {
             const worker = await mediasoup.createWorker({
                 logLevel: config.mediasoup.workerSettings.logLevel as mediasoup.types.WorkerLogLevel,
@@ -24,7 +18,7 @@ export class MediasoupWorkersGroup extends Events.EventEmitter {
                 setTimeout(() => process.exit(1), 2000);
             });
 
-            this.msWorkers.push(worker);
+            WorkerStore.msWorkers.push(worker);
 
             /*// Log worker resource usage every X seconds.
             setInterval(async () => {
@@ -34,33 +28,29 @@ export class MediasoupWorkersGroup extends Events.EventEmitter {
         }
     }
 
-    async getLeastLoadedWorker() {
-        const workerStats = await Promise.all(this.msWorkers.map( async (worker, index) => {
+    static async getLeastLoadedWorker() {
+        const workerStats = await Promise.all(WorkerStore.msWorkers.map( async (worker, index) => {
             return {
-                stats: await this.getWorkerStats(worker),
+                stats: await WorkerService.getWorkerStats(worker),
                 worker: worker
             }
         }));
         return workerStats.sort((w1, w2) => w1.stats.cpu - w2.stats.cpu)[0].worker;
     }
 
-    async getGoodRouter(): Promise<mediasoup.types.Router> {
-        const worker = await this.getLeastLoadedWorker();
+    static async getGoodRouter(): Promise<mediasoup.types.Router> {
+        const worker = await WorkerService.getLeastLoadedWorker();
         return await worker.createRouter(config.mediasoup.routerOptions as mediasoup.types.RouterOptions)
     }
 
-    async getWorkerStats(worker) {
+    static async getWorkerStats(worker: mediasoup.types.Worker) {
+        // @ts-ignore
         const stats = await pidusage(worker._child.pid);
         return {
+            // @ts-ignore
             pid: worker._child.pid,
             cpu: stats.cpu
         }
     }
-
-    static async create() {
-        const msW = new MediasoupWorkersGroup();
-        await msW.init();
-        return msW;
-    }
-
 }
+export default WorkerService;

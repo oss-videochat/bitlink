@@ -3,12 +3,12 @@ import {MediaState} from '@bitlink/common';
 
 export interface MediasoupPeer {
     transports:  {
-        sending: types.Transport,
-        receiving: types.Transport,
+        sending?: types.Transport,
+        receiving?: types.Transport,
     },
     producers: {
-        [key in keyof MediaState]: types.Producer;
+        [key in keyof MediaState]: types.Producer | undefined;
     },
-    consumers: Array<types.Consumer>,
+    consumers: types.Consumer[],
     rtcCapabilities: types.RtpCapabilities
 }

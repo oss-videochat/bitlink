@@ -6,7 +6,7 @@ interface RoomStorage {
 }
 
 class RoomStore {
-    room: RoomStorage = {};
+    rooms: RoomStorage = {};
 }
 
 export default new RoomStore();

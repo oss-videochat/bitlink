@@ -2,6 +2,8 @@ import {config} from "../../config";
 import * as mediasoup from "mediasoup";
 import WorkerStore from "../stores/WorkerStore";
 import * as pidusage from 'pidusage';
+import debug from "../helpers/debug";
+const log = debug("Services:WorkerService");
 
 class WorkerService {
     static async init(){
@@ -19,7 +21,7 @@ class WorkerService {
             });
 
             WorkerStore.msWorkers.push(worker);
-
+            log("Worker setup complete")
             /*// Log worker resource usage every X seconds.
             setInterval(async () => {
                 const usage = await worker.getResourceUsage();

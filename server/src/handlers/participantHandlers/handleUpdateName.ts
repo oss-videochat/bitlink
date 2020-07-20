@@ -6,7 +6,7 @@ interface handleUpdateNameParams {
     name: string;
 }
 
-const handleUpdateName: handleParticipantEvent<handleUpdateNameParams> = async ({name, participant, room}, cb) => {
+export const handleUpdateName: handleParticipantEvent<handleUpdateNameParams> = async ({name, participant, room}, cb) => {
     cb(RoomService.participantChangedName(room, participant, name));
 };
-export default handleUpdateName;
+

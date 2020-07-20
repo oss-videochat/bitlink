@@ -1,7 +1,4 @@
 import {MediaState, MessageType, ParticipantRole, Reactions} from "..";
-import {Message} from "../../../server/src/interfaces/Message";
-import {MessageGroup} from "../../../server/src/interfaces/MessageGroup";
-import {Participant} from "../../../server/src/interfaces/Participant";
 
 export interface RoomSummary {
     id: string,
@@ -34,14 +31,14 @@ export interface SystemMessageSummary extends MessageSummary {
 
 export interface GroupMessageSummary extends MessageSummary {
     type: MessageType.GROUP,
-    group: number,
-    from: number,
+    group: string,
+    from: string,
 }
 
 export interface DirectMessageSummary extends MessageSummary {
     type: MessageType.DIRECT,
-    to: number,
-    from: number,
+    to: string,
+    from: string,
 }
 
 export interface ReactionSummary {

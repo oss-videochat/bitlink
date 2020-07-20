@@ -1,6 +1,5 @@
 import {handleSocketEvent} from "../../interfaces/handleEvent";
 import RoomService from "../../services/RoomService";
-import Participant from "../../models/Participant";
 import debug from "../../helpers/debug";
 import WorkerService from "../../services/WorkerService";
 import {RoomSettings} from "../../interfaces/Room";

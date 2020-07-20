@@ -1,10 +1,47 @@
 import {DirectMessage, GroupMessage, Message, SystemMessage} from "../interfaces/Message";
 import {Participant} from "../interfaces/Participant";
 import {Room} from "../interfaces/Room";
-import {MessageType, MessageSummary, GroupMessageSummary, DirectMessageSummary, SystemMessageSummary} from "@bitlink/common";
+import {MessageType, MessageSummary, ParticipantRole, GroupMessageSummary, DirectMessageSummary, SystemMessageSummary, MessageInput} from "@bitlink/common";
 import RoomService from "./RoomService";
+import {v4 as uuidv4} from "uuid";
+import {MessageGroup} from "../interfaces/MessageGroup";
 
 class MessageService {
+    static create(outline: MessageInput, from: Participant, options: {permission?: ParticipantRole, group?: MessageGroup, to?: Participant}): Message {
+        const common: Message = {
+            id:  uuidv4(),
+            created: new Date(),
+            type: outline.type,
+            content: outline.content
+        };
+
+        switch (outline.type) {
+            case MessageType.SYSTEM: {
+                return {
+                    ...common,
+                    permission: options.permission
+                } as SystemMessage
+            }
+            case MessageType.GROUP: {
+                return {
+                    ...common,
+                    group: options.group,
+                    from: from
+                } as GroupMessage
+            }
+            case MessageType.DIRECT: {
+                return {
+                    ...common,
+                    from: from,
+                    to: options.to
+                } as DirectMessage
+            }
+            default: {
+                throw "Unknown type"
+            }
+        }
+    }
+
     static hasPermissionToView(message: Message, participant: Participant) {
         if(message.type === MessageType.GROUP){
             return MessageService.isParticipantPartOfMessagingGroup((message as GroupMessage), participant)
@@ -51,7 +88,7 @@ class MessageService {
             const systemMessage = message as SystemMessage;
             return {
                 ...common,
-                permissions: systemMessage.permission,
+                permission: systemMessage.permission,
                 content: systemMessage.content
             } as SystemMessageSummary;
 

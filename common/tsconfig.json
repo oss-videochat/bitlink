@@ -5,7 +5,8 @@
     "sourceMap": true,
     "outDir": "build",
     "downlevelIteration": true,
-    "declaration": true
+    "declaration": true,
+    "skipLibCheck": true
   },
   "include": [
     "src/**/*"
@@ -14,3 +15,4 @@
     "node_modules"
   ]
 }
+

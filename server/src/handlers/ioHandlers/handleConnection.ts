@@ -1,5 +1,4 @@
 import * as socketio from "socket.io";
-import {APIResponseCallback} from "../../models/APIResponse";
 import SocketService from "../../services/SocketService";
 import handleGetRTPCapabilities from "../socketHandlers/handleGetRTPCapabilities";
 import handleJoinRoom from "../socketHandlers/handleJoinRoom";

@@ -1,5 +1,3 @@
-import {APIResponseCallback} from "../../models/APIResponse";
-import Room from "../../models/Room";
 import {handleSocketEvent} from "../../interfaces/handleEvent";
 import RoomService from "../../services/RoomService";
 

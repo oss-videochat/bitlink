@@ -1,5 +1,5 @@
 import {types} from "mediasoup";
-import {MediaState} from '@bitlink/common';
+import {MediaState, TransportJob} from '@bitlink/common';
 
 export interface MediasoupPeer {
     transports:  {

@@ -1,6 +1,5 @@
 import * as socketio from "socket.io";
 import SocketStore from "../stores/SocketStore";
-import {APIResponseCallback} from "../models/APIResponse";
 import handleConnection from "../handlers/ioHandlers/handleConnection";
 
 class SocketService {

@@ -1,10 +1,11 @@
 #!/usr/bin/env node
 
+const socketio = require('socket.io');
+const WorkerService = require("../src/services/WorkerService").default;
+const SocketService = require("../src/services/SocketService").default;
 const app = require('../app').default;
 const debug = require('debug')('bitlink:server');
 const http = require('http');
-const fs = require('fs');
-const RoomManager = require('../src/models/RoomManager').default;
 const port = process.env.PORT || '3001';
 
 app.set('port', port);
@@ -14,10 +15,12 @@ const server = http.createServer({}, app);
 server.on('error', onError);
 server.on('listening', onListening);
 
-RoomManager.create(server).then(roomManager => {
-    app.roomManager = roomManager;
+
+
+WorkerService.init().then(() => {
+    SocketService.init(socketio(server));
     server.listen(port);
-});
+})
 
 function onError(error) {
     if (error.syscall !== 'listen') {

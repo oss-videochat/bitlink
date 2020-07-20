@@ -1,3 +1,5 @@
+import {RoomSettings} from "../../interfaces/Room";
+
 const Ajv = require('ajv');
 
 const JSON = {
@@ -10,7 +12,7 @@ const JSON = {
 };
 
 
-export function UpdateRoomSettingsValidation(newSettings) {
+export function UpdateRoomSettingsValidation(newSettings: RoomSettings) {
     if (!newSettings) {
         return false;
     }

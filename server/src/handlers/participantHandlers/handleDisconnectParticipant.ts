@@ -3,8 +3,6 @@ import RoomService from "../../services/RoomService";
 import ParticipantService from "../../services/ParticipantService";
 
 
-const handleDisconnectParticipant: handleParticipantEvent = async ({participant, room}, cb) => {
-    ParticipantService.disconnect(participant);
+export const handleDisconnectParticipant: handleParticipantEvent = async ({participant, room}, cb) => {
     RoomService.participantLeft(room, participant);
 }
-export default handleDisconnectParticipant;

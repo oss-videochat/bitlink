@@ -1,4 +1,4 @@
-import Room from "../models/Room";
+import Room from "../interfaces/Room";
 
 declare global {
     namespace Express {

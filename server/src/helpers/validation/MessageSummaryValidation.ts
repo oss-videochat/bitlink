@@ -1,11 +1,11 @@
-import {MessageSummary, MessageType} from "@bitlink/common";
+import {MessageType} from "@bitlink/common";
 
 const Ajv = require('ajv');
 
 const common = {
-   // id: {type: "string"},
+    // id: {type: "string"},
     content: {type: "string"},
-   // created: {type: "number"},
+    // created: {type: "number"},
     type: {type: "number"}
 }
 
@@ -34,9 +34,9 @@ export function MessageSummaryValidation(summary: any, type: MessageType) {
     }
     const ajv = new Ajv();
     let json;
-    if(type === MessageType.GROUP){
+    if (type === MessageType.GROUP) {
         json = groupMessage;
-    } else if(type === MessageType.DIRECT){
+    } else if (type === MessageType.DIRECT) {
         json = directMessage;
     } else {
         return false;

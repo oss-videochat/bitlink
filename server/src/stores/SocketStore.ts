@@ -7,4 +7,5 @@ class SocketStore {
 
 
 }
+
 export default new SocketStore();

@@ -1,15 +1,21 @@
 import {DirectMessage, GroupMessage, Message, SystemMessage} from "../interfaces/Message";
 import {Participant} from "../interfaces/Participant";
-import {Room} from "../interfaces/Room";
-import {MessageType, MessageSummary, ParticipantRole, GroupMessageSummary, DirectMessageSummary, SystemMessageSummary, MessageInput} from "@bitlink/common";
-import RoomService from "./RoomService";
+import {
+    DirectMessageSummary,
+    GroupMessageSummary,
+    MessageInput,
+    MessageSummary,
+    MessageType,
+    ParticipantRole,
+    SystemMessageSummary
+} from "@bitlink/common";
 import {v4 as uuidv4} from "uuid";
 import {MessageGroup} from "../interfaces/MessageGroup";
 
 class MessageService {
-    static create(outline: MessageInput, from: Participant, options: {permission?: ParticipantRole, group?: MessageGroup, to?: Participant}): Message {
+    static create(outline: MessageInput, from: Participant, options: { permission?: ParticipantRole, group?: MessageGroup, to?: Participant }): Message {
         const common: Message = {
-            id:  uuidv4(),
+            id: uuidv4(),
             created: new Date(),
             type: outline.type,
             content: outline.content
@@ -43,20 +49,20 @@ class MessageService {
     }
 
     static hasPermissionToView(message: Message, participant: Participant) {
-        if(message.type === MessageType.GROUP){
+        if (message.type === MessageType.GROUP) {
             return MessageService.isParticipantPartOfMessagingGroup((message as GroupMessage), participant)
         }
-        if(message.type === MessageType.DIRECT){
-           const directMessage = message as DirectMessage;
-           return  directMessage.from === participant || directMessage.to === participant;
+        if (message.type === MessageType.DIRECT) {
+            const directMessage = message as DirectMessage;
+            return directMessage.from === participant || directMessage.to === participant;
         }
-        if(message.type === MessageType.SYSTEM){
+        if (message.type === MessageType.SYSTEM) {
             return participant.role <= (message as SystemMessage).permission;
         }
         throw "Unexpected message type";
     }
 
-    static isParticipantPartOfMessagingGroup(message: GroupMessage, participant: Participant){
+    static isParticipantPartOfMessagingGroup(message: GroupMessage, participant: Participant) {
         return message.group.members.includes(participant);
     }
 
@@ -68,7 +74,7 @@ class MessageService {
             type: message.type
         };
 
-        if(message.type === MessageType.GROUP){
+        if (message.type === MessageType.GROUP) {
             const groupMessage = message as GroupMessage;
             return {
                 ...common,
@@ -76,7 +82,7 @@ class MessageService {
                 from: groupMessage.from.id,
             } as GroupMessageSummary;
         }
-        if(message.type === MessageType.DIRECT){
+        if (message.type === MessageType.DIRECT) {
             const directMessage = message as DirectMessage;
             return {
                 ...common,
@@ -84,7 +90,7 @@ class MessageService {
                 from: directMessage.from.id,
             } as DirectMessageSummary;
         }
-        if(message.type === MessageType.SYSTEM){
+        if (message.type === MessageType.SYSTEM) {
             const systemMessage = message as SystemMessage;
             return {
                 ...common,
@@ -96,4 +102,5 @@ class MessageService {
         throw "Unexpected message type";
     }
 }
+
 export default MessageService;

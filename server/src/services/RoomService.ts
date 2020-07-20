@@ -1,6 +1,6 @@
 import {Room, RoomSettings} from "../interfaces/Room";
 import RoomStore from "../stores/RoomStore";
-import {MediaAction, MediaSource, ParticipantRole, RoomSummary, MessageType} from "@bitlink/common";
+import {MediaAction, MediaSource, MessageType, ParticipantRole, RoomSummary} from "@bitlink/common";
 import {Participant} from "../interfaces/Participant";
 import debug from "../helpers/debug";
 import ParticipantService from "./ParticipantService";
@@ -12,7 +12,6 @@ import MediasoupPeerService from "./MediasoupPeerService";
 import {handleParticipantEvent} from "../interfaces/handleEvent";
 import {UpdateRoomSettingsValidation} from "../helpers/validation/UpdateRoomSettings";
 import {DirectMessage, GroupMessage, Message, SystemMessage} from "../interfaces/Message";
-import {MessageGroup} from "../interfaces/MessageGroup";
 import * as Handlers from "../handlers/participantHandlers";
 
 const log = debug("Services:RoomService");
@@ -42,7 +41,7 @@ class RoomService {
         return room.messageGroups.find(group => group.id === groupId);
     }
 
-    static getParticipant(room: Room, participantId: string){
+    static getParticipant(room: Room, participantId: string) {
         return room.participants.find(participant => participant.id === participantId);
     }
 
@@ -96,27 +95,6 @@ class RoomService {
                 rtcCapabilities: room.router.rtpCapabilities
             }
         };
-    }
-
-
-    private static _addParticipant(room: Room, participant: Participant) {
-        room.participants.push(participant);
-
-        function pw(func: handleParticipantEvent<any>): handleParticipantEvent {
-            return (data: any, cb: any) => func({...data, participant, room}, cb)
-        }
-
-        participant.socket.on("disconnect", pw(Handlers.handleDisconnectParticipant));
-        participant.socket.on("update-name", pw(Handlers.handleDisconnectParticipant));
-        participant.socket.on("producer-action", pw(Handlers.handleProducerAction));
-        participant.socket.on("get-room-settings", pw(Handlers.handleGetRoomSettings));
-        participant.socket.on("update-room-settings", pw(Handlers.handleUpdateRoomSettings));
-        participant.socket.on("kick-participant", pw(Handlers.handleKickParticipant));
-        participant.socket.on("send-message", pw(Handlers.handleSendMessage));
-        participant.socket.on("edit-message", pw(Handlers.handleEditMessage));
-        participant.socket.on("delete-message", pw(Handlers.handleDeleteMessage));
-
-        RoomService.broadcast(room, "new-participant", [participant], ParticipantService.getSummary(participant));
     }
 
     static broadcastHosts(room: Room, events: string, ...args: any[]) {
@@ -228,17 +206,11 @@ class RoomService {
             throw "Bad input";
         }
         const safeVersion = RoomService._getSafeSettings(newSettings);
-        if(JSON.stringify(RoomService._getSafeSettings(room.settings)) !== JSON.stringify(safeVersion)){
+        if (JSON.stringify(RoomService._getSafeSettings(room.settings)) !== JSON.stringify(safeVersion)) {
             this.broadcast(room, "updated-room-settings", RoomService.getConnectedParticipants(room).filter(participant => participant.role === ParticipantRole.HOST), safeVersion);
         }
         room.settings = newSettings;
         RoomService.broadcast(room, "updated-room-settings-host", RoomService.getConnectedParticipants(room).filter(participant => participant.role !== ParticipantRole.HOST), newSettings);
-    }
-
-    private static _getSafeSettings(settings: RoomSettings){
-        return {
-            name: settings.name
-        }
     }
 
     static kickParticipant(room: Room, participantToRemove: Participant) {
@@ -247,7 +219,7 @@ class RoomService {
         participantToRemove.socket.emit("kicked");
     }
 
-    static alertRelevantParticipantsAboutMessage(room: Room, message: Message,  eventType: "new" | "edit" | "delete"){
+    static alertRelevantParticipantsAboutMessage(room: Room, message: Message, eventType: "new" | "edit" | "delete") {
         const summary = MessageService.getSummary(message);
         switch (message.type) {
             case MessageType.SYSTEM: {
@@ -293,16 +265,42 @@ class RoomService {
         RoomService.alertRelevantParticipantsAboutMessage(room, message, "delete")
     }
 
-    private static _getMessageIndex(room: Room, messageId: string) {
-        return room.messages.findIndex(message => message.id === messageId);
-    }
-
     static transferHost(room: Room, from: Participant, to: Participant) {
         log("Transfer host: %s --> %s<%s>", from.name, to.name, to.role);
         from.role = ParticipantRole.MEMBER;
         to.role = ParticipantRole.HOST;
-        this.broadcast(room, 'participant-update-role', [],to.id, ParticipantRole.HOST);
+        this.broadcast(room, 'participant-update-role', [], to.id, ParticipantRole.HOST);
         this.broadcast(room, 'participant-update-role', [], from.id, ParticipantRole.MEMBER);
+    }
+
+    private static _addParticipant(room: Room, participant: Participant) {
+        room.participants.push(participant);
+
+        function pw(func: handleParticipantEvent<any>): handleParticipantEvent {
+            return (data: any, cb: any) => func({...data, participant, room}, cb)
+        }
+
+        participant.socket.on("disconnect", pw(Handlers.handleDisconnectParticipant));
+        participant.socket.on("update-name", pw(Handlers.handleDisconnectParticipant));
+        participant.socket.on("producer-action", pw(Handlers.handleProducerAction));
+        participant.socket.on("get-room-settings", pw(Handlers.handleGetRoomSettings));
+        participant.socket.on("update-room-settings", pw(Handlers.handleUpdateRoomSettings));
+        participant.socket.on("kick-participant", pw(Handlers.handleKickParticipant));
+        participant.socket.on("send-message", pw(Handlers.handleSendMessage));
+        participant.socket.on("edit-message", pw(Handlers.handleEditMessage));
+        participant.socket.on("delete-message", pw(Handlers.handleDeleteMessage));
+
+        RoomService.broadcast(room, "new-participant", [participant], ParticipantService.getSummary(participant));
+    }
+
+    private static _getSafeSettings(settings: RoomSettings) {
+        return {
+            name: settings.name
+        }
+    }
+
+    private static _getMessageIndex(room: Room, messageId: string) {
+        return room.messages.findIndex(message => message.id === messageId);
     }
 }
 

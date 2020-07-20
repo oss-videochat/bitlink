@@ -6,7 +6,7 @@ interface handleKickParticipantParam {
     participantId: string
 }
 
-export const handleKickParticipant: handleParticipantEvent<handleKickParticipantParam> = async ({participantId,room, participant}, cb) => {
+export const handleKickParticipant: handleParticipantEvent<handleKickParticipantParam> = async ({participantId, room, participant}, cb) => {
     if (participant.role === ParticipantRole.HOST) {
         cb({
             success: false,

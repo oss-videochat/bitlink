@@ -3,10 +3,11 @@ import * as mediasoup from "mediasoup";
 import WorkerStore from "../stores/WorkerStore";
 import * as pidusage from 'pidusage';
 import debug from "../helpers/debug";
+
 const log = debug("Services:WorkerService");
 
 class WorkerService {
-    static async init(){
+    static async init() {
         for (let i = 0; i < config.mediasoup.numWorkers; i++) {
             const worker = await mediasoup.createWorker({
                 logLevel: config.mediasoup.workerSettings.logLevel as mediasoup.types.WorkerLogLevel,
@@ -21,17 +22,17 @@ class WorkerService {
             });
 
             WorkerStore.msWorkers.push(worker);
-            log("Worker setup complete")
             /*// Log worker resource usage every X seconds.
             setInterval(async () => {
                 const usage = await worker.getResourceUsage();
                 console.info('mediasoup Worker resource usage [pid:%d]: %o', worker.pid, usage);
             }, 120000);*/
         }
+        log("Worker setup complete")
     }
 
     static async getLeastLoadedWorker() {
-        const workerStats = await Promise.all(WorkerStore.msWorkers.map( async (worker, index) => {
+        const workerStats = await Promise.all(WorkerStore.msWorkers.map(async (worker, index) => {
             return {
                 stats: await WorkerService.getWorkerStats(worker),
                 worker: worker
@@ -55,4 +56,5 @@ class WorkerService {
         }
     }
 }
+
 export default WorkerService;

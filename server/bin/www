@@ -16,7 +16,6 @@ server.on('error', onError);
 server.on('listening', onListening);
 
 
-
 WorkerService.init().then(() => {
     SocketService.init(socketio(server));
     server.listen(port);

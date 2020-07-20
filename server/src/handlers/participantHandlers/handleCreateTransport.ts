@@ -1,5 +1,5 @@
 import {handleParticipantEvent} from "../../interfaces/handleEvent";
-import {TransportType, TransportJob} from "@bitlink/common";
+import {TransportJob, TransportType} from "@bitlink/common";
 import WebRTCRoomService from "../../services/WebRTCRoomService";
 
 interface handleCreateTransportParam {
@@ -7,8 +7,8 @@ interface handleCreateTransportParam {
     kind: TransportJob
 }
 
-const handleCreateTransport: handleParticipantEvent<handleCreateTransportParam> = async ({room, participant,type, kind}, cb) => {
-    if(!["webrtc", /*"plain"*/].includes(type)){
+const handleCreateTransport: handleParticipantEvent<handleCreateTransportParam> = async ({room, participant, type, kind}, cb) => {
+    if (!["webrtc", /*"plain"*/].includes(type)) {
         cb({
             success: false,
             error: "Unknown type",

@@ -1,5 +1,5 @@
 import {handleParticipantEvent} from "../../interfaces/handleEvent";
-import {MediaType, MediaSource} from "@bitlink/common";
+import {MediaSource, MediaType} from "@bitlink/common";
 import {types} from "mediasoup";
 import MediasoupPeerService from "../../services/MediasoupPeerService";
 import WebRTCRoomService from "../../services/WebRTCRoomService";
@@ -11,8 +11,8 @@ interface handleCreateProducerParam {
     rtpParameters: types.RtpParameters
 }
 
-const handleCreateProducer: handleParticipantEvent<handleCreateProducerParam> = async ({transportId, source, kind, rtpParameters,participant, room}, cb) => {
-    const transport = MediasoupPeerService.getTransport(participant.mediasoupPeer,transportId);
+const handleCreateProducer: handleParticipantEvent<handleCreateProducerParam> = async ({transportId, source, kind, rtpParameters, participant, room}, cb) => {
+    const transport = MediasoupPeerService.getTransport(participant.mediasoupPeer, transportId);
     if (!transport) {
         cb({
             success: false,

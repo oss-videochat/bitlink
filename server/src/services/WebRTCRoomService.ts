@@ -1,15 +1,12 @@
-import * as socketio from 'socket.io';
-import {MediasoupPeer} from "../interfaces/MediasoupPeer";
 import {types} from "mediasoup";
 import debug from "../helpers/debug";
 import {Room} from "../interfaces/Room";
 import {Participant} from "../interfaces/Participant";
-import {TransportType, TransportJob, MediaSourceToTypeMap, MediaSource, MediaType} from "@bitlink/common";
+import {MediaSource, MediaSourceToTypeMap, MediaType, TransportJob, TransportType} from "@bitlink/common";
 import {config} from "../../config";
 import {WebRtcTransportOptions} from "mediasoup/lib/WebRtcTransport";
 import MediasoupPeerService from "./MediasoupPeerService";
 import RoomService from "./RoomService";
-import * as mediasoup from "mediasoup";
 
 const log = debug("Services:WebRTCRoomService");
 
@@ -23,7 +20,7 @@ class WebRTCRoomService {
                 break;
             case "plain":
                 throw "Unsupported";
-                //transport = await room.router.createPlainTransport(config.mediasoup.plainTransportOptions);
+            //transport = await room.router.createPlainTransport(config.mediasoup.plainTransportOptions);
             default:
                 throw "Unknown type"
         }

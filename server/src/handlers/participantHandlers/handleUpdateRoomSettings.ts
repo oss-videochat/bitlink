@@ -1,6 +1,5 @@
 import {handleParticipantEvent} from "../../interfaces/handleEvent";
 import RoomService from "../../services/RoomService";
-import ParticipantService from "../../services/ParticipantService";
 import {RoomSettings} from "../../interfaces/Room";
 import {ParticipantRole} from "@bitlink/common";
 

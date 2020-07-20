@@ -1,4 +1,3 @@
-import * as mediasoup from "mediasoup";
 import {Room} from "../interfaces/Room";
 
 interface RoomStorage {

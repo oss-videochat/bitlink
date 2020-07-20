@@ -12,10 +12,10 @@ export const handleEditMessage: handleParticipantEvent<handleEditMessageParam> =
     if (!message) {
         return cb({success: false, error: "Could not find message", status: 404});
     }
-    if((message.type !== MessageType.DIRECT
+    if ((message.type !== MessageType.DIRECT
         && message.type !== MessageType.GROUP)
         || (message as GroupMessage | DirectMessage).from.id !== participant.id
-    ){
+    ) {
         return cb({success: false, error: "You are not authorized to preform this action", status: 403});
     }
     RoomService.deleteMessage(room, message);

@@ -1,7 +1,7 @@
 import * as socketio from 'socket.io';
 import {Participant} from "../interfaces/Participant";
 import {v4 as uuidv4} from 'uuid';
-import {ParticipantRole, ParticipantSummary, MediaSource, MediaAction} from "@bitlink/common";
+import {MediaAction, MediaSource, ParticipantRole, ParticipantSummary} from "@bitlink/common";
 import {MediasoupPeer} from "../interfaces/MediasoupPeer";
 import debug from "../helpers/debug";
 

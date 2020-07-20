@@ -1,5 +1,5 @@
 import {Socket} from "socket.io";
-import {MediaAction, ParticipantRole, MediaState} from '@bitlink/common';
+import {MediaState, ParticipantRole} from '@bitlink/common';
 import {MediasoupPeer} from "./MediasoupPeer";
 
 export interface Participant {

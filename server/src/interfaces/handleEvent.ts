@@ -10,7 +10,9 @@ export interface APIResponse<T = any> {
     status: number
 }
 
-export interface APIResponseCallback { (response: APIResponse): void}
+export interface APIResponseCallback {
+    (response: APIResponse): void
+}
 
-export type handleSocketEvent<T = {}> = (data: T & {socket: socketio.Socket}, cb: APIResponseCallback) => void;
-export type handleParticipantEvent<T = {}> = (data: T & {participant: Participant, room: Room}, cb: APIResponseCallback) => void;
+export type handleSocketEvent<T = {}> = (data: T & { socket: socketio.Socket }, cb: APIResponseCallback) => void;
+export type handleParticipantEvent<T = {}> = (data: T & { participant: Participant, room: Room }, cb: APIResponseCallback) => void;

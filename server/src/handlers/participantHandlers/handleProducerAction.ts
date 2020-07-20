@@ -11,7 +11,7 @@ interface handleProducerActionParams {
 
 export const handleProducerAction: handleParticipantEvent<handleProducerActionParams> = async ({source, action, participant, room}, cb) => {
     const response = MediasoupPeerService.producerAction(participant.mediasoupPeer, source, action);
-    if(!response.success){
+    if (!response.success) {
         return cb(response);
     }
     ParticipantService.mediaStateUpdate(participant, source, action);

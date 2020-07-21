@@ -13,7 +13,7 @@ const bpModelPromise = bodyPix.load({
 
 const segmentationProperties: PersonInferenceConfig = {
     flipHorizontal: false,
-    internalResolution: "high",
+    internalResolution: "low",
     segmentationThreshold: 0.9,
     scoreThreshold: 0.2,
     maxDetections: 1
@@ -64,7 +64,7 @@ export default async function runEffects(stream: MediaStream){
                 worker.postMessage({id: MessageType.SEGMENT, imageData: liveData});
             } else {*/
                 bpModel.segmentPerson(videoRenderCanvas, segmentationProperties).then(function(segmentation) {
-                    lastSegmentation = segmentation.data;
+                    lastSegmentation = segmentation;
                     previousSegmentationComplete = true;
                 });
            // }
@@ -75,12 +75,12 @@ export default async function runEffects(stream: MediaStream){
 
 
     function processSegmentation(segmentation: any){
-        const ctx = finalCanvas.getContext('2d')!;
+   /*     const ctx = finalCanvas.getContext('2d')!;
         const liveData = videoRenderCanvasCtx.getImageData(0, 0, videoRenderCanvas.width, videoRenderCanvas.height);
         const dataL = liveData.data;
-
+*/
         if(segmentation){
-            for (let x = 0; x < finalCanvas.width; x++) {
+        /*    for (let x = 0; x < finalCanvas.width; x++) {
                 for (let y = 0; y < finalCanvas.height; y++) {
                     let n = y * finalCanvas.width + x;
                     if (segmentation[n] === 0) {
@@ -90,9 +90,16 @@ export default async function runEffects(stream: MediaStream){
                         dataL[n * 4 + 3] = 255;
                     }
                 }
-            }
+            }*/
+            bodyPix.drawBokehEffect(
+                finalCanvas,
+                videoRenderCanvas,
+                segmentation,
+                12, // Constant for background blur, integer values between 0-20
+                7 // Constant for edge blur, integer values between 0-20
+            );
         }
-        ctx.putImageData(liveData, 0 ,0)
+        //ctx.putImageData(liveData, 0 ,0)
     }
 
     tmpVideo.srcObject = stream;
@@ -106,10 +113,10 @@ export default async function runEffects(stream: MediaStream){
     tmpVideo.srcObject = stream;
 
     finalCanvas.getContext('2d'); // firefox is stupid if we captureStream() without getting the contextFirst()
-    /*finalCanvas.style.position = "fixed";
+    finalCanvas.style.position = "fixed";
     finalCanvas.style.left = "0";
     finalCanvas.style.top = "0";
-    document.querySelector('body')!.appendChild(finalCanvas);*/
+    document.querySelector('body')!.appendChild(finalCanvas);
 
     // @ts-ignore
     return finalCanvas.captureStream();

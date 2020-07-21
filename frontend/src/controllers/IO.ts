@@ -13,7 +13,10 @@ import UIStore from "../stores/UIStore";
 import {ResetStores} from "../util/ResetStores";
 import * as mediasoupclient from 'mediasoup-client';
 import Participant, {ParticipantData} from "../models/Participant";
-import {MediaAction, MediaSource, MediaType, ParticipantSummary, MessageSummary, RoomSummary, ParticipantRole} from "@bitlink/common";
+import {MediaAction, MediaSource, MessageType, ParticipantSummary, MessageSummary, RoomSummary, ParticipantRole} from "@bitlink/common";
+import {handleEvent} from "../interfaces/handleEvent";
+import * as Handlers from './handlers';
+import {DirectMessage, GroupMessage, SystemMessage} from "../../../server/src/interfaces/Message";
 
 const log = debug("IO");
 
@@ -41,40 +44,39 @@ class IO {
     constructor(ioAddress: string) {
         this.io = io(ioAddress);
 
-        this.io.on("kicked", this._handleKick.bind(this));
+        function iw(func: handleEvent<any>): handleEvent {
+            return (data: any, cb: any) => func({...data, io}, cb)
+        }
 
-        this.io.on("join-room", this._handleJoinRoom.bind(this));
+        this.io.on("kicked", iw(Handlers.handleKick));
 
-        this.io.on("waiting-room-accept", this._handleWaitingRoomAccept.bind(this));
-        this.io.on("new-waiting-room-participant", this._handleWaitingRoomNewParticipant.bind(this));
-        this.io.on("waiting-room-rejection", this._handleWaitingRoomRejection.bind(this));
+        this.io.on("join-room", iw(Handlers.handleJoinRoom));
 
-        this.io.on("destroy", this._handleRoomClosure.bind(this));
+        this.io.on("waiting-room-accept", iw(Handlers.handleWaitingRoomAccept));
+        this.io.on("new-waiting-room-participant", iw(Handlers.handleWaitingRoomNewParticipant));
+        this.io.on("waiting-room-rejection", iw(Handlers.handleWaitingRoomRejection));
 
-        this.io.on("new-participant", this._handleNewParticipant.bind(this));
-        this.io.on("participant-updated-media-state", this._handleMediaStateUpdate.bind(this));
-        this.io.on("participant-left", this._handleParticipantLeft.bind(this));
-        this.io.on("participant-changed-name", this._handleParticipantNameChange.bind(this));
-        this.io.on("participant-update-role", this._handleParticipantUpdateRole.bind(this));
+        this.io.on("destroy", iw(Handlers.handleRoomClosure));
 
-        this.io.on("update-room-settings", this._handleUpdatedRoomSettings.bind(this));
-        this.io.on("update-room-settings-host", this._handleUpdatedRoomSettings.bind(this));
+        this.io.on("new-participant", iw(Handlers.handleNewParticipant));
+        this.io.on("participant-updated-media-state", iw(Handlers.handleMediaStateUpdate));
+        this.io.on("participant-left", iw(Handlers.handleParticipantLeft));
+        this.io.on("participant-changed-name", iw(Handlers.handleParticipantNameChange));
+        this.io.on("participant-update-role",  iw(Handlers.handleParticipantUpdateRole));
+
+        this.io.on("updated-room-settings", iw(Handlers.handleUpdatedRoomSettings));
+        this.io.on("updated-room-settings-host", iw(Handlers.handleUpdatedRoomSettings));
 
 
-        this.io.on("new-room-message", this._handleNewMessage.bind(this));
-        this.io.on("new-direct-message", this._handleNewMessage.bind(this));
-
-        this.io.on("edit-room-message", this._handleEditMessage.bind(this));
-        this.io.on("edit-direct-message", this._handleEditMessage.bind(this));
-
-        this.io.on("delete-room-message", this._handleDeleteMessage.bind(this));
-        this.io.on("delete-direct-message", this._handleDeleteMessage.bind(this));
+        this.io.on("new-message", iw(Handlers.handleNewMessage));
+        this.io.on("edit-message",  iw(Handlers.handleEditMessage));
+        this.io.on("delete-message",  iw(Handlers.handleDeleteMessage));
 
         // ##################
         // ## WebRTC stuff ## ASCII Art, Yey! :D
         // ##################
 
-        this.io.on("new-consumer", this._handleNewConsumer.bind(this));
+        this.io.on("new-consumer",  iw(Handlers.handleNewConsumer));
 
         reaction(() => {
             return {
@@ -174,10 +176,11 @@ class IO {
                         if (response.status !== 403) {
                             throw response.error;
                         }
-                        this._handleWaitingRoomInformation(response.data);
+                        UIStore.store.modalStore.joiningRoom = false;
+                        UIStore.store.modalStore.waitingRoom = true;
                         return;
                     }
-                    this._handleRoomSummary(response.data);
+                    this.processRoomSummary(response.data);
                     this.createTransports()
                         .then(() => this.io.emit("transports-ready"));
                     setTimeout(() => { // https://www.theatlantic.com/technology/archive/2017/02/why-some-apps-use-fake-progress-bars/517233/
@@ -243,51 +246,38 @@ class IO {
 
     }
 
-    _handleKick() {
-        this.reset();
-        NotificationStore.add(new UINotification("You have been kicked from the room", NotificationType.Warning))
-    }
-
-    _handleJoinRoom(id: string) {
-        this.joinRoom(id, MyInfo.chosenName);
-    }
-
-
-    @action
-    _handleRoomSummary(data: { summary: RoomSummary, rtcCapabilities: any }) {
-        const roomSummary = data.summary;
-
-        const participants = roomSummary.participants.map((participantSummary: ParticipantSummary) => {
-            const participant = new Participant({
-                ...participantSummary,
-                mediasoup: {
-                    consumer: {
-                        camera: null,
-                        microphone: null,
-                        screen: null
-                    }
-                }
-            });
-            if (participant.id === roomSummary.myId) {
-                CurrentUserInformationStore.info = participant;
-            }
-            return participant;
-        });
-        ParticipantsStore.replace(participants);
-        ChatStore.addParticipant(...participants);
-
-        roomSummary.messages.forEach((message: MessageSummary) => {
-            const realMessage = this.convertMessageSummaryToMessage(message);
-            ChatStore.addMessage(realMessage);
-        });
-
-        RoomStore.room = roomSummary;
-        RoomStore.mediasoup.rtcCapabilities = data.rtcCapabilities;
-        UIStore.store.joinedDate = new Date();
-    }
-
-
     convertMessageSummaryToMessage(message: MessageSummary): Message {
+        const common: Message = {
+            id: message.id,
+            created: message.created,
+            type: message.type,
+            content: message.content
+        };
+
+        switch (message.type) {
+            case MessageType.SYSTEM: {
+                return {
+                    ...common,
+                } as SystemMessage
+            }
+            case MessageType.GROUP: {
+                return {
+                    ...common,
+                    group: options.group,
+                    from: from
+                } as GroupMessage
+            }
+            case MessageType.DIRECT: {
+                return {
+                    ...common,
+                    from: from,
+                    to: options.to
+                } as DirectMessage
+            }
+            default: {
+                throw "Unknown type"
+            }
+        }
         const replacementObj: any = {};
         replacementObj.from = ParticipantsStore.getById(message.from) || null;
         replacementObj.to = ParticipantsStore.getById(message.to) || null;
@@ -296,30 +286,6 @@ class IO {
             reaction.participant = ParticipantsStore.getById(reaction.participant);
         });
         return Object.assign({}, message, replacementObj) as Message;
-    }
-
-    _handleNewParticipant(participantSummary: ParticipantSummary) {
-        ParticipantsStore.removeFromWaitingRoom(participantSummary.id);
-
-       /* participantSummary.mediaState = {
-            camera: false,
-            screen: false,
-            microphone: false
-        };*/
-
-        const participant = new Participant({
-            ...participantSummary,
-            mediasoup: {
-                consumer: {
-                    camera: null,
-                    screen: null,
-                    microphone: null
-                }
-            }
-        });
-        ParticipantsStore.participants.push(participant);
-        NotificationStore.add(new UINotification(`${participant.name} joined!`, NotificationType.Alert));
-        ChatStore.addSystemMessage({content: `${participant.name} joined`});
     }
 
     @action
@@ -340,113 +306,6 @@ class IO {
             }
         }
         participant.mediaState[update.source] = update.action === "resume";
-    }
-
-    _handleParticipantLeft(participantId: string) {
-        const participant: Participant | undefined = ParticipantsStore.getById(participantId);
-        if (participant) {
-            participant.isAlive = false;
-            ChatStore.addSystemMessage({content: `${participant.name} left`});
-            NotificationStore.add(new UINotification(`${participant.name} left!`, NotificationType.Alert));
-        }
-        ParticipantsStore.removeFromWaitingRoom(participantId);
-    }
-
-    _handleParticipantNameChange(participantId: string, newName: string) {
-        const participant = ParticipantsStore.getById(participantId);
-        if (participant) {
-            participant.name = newName;
-        }
-    }
-
-    _handleParticipantUpdateRole(participantId: string, newRole: ParticipantRole){
-        const roleLookup = {
-            [ParticipantRole.HOST]: 'host',
-            [ParticipantRole.MANAGER]: 'manager',
-            [ParticipantRole.MEMBER]: 'member'
-        }
-
-        const participant = ParticipantsStore.getById(participantId);
-        if (participant) {
-            ChatStore.addSystemMessage({content: `${participant.name} new role is ${roleLookup[participant.role]}`})
-            participant.role = newRole;
-        }
-        if(participantId === MyInfo.info?.id){
-            MyInfo.info.role = newRole;
-        }
-    }
-
-    _handleRoomClosure() {
-        NotificationStore.add(new UINotification(`Room was closed!`, NotificationType.Warning));
-        ResetStores();
-        UIStore.store.modalStore.joinOrCreate = true;
-    }
-
-    _handleNewMessage(messageSummary: MessageSummary) {
-        const realMessage = this.convertMessageSummaryToMessage(messageSummary);
-        const notification = new UINotification(realMessage.content, NotificationType.Alert, {title: realMessage.from.name});
-        if (!document.hasFocus()) {
-            NotificationStore.systemNotify(notification);
-        } else if (!UIStore.store.chatPanel) {
-            NotificationStore.add(notification);
-        }
-        ChatStore.addMessage(realMessage);
-    }
-
-    _handleEditMessage(messageSummary: MessageSummary) {
-        ChatStore.editMessage(messageSummary.id, messageSummary.content);
-    }
-
-    _handleDeleteMessage(messageSummary: MessageSummary) {
-        ChatStore.removeMessage(messageSummary.id);
-    }
-
-    async _handleNewConsumer(source: MediaSource, kind: MediaType, participantId: string, data: any, cb: Function) {
-        const participant = ParticipantsStore.getById(participantId);
-        if (!participant) {
-            throw 'Could not find participant';
-        }
-        log("New Consumer for %s: %s", participant.name, source);
-        participant.mediasoup!.consumer[source] = await MyInfo.mediasoup.transports.receiving!.consume({
-            id: data.consumerId,
-            producerId: data.producerId,
-            kind: kind,
-            rtpParameters: data.rtpParameters
-        });
-
-        participant.mediasoup!.consumer[source]!.on("transportclose", () => {
-            participant.mediasoup!.consumer[source] = null;
-        });
-
-        cb(true);
-        participant.mediasoup!.consumer[source]?.resume();
-    }
-
-    _handleWaitingRoomInformation(info: any) {
-        UIStore.store.modalStore.joiningRoom = false;
-        UIStore.store.modalStore.waitingRoom = true;
-    }
-
-    _handleWaitingRoomAccept(data: any) {
-        NotificationStore.add(new UINotification("You were accepted into the room!", NotificationType.Success), true);
-        UIStore.store.modalStore.waitingRoom = false;
-        this._handleRoomSummary(data);
-        this.createTransports()
-            .then(() => this.io.emit("transports-ready"));
-    }
-
-    _handleWaitingRoomRejection(reason: any) {
-        NotificationStore.add(new UINotification(reason, NotificationType.Error), true);
-        UIStore.store.modalStore.waitingRoom = false;
-        UIStore.store.modalStore.joiningRoom = false;
-        UIStore.store.modalStore.join = true;
-    }
-
-
-    _handleUpdatedRoomSettings(newSettings: RoomSettingsObj) {
-        if (RoomStore.room?.name !== newSettings.name) {
-            RoomStore.room!.name = newSettings.name;
-        }
     }
 
     async toggleMedia(source: MediaSource) {
@@ -567,6 +426,38 @@ class IO {
         return;
     }
 
+    processRoomSummary(data: { summary: RoomSummary, rtcCapabilities: any }) {
+        const roomSummary = data.summary;
+
+        const participants = roomSummary.participants.map((participantSummary: ParticipantSummary) => {
+            const participant = new Participant({
+                ...participantSummary,
+                mediasoup: {
+                    consumer: {
+                        camera: null,
+                        microphone: null,
+                        screen: null
+                    }
+                }
+            });
+            if (participant.id === roomSummary.myId) {
+                CurrentUserInformationStore.info = participant;
+            }
+            return participant;
+        });
+        ParticipantsStore.replace(participants);
+        ChatStore.addParticipant(...participants);
+
+        roomSummary.messages.forEach((message: MessageSummary) => {
+            const realMessage = this.convertMessageSummaryToMessage(message);
+            ChatStore.addMessage(realMessage);
+        });
+
+        RoomStore.room = roomSummary;
+        RoomStore.mediasoup.rtcCapabilities = data.rtcCapabilities;
+        UIStore.store.joinedDate = new Date();
+    }
+
     socketRequest(event: string, ...args: any[]): Promise<APIResponse> {
         return new Promise(async (resolve, reject) => {
             this.io.emit(event, ...args, (json: APIResponse) => {
@@ -574,7 +465,6 @@ class IO {
             });
         });
     }
-
 
 }
 

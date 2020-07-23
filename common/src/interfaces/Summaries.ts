@@ -1,12 +1,19 @@
 import {MediaState, MessageType, ParticipantRole, Reactions} from "..";
+import {Participant} from "../../../server/src/interfaces/Participant";
 
 export interface RoomSummary {
     id: string,
     idHash: string,
     name: string,
     myId: string
-    participants: Array<ParticipantSummary>,
-    messages: Array<MessageSummary>,
+    participants: ParticipantSummary[],
+    messages: MessageSummary[],
+}
+
+export interface MessageGroupSummary {
+    id: string,
+    name: string,
+    members: string
 }
 
 export interface ParticipantSummary {

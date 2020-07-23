@@ -127,13 +127,13 @@ class RoomService {
     static participantLeft(room: Room, participant: Participant) {
         ParticipantService.disconnect(participant);
         MediasoupPeerService.destroy(participant.mediasoupPeer);
-        RoomService.broadcast(room, "participant-left", [], participant.id);
+        RoomService.broadcast(room, "participant-left", [], {participantId: participant.id});
     }
 
     static participantChangedName(room: Room, participant: Participant, newName: string) {
         log("Participant changing name %s --> %s", participant.name, newName);
         ParticipantService.changeName(participant, name);
-        RoomService.broadcast(room, "participant-changed-name", [participant], participant.id, participant.name);
+        RoomService.broadcast(room, "participant-changed-name", [participant], {participantId: participant.id, newName: participant.name});
         return {
             success: true,
             status: 200,
@@ -184,7 +184,7 @@ class RoomService {
                     status: 200
                 };
             case "reject":
-                patientParticipant.socket.emit("waiting-room-rejection", "The host rejected you.");
+                patientParticipant.socket.emit("waiting-room-rejection", {reason: "The host rejected you."});
                 RoomService.participantLeft(room, patientParticipant);
                 return {
                     success: true,
@@ -207,10 +207,10 @@ class RoomService {
         }
         const safeVersion = RoomService._getSafeSettings(newSettings);
         if (JSON.stringify(RoomService._getSafeSettings(room.settings)) !== JSON.stringify(safeVersion)) {
-            this.broadcast(room, "updated-room-settings", RoomService.getConnectedParticipants(room).filter(participant => participant.role === ParticipantRole.HOST), safeVersion);
+            this.broadcast(room, "updated-room-settings", RoomService.getConnectedParticipants(room).filter(participant => participant.role === ParticipantRole.HOST), {newSettings: safeVersion});
         }
         room.settings = newSettings;
-        RoomService.broadcast(room, "updated-room-settings-host", RoomService.getConnectedParticipants(room).filter(participant => participant.role !== ParticipantRole.HOST), newSettings);
+        RoomService.broadcast(room, "updated-room-settings-host", RoomService.getConnectedParticipants(room).filter(participant => participant.role !== ParticipantRole.HOST), {newSettings});
     }
 
     static kickParticipant(room: Room, participantToRemove: Participant) {
@@ -223,19 +223,19 @@ class RoomService {
         const summary = MessageService.getSummary(message);
         switch (message.type) {
             case MessageType.SYSTEM: {
-                RoomService.broadcast(room, `${eventType}-message`, RoomService.getConnectedParticipants(room).filter(participant => participant.role > (message as SystemMessage).permission), summary)
+                RoomService.broadcast(room, `${eventType}-message`, RoomService.getConnectedParticipants(room).filter(participant => participant.role > (message as SystemMessage).permission), {messageSummary: summary})
                 break;
             }
             case MessageType.GROUP: {
                 (message as GroupMessage).group.members.filter(participant => participant.isConnected).forEach(participant => {
-                    participant.socket.emit(`${eventType}-message`, summary)
+                    participant.socket.emit(`${eventType}-message`, {messageSummary: summary})
                 });
                 break;
             }
             case MessageType.DIRECT: {
                 const directMessage = message as DirectMessage;
                 [directMessage.from.socket, directMessage.to.socket].forEach(socket => {
-                    socket.emit(`${eventType}-message`, summary)
+                    socket.emit(`${eventType}-message`, {messageSummary: summary})
                 });
                 break;
             }
@@ -269,8 +269,8 @@ class RoomService {
         log("Transfer host: %s --> %s<%s>", from.name, to.name, to.role);
         from.role = ParticipantRole.MEMBER;
         to.role = ParticipantRole.HOST;
-        this.broadcast(room, 'participant-update-role', [], to.id, ParticipantRole.HOST);
-        this.broadcast(room, 'participant-update-role', [], from.id, ParticipantRole.MEMBER);
+        this.broadcast(room, 'participant-update-role', [], {participantId: to.id, newRole: ParticipantRole.HOST});
+        this.broadcast(room, 'participant-update-role', [], {participantId: from.id, newRole: ParticipantRole.MEMBER});
     }
 
     private static _addParticipant(room: Room, participant: Participant) {
@@ -289,8 +289,10 @@ class RoomService {
         participant.socket.on("send-message", pw(Handlers.handleSendMessage));
         participant.socket.on("edit-message", pw(Handlers.handleEditMessage));
         participant.socket.on("delete-message", pw(Handlers.handleDeleteMessage));
+        participant.socket.on("transfer-host", pw(Handlers.handleTransferHost));
+        participant.socket.on("change-name", pw(Handlers.handleUpdateName));
 
-        RoomService.broadcast(room, "new-participant", [participant], ParticipantService.getSummary(participant));
+        RoomService.broadcast(room, "new-participant", [participant], {participantSummary: ParticipantService.getSummary(participant)});
     }
 
     private static _getSafeSettings(settings: RoomSettings) {

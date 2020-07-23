@@ -4,7 +4,7 @@ import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
 import {faExternalLinkSquareAlt} from '@fortawesome/free-solid-svg-icons'
 import './RoomId.css';
 import NotificationStore, {NotificationType, UINotification} from "../../stores/NotificationStore";
-import MyInfo from "../../stores/MyInfo";
+import MyInfo from "../../stores/MyInfoStore";
 
 const RoomId: React.FunctionComponent = () => {
     function copyLink() {
@@ -28,7 +28,7 @@ const RoomId: React.FunctionComponent = () => {
 
     return (
         <div onClick={copyLink} className={"room-info--id-wrapper"}>
-            <span className={"room-info--id"}>{RoomStore.room!.id}</span>
+            <span className={"room-info--id"}>{RoomStore.info!.id}</span>
             <span className={"room-info--share-icon"}><FontAwesomeIcon icon={faExternalLinkSquareAlt}/></span>
         </div>
     );

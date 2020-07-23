@@ -1,8 +1,8 @@
 import React, {useEffect, useState} from 'react';
 import {useObserver} from "mobx-react"
 import ChatStore from "../../../stores/ChatStore";
-import {Message} from "../../../stores/MessagesStore";
-import MyInfo from "../../../stores/MyInfo";
+import {Message} from "../../../interfaces/Messages";
+import MyInfo from "../../../stores/MyInfoStore";
 import MessageComponent from "./MessageComponent";
 import './MessagesContainer.css'
 import ParticipantsStore from "../../../stores/ParticipantsStore";

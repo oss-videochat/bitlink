@@ -1,7 +1,7 @@
 import React from 'react';
 import {observer} from "mobx-react"
 import {Reactions} from "@bitlink/common";
-import {Reaction} from "../../../stores/MessagesStore";
+import {Reaction} from "../../../interfaces/Messages";
 
 interface ReactionArrayObj {
     [key: string]: Array<Reaction>

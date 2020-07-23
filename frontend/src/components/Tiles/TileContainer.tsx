@@ -6,7 +6,7 @@ import ParticipantsStore from "../../stores/ParticipantsStore";
 import VideoTile from "./VideoTile";
 import AudioTile from "./AudioTile";
 import TilePlaceholder from "./TilePlaceholder";
-import MyInfo from "../../stores/MyInfo";
+import MyInfo from "../../stores/MyInfoStore";
 import UIStore from "../../stores/UIStore";
 import {LayoutSizeCalculation} from "../../util/LayoutSizeCalculation";
 import Participant from "../../models/Participant";
@@ -122,7 +122,7 @@ export class TileContainer extends React.Component<any, any> {
                 </div>
 
                 {
-                    RoomStore.room ?
+                    RoomStore.info ?
                         <div className={"controls-wrapper"}>
                             <span onClick={() => IO.toggleMedia("camera")}>
                                 {MyInfo.info?.mediaState.camera ?

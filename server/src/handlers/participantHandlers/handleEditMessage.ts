@@ -5,9 +5,10 @@ import {DirectMessage, GroupMessage} from "../../interfaces/Message";
 
 interface handleEditMessageParam {
     messageId: string,
+    newContent: string
 }
 
-export const handleEditMessage: handleParticipantEvent<handleEditMessageParam> = async ({messageId, room, participant}, cb) => {
+export const handleEditMessage: handleParticipantEvent<handleEditMessageParam> = async ({messageId, newContent, room, participant}, cb) => {
     const message = RoomService.getMessage(room, messageId);
     if (!message) {
         return cb({success: false, error: "Could not find message", status: 404});
@@ -18,7 +19,7 @@ export const handleEditMessage: handleParticipantEvent<handleEditMessageParam> =
     ) {
         return cb({success: false, error: "You are not authorized to preform this action", status: 403});
     }
-    RoomService.deleteMessage(room, message);
+    RoomService.editMessage(room, message, newContent);
     cb({success: true, error: null, status: 200});
 };
 

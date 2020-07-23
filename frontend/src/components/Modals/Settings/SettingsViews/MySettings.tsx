@@ -1,5 +1,5 @@
 import React, {ChangeEvent, useEffect, useState} from 'react';
-import MyInfo from "../../../../stores/MyInfo";
+import MyInfo from "../../../../stores/MyInfoStore";
 import IO from "../../../../controllers/IO";
 import {ISettingsPanelProps} from '../SettingsViewer';
 

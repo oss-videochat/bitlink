@@ -7,7 +7,7 @@ import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
 import {faCogs, faComments, faExpand, faUsers} from '@fortawesome/free-solid-svg-icons'
 import UIStore from "../../stores/UIStore";
 import RoomId from "./RoomId";
-import MyInfo from "../../stores/MyInfo";
+import MyInfo from "../../stores/MyInfoStore";
 
 interface IHeaderProps {
     toggleFullscreen: () => void
@@ -18,9 +18,9 @@ const Header: React.FunctionComponent<IHeaderProps> = ({toggleFullscreen}) => {
         return (
             <header className={"header"}>
                 <div className={"header--room-info"}>
-                    {RoomStore.room ?
+                    {RoomStore.info ?
                         <React.Fragment>
-                            <span data-private={""} className={"room-info--name"}>{RoomStore.room.name}</span>
+                            <span data-private={""} className={"room-info--name"}>{RoomStore.info.name}</span>
                             <RoomId/>
                         </React.Fragment>
                         : null
@@ -43,7 +43,7 @@ const Header: React.FunctionComponent<IHeaderProps> = ({toggleFullscreen}) => {
                                 : null
                         }
                     </ul>
-                    {RoomStore.room ?
+                    {RoomStore.info ?
                         <React.Fragment>
                             <span className={"divider"}/>
                             <ul>

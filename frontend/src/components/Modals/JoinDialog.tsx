@@ -1,7 +1,7 @@
 import React, {useState} from 'react';
 import './Dialog.css';
 import IO from "../../controllers/IO";
-import MyInfo from "../../stores/MyInfo";
+import MyInfo from "../../stores/MyInfoStore";
 import UIStore from "../../stores/UIStore";
 import RoomStore from "../../stores/RoomStore";
 import NotificationStore, {NotificationType, UINotification} from "../../stores/NotificationStore";
@@ -47,7 +47,7 @@ const JoinDialog: React.FunctionComponent = () => {
 
     function handleCancel() {
         UIStore.store.modalStore.join = false;
-        if (!RoomStore.room) {
+        if (!RoomStore.info) {
             UIStore.store.modalStore.joinOrCreate = true;
         }
     }

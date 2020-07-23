@@ -7,7 +7,7 @@ import {SettingsPanels} from "../../../enum/SettingsPanels";
 import UIStore from "../../../stores/UIStore";
 import * as Events from 'events';
 import NotificationStore, {NotificationType, UINotification} from "../../../stores/NotificationStore";
-import MyInfo from "../../../stores/MyInfo";
+import MyInfo from "../../../stores/MyInfoStore";
 
 interface SettingsModalState {
     selectedPanel: SettingsPanels,

@@ -1,6 +1,6 @@
 import {types} from "mediasoup-client";
 import {computed, observable} from 'mobx';
-import {MediaSource, MediaState, ParticipantRole} from "@bitlink/common";
+import {MediaSource, MediaState, ParticipantRole, ParticipantSummary} from "@bitlink/common";
 
 
 export interface ParticipantData {
@@ -18,47 +18,39 @@ export interface ParticipantData {
 }
 
 export default class Participant {
-    @observable id: string;
-    @observable name: string;
-    @observable role: ParticipantRole;
-    @observable isAlive: boolean;
-    @observable mediaState: MediaState;
-    @observable mediasoup: {
-        consumer: {
-            [key in MediaSource]: types.Consumer | null
-        }
+    @observable info: ParticipantSummary;
+    @observable consumers: { [key in MediaSource]: types.Consumer | null } = {
+        camera: null,
+        microphone: null,
+        screen: null
     };
-    constructor(data: Partial<Participant>) {
-        this.id = data.id!;
-        this.name = data.name!;
-        this.role = data.role!;
-        this.isAlive = data.isAlive!;
-        this.mediaState = data.mediaState!;
-        this.mediasoup = data.mediasoup!;
+
+    constructor(data: ParticipantSummary) {
+        this.info = data;
     }
 
     @computed
     get mentionString(){
-        return this.name.replace(/\s+/g, '');
+        return this.info.name.replace(/\s+/g, '');
     }
 
     @computed
     get isHost(){
-        return this.role === ParticipantRole.HOST;
+        return this.info.role === ParticipantRole.HOST;
     }
 
     @computed
     get hasVideo(): boolean {
-        return this.mediaState.camera && !!this.mediasoup.consumer.camera
+        return this.info.mediaState.camera && !!this.consumers.camera
     }
 
     @computed
     get hasAudio(): boolean {
-        return this.mediaState.microphone && !!this.mediasoup.consumer.microphone
+        return this.info.mediaState.microphone && !!this.consumers.microphone
     }
 
     @computed
     get hasScreen(): boolean {
-        return this.mediaState.screen && !!this.mediasoup.consumer.screen
+        return this.info.mediaState.screen && !!this.consumers.screen
     }
 }

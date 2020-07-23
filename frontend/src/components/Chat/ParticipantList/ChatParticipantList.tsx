@@ -3,7 +3,7 @@ import {useObserver} from "mobx-react"
 import ChatParticipant from "./ChatParticipant";
 import RoomStore from "../../../stores/RoomStore";
 import ParticipantsStore from "../../../stores/ParticipantsStore";
-import MyInfo from "../../../stores/MyInfo";
+import MyInfo from "../../../stores/MyInfoStore";
 import ChatStore from "../../../stores/ChatStore";
 import SearchBar from "./SearchBar";
 import './ChatParticipantList.css';
@@ -46,7 +46,7 @@ const ChatParticipantList: React.FunctionComponent<IChatParticipantListProps> = 
         <div className={"chat-participant-wrapper " + (UIStore.store.participantPanel ? "open" : "")}>
             <div className={"chat-participant-wrapper--content"}>
                 <SearchBar onChange={handleSearchChange}/>
-                {RoomStore.room ?
+                {RoomStore.info ?
                     <div className={"chat-participant-list"}>
                         {ParticipantsStore.waitingRoom.length > 0 ?
                             <WaitingRoomList/>
@@ -54,11 +54,11 @@ const ChatParticipantList: React.FunctionComponent<IChatParticipantListProps> = 
                         }
 
                         {
-                            (!searchText || RoomStore.room.name.toLowerCase().includes(searchText.toLowerCase())) ?
+                            (!searchText || RoomStore.info.name.toLowerCase().includes(searchText.toLowerCase())) ?
                                 <ChatParticipant onChosen={onChosen} key={"chat-everyone"}
                                                  selected={selectedUser === "everyone"}
                                                  participant={ParticipantsStore.everyone}
-                                                 name={RoomStore.room.name}
+                                                 name={RoomStore.info.name}
                                                  lastMessage={getLastMessage("everyone")}/> :
                                 null
                         }

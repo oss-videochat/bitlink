@@ -2,7 +2,7 @@ import React from 'react';
 import './ParticipantList.css';
 import {useObserver} from 'mobx-react';
 import ParticipantsStore from "../../stores/ParticipantsStore";
-import MyInfo from "../../stores/MyInfo";
+import MyInfo from "../../stores/MyInfoStore";
 import IO from "../../controllers/IO";
 
 interface IParticipantListProps {

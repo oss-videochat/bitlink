@@ -8,7 +8,7 @@ import {useObserver} from "mobx-react"
 import UIStore from "../../../stores/UIStore";
 import ChatStore from "../../../stores/ChatStore";
 import MessageContent from "./MessageContent";
-import {Message} from "../../../stores/MessagesStore";
+import {Message} from "../../../interfaces/Messages";
 
 //  startGroup={lastParticipant !== message.from.id || message.created - lastTime > 1000 * 60 * 5}
 //                                         key={message.id}

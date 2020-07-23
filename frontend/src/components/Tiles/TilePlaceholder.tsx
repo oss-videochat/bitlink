@@ -8,7 +8,7 @@ const TilePlaceholder: React.FunctionComponent = () => useObserver(() => (
         <div className={"video-placeholder"}>
                 <span className={"video-placeholder--message"}>
                       Click the button to invite others.
-                    {RoomStore.room ?
+                    {RoomStore.info ?
                         <RoomId/>
                         : null
                     }

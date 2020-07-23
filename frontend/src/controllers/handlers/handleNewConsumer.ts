@@ -1,7 +1,7 @@
 import {handleEvent} from "../../interfaces/handleEvent";
 import {MediaType, MediaSource} from "@bitlink/common";
 import ParticipantsStore from "../../stores/ParticipantsStore";
-import MyInfo from "../../stores/MyInfo";
+import MyInfo from "../../stores/MyInfoStore";
 import debug from "../../util/debug";
 
 const log = debug("Handlers:NewConsumer");

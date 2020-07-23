@@ -84,11 +84,16 @@ class WebRTCRoomService {
 
         MediasoupPeerService.addConsumer(consumerPeer.mediasoupPeer, consumer);
 
-        consumerPeer.socket.emit("new-consumer", source, MediaSourceToTypeMap[source], producerPeer.id, {
-            producerId: producer.id,
-            consumerId: consumer.id,
-            rtpParameters: consumer.rtpParameters,
-            producerPaused: consumer.producerPaused,
+        consumerPeer.socket.emit("new-consumer", {
+            source,
+            kind: MediaSourceToTypeMap[source],
+            participantId: producerPeer.id,
+            data: {
+                producerId: producer.id,
+                consumerId: consumer.id,
+                rtpParameters: consumer.rtpParameters,
+                producerPaused: consumer.producerPaused,
+            }
         }, (success: boolean) => {
             if (success) {
                 consumer.resume();

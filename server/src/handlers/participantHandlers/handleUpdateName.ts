@@ -2,10 +2,10 @@ import {handleParticipantEvent} from "../../interfaces/handleEvent";
 import RoomService from "../../services/RoomService";
 
 interface handleUpdateNameParams {
-    name: string;
+    newName: string;
 }
 
-export const handleUpdateName: handleParticipantEvent<handleUpdateNameParams> = async ({name, participant, room}, cb) => {
-    cb(RoomService.participantChangedName(room, participant, name));
+export const handleUpdateName: handleParticipantEvent<handleUpdateNameParams> = ({newName, participant, room}, cb) => {
+    cb(RoomService.participantChangedName(room, participant, newName));
 };
 

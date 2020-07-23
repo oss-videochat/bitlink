@@ -2,7 +2,7 @@ import React from 'react';
 import './SettingsPanel.css'
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
 import {faDoorClosed, faExclamationCircle, faUserCog, faUsers} from '@fortawesome/free-solid-svg-icons'
-import MyInfo from "../../../stores/MyInfo";
+import MyInfo from "../../../stores/MyInfoStore";
 import {SettingsPanels} from "../../../enum/SettingsPanels";
 
 interface ISettingsPanelProps {

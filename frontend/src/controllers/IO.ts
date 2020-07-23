@@ -3,21 +3,19 @@ import io from 'socket.io-client';
 import ParticipantsStore from "../stores/ParticipantsStore";
 import {action, reaction} from 'mobx';
 
-import CurrentUserInformationStore from "../stores/MyInfo";
-import MyInfo from "../stores/MyInfo";
+import CurrentUserInformationStore from "../stores/MyInfoStore";
+import MyInfo from "../stores/MyInfoStore";
 import RoomStore from "../stores/RoomStore";
 import ChatStore from "../stores/ChatStore";
-import {Message} from "../stores/MessagesStore";
 import NotificationStore, {NotificationType, UINotification} from "../stores/NotificationStore";
 import UIStore from "../stores/UIStore";
 import {ResetStores} from "../util/ResetStores";
 import * as mediasoupclient from 'mediasoup-client';
 import Participant, {ParticipantData} from "../models/Participant";
-import {MediaAction, MediaSource, MessageType, ParticipantSummary, MessageSummary, RoomSummary, ParticipantRole} from "@bitlink/common";
+import {MediaAction, MediaSource, MessageType, ParticipantSummary, MessageSummary, RoomSummary, ParticipantRole, DirectMessageSummary, GroupMessageSummary} from "@bitlink/common";
 import {handleEvent} from "../interfaces/handleEvent";
 import * as Handlers from './handlers';
-import {DirectMessage, GroupMessage, SystemMessage} from "../../../server/src/interfaces/Message";
-
+import {DirectMessage, GroupMessage, Message, SystemMessage} from "../interfaces/Message";
 const log = debug("IO");
 
 interface APIResponse {
@@ -115,7 +113,7 @@ class IO {
     }
 
     leave() {
-        if(RoomStore.room && MyInfo.info?.isHost && ParticipantsStore.getLiving(true).slice(2).length > 0){
+        if(RoomStore.info && MyInfo.info?.isHost && ParticipantsStore.getLiving(true).slice(2).length > 0){
             UIStore.store.modalStore.leaveMenu = true;
         } else {
             // eslint-disable-next-line no-restricted-globals
@@ -137,7 +135,9 @@ class IO {
     }
 
     transferHost(participant: Participant){
-        return this.socketRequest("transfer-host", participant.id);
+        return this.socketRequest("transfer-host", {
+            participantId: participant.id
+        });
     }
 
     reset() {
@@ -162,7 +162,7 @@ class IO {
             throw "Could not connect to server";
         }
         UIStore.store.modalStore.joiningRoom = true;
-        this.socketRequest("get-rtp-capabilities", id)
+        this.socketRequest("get-rtp-capabilities", {roomId: id})
             .then((response: APIResponse) => {
                 if (!response.success) {
                     throw response.error;
@@ -205,7 +205,7 @@ class IO {
 
             transport.on("connect", async ({dtlsParameters}, callback, errback) => {
                 log("Transport connect event emitted");
-                const response = await this.socketRequest("connect-transport", transport.id, dtlsParameters);
+                const response = await this.socketRequest("connect-transport", {transportId: transport.id, dtlsParameters: dtlsParameters});
                 if (!response.success) {
                     log("connect-transport request error");
                     NotificationStore.add(new UINotification(`An error occurred connecting to the transport: ${response.error}`, NotificationType.Error));
@@ -219,13 +219,13 @@ class IO {
             transport.on("produce", async ({kind, rtpParameters, appData}, callback, errback) => {
                 log("Producing type: %s", appData.source);
                 try {
-                    const response: APIResponse = await this.socketRequest("create-producer", transport.id, kind, appData.source, rtpParameters);
+                    const response: APIResponse = await this.socketRequest("create-producer", {transportId: transport.id, kind, source: appData.source, rtpParameters});
                     if (!response.success) {
                         errback(response.error);
                         errback(response.error);
                         return;
                     }
-                    this.socketRequest("producer-action", appData.source, "resume");
+                    this.socketRequest("producer-action", {source: appData.source, action: "resume"});
                     callback({id: response.data.id});
                 } catch (error) {
                     errback(error);
@@ -234,11 +234,11 @@ class IO {
         };
 
         return Promise.all([
-            this.socketRequest("create-transport", "webrtc", "receiving").then((response: APIResponse) => {
+            this.socketRequest("create-transport", {type: "webrtc", kind: "receiving"}).then((response: APIResponse) => {
                 MyInfo.mediasoup.transports.receiving = RoomStore.device!.createRecvTransport(response.data.transportInfo);
                 return addTransportListeners(MyInfo.mediasoup.transports.receiving);
             }),
-            this.socketRequest("create-transport", "webrtc", "sending").then((response: APIResponse) => {
+            this.socketRequest("create-transport", {type: "webrtc", kind: "sending"}).then((response: APIResponse) => {
                 MyInfo.mediasoup.transports.sending = RoomStore.device!.createSendTransport(response.data.transportInfo);
                 return addTransportListeners(MyInfo.mediasoup.transports.sending);
             })
@@ -247,9 +247,9 @@ class IO {
     }
 
     convertMessageSummaryToMessage(message: MessageSummary): Message {
-        const common: Message = {
+        const common = {
             id: message.id,
-            created: message.created,
+            created: new Date(message.created),
             type: message.type,
             content: message.content
         };
@@ -261,31 +261,25 @@ class IO {
                 } as SystemMessage
             }
             case MessageType.GROUP: {
+                const groupMessage = message as GroupMessageSummary;
                 return {
                     ...common,
-                    group: options.group,
-                    from: from
+                    group: RoomStore.getGroup(groupMessage.group),
+                    from: ParticipantsStore.getById(groupMessage.from)
                 } as GroupMessage
             }
             case MessageType.DIRECT: {
+                const groupMessage = message as DirectMessageSummary;
                 return {
                     ...common,
-                    from: from,
-                    to: options.to
+                    from: ParticipantsStore.getById(groupMessage.from),
+                    to: ParticipantsStore.getById(groupMessage.to)
                 } as DirectMessage
             }
             default: {
                 throw "Unknown type"
             }
         }
-        const replacementObj: any = {};
-        replacementObj.from = ParticipantsStore.getById(message.from) || null;
-        replacementObj.to = ParticipantsStore.getById(message.to) || null;
-        replacementObj.reactions = JSON.parse(JSON.stringify(message.reactions));
-        replacementObj.reactions.forEach((reaction: any) => {
-            reaction.participant = ParticipantsStore.getById(reaction.participant);
-        });
-        return Object.assign({}, message, replacementObj) as Message;
     }
 
     @action
@@ -315,7 +309,7 @@ class IO {
                 action = "close";
             }
             MyInfo[action](source);
-            this.socketRequest("producer-action", source, action);
+            this.socketRequest("producer-action", {source, action});
             return;
         }
         const stream = await MyInfo.getStream(source);
@@ -332,27 +326,32 @@ class IO {
     }
 
     @action
-    async send(toId: string, content: string) {
-        const response = await this.socketRequest("send-message", toId, content);
+    async send(messageType: MessageType, toId: string, content: string) {
+        let response;
+        if(messageType === MessageType.GROUP){
+            response = await this.socketRequest("send-message", {
+                type: messageType,
+                group: toId,
+                content
+            });
+        } else {
+            response = await this.socketRequest("send-message", {
+                type: messageType,
+                to: toId,
+                content
+            });
+        }
         if (!response.success) {
             NotificationStore.add(new UINotification(`An error occurred sending the message: "${response.error}"`, NotificationType.Error));
             console.error("Sending Error: " + response.error);
             return false;
         }
-        ChatStore.addMessage({
-            id: response.data.id,
-            from: MyInfo.info!,
-            to: ParticipantsStore.getById(toId)!,
-            content: content,
-            reactions: [],
-            created: response.data.created
-        });
         return true;
     }
 
     @action
-    async edit(toId: string, content: string) {
-        const response = await this.socketRequest("edit-message", toId, content);
+    async edit(messageId: string, content: string) {
+        const response = await this.socketRequest("edit-message", {messageId: messageId, newContent: content});
 
         if (!response.success) {
             NotificationStore.add(new UINotification(`An error occurred editing the message: "${response.error}"`, NotificationType.Error));
@@ -360,26 +359,26 @@ class IO {
             return false;
         }
 
-        ChatStore.editMessage(toId, content);
+        ChatStore.editMessage(messageId, content);
         return true;
     }
 
     @action
-    async delete(toId: string) {
-        const response = await this.socketRequest("delete-message", toId);
+    async delete(messageId: string) {
+        const response = await this.socketRequest("delete-message", {messageId: messageId});
 
         if (!response.success) {
             NotificationStore.add(new UINotification(`An error occurred deleting the message: "${response.error}"`, NotificationType.Error));
             console.error("Deleting Error: " + response.error);
             return false;
         }
-        ChatStore.removeMessage(toId);
+        ChatStore.removeMessage(messageId);
         return true;
     }
 
 
     async waitingRoomDecision(id: string, accept: boolean) {
-        const response = await this.socketRequest("waiting-room-decision", id, accept ? "accept" : "reject");
+        const response = await this.socketRequest("waiting-room-decision", { id, decision: accept ? "accept" : "reject"});
 
         if (!response.success) {
             NotificationStore.add(new UINotification(`An error occurred while deciding on waiting room member: "${response.error}"`, NotificationType.Error));
@@ -390,7 +389,7 @@ class IO {
     }
 
     async changeName(newName: string) {
-        const response = await this.socketRequest("change-name", newName);
+        const response = await this.socketRequest("change-name", {newName});
         if (response.success) {
             MyInfo.info!.name = newName;
         }
@@ -407,17 +406,17 @@ class IO {
     }
 
     async changeRoomSettings(newSettings: RoomSettingsObj): Promise<undefined> {
-        const response = await this.socketRequest("update-room-settings", newSettings);
+        const response = await this.socketRequest("update-room-settings", {newSettings});
         if (!response.success) {
             NotificationStore.add(new UINotification("Error Getting Settings: " + response.error, NotificationType.Error))
             throw response.error;
         }
-        RoomStore.room!.name = newSettings.name;
+        RoomStore.info!.name = newSettings.name;
         return;
     }
 
     async kick(participant: Participant): Promise<void> {
-        const response = await this.socketRequest("kick-participant", participant.id);
+        const response = await this.socketRequest("kick-participant", {participantId: participant.id});
         if (!response.success) {
             NotificationStore.add(new UINotification("Error Kicking Participant: " + response.error, NotificationType.Error))
             throw response.error;
@@ -453,7 +452,7 @@ class IO {
             ChatStore.addMessage(realMessage);
         });
 
-        RoomStore.room = roomSummary;
+        RoomStore.info = roomSummary;
         RoomStore.mediasoup.rtcCapabilities = data.rtcCapabilities;
         UIStore.store.joinedDate = new Date();
     }

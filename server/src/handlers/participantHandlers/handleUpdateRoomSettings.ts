@@ -7,7 +7,7 @@ interface handleUpdateRoomSettingsParams {
     newSettings: RoomSettings,
 }
 
-export const handleUpdateRoomSettings: handleParticipantEvent<handleUpdateRoomSettingsParams> = async ({newSettings, participant, room}, cb) => {
+export const handleUpdateRoomSettings: handleParticipantEvent<handleUpdateRoomSettingsParams> = ({newSettings, participant, room}, cb) => {
     if (participant.role === ParticipantRole.HOST) {
         cb({
             success: false,

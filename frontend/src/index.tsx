@@ -6,7 +6,7 @@ import {autorun} from 'mobx';
 import RoomStore from "./stores/RoomStore";
 import UIStore from "./stores/UIStore";
 import debug from 'debug';
-import MyInfo from "./stores/MyInfo";
+import MyInfo from "./stores/MyInfoStore";
 import IO from "./controllers/IO";
 
 
@@ -27,7 +27,7 @@ ReactDOM.render(
 // @ts-ignore
 if (!window.navigator.standalone) { // ios is stupid. If i try to change url bar stuff gets messed up in PWA
     autorun(() => {
-        if (!RoomStore.room) {
+        if (!RoomStore.info) {
             const modalStore = UIStore.store.modalStore;
             if (modalStore.join) {
                 window.history.replaceState({}, "BitLink | Join ", '/join');
@@ -38,12 +38,12 @@ if (!window.navigator.standalone) { // ios is stupid. If i try to change url bar
             }
             return;
         }
-        window.history.replaceState({}, "BitLink | Join " + RoomStore.room.name, '/join/' + RoomStore.room.id);
+        window.history.replaceState({}, "BitLink | Join " + RoomStore.info.name, '/join/' + RoomStore.info.id);
     });
 }
 
 window.addEventListener("beforeunload", (e => {
-    if(RoomStore.room){
+    if(RoomStore.info){
         e.preventDefault();
         e.returnValue = '';
         IO.leave();

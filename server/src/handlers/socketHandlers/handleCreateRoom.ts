@@ -19,6 +19,6 @@ const handleCreateRoom: handleSocketEvent<handleCreateRoomParams> = async ({name
     }
     const room = RoomService.create(router, defaultRoomSettings);
     RoomService.addRoom(room);
-    socket.emit("join-room", room.id);
+    socket.emit("join-room", {id: room.id});
 }
 export default handleCreateRoom;

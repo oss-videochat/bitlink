@@ -2,7 +2,7 @@ import {handleEvent} from "../../interfaces/handleEvent";
 import {ParticipantRole} from "@bitlink/common";
 import ParticipantsStore from "../../stores/ParticipantsStore";
 import ChatStore from "../../stores/ChatStore";
-import MyInfo from "../../stores/MyInfo";
+import MyInfo from "../../stores/MyInfoStore";
 
 interface handleParticipantUpdateRoleParam {
     participantId: string,

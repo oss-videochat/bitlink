@@ -2,7 +2,7 @@ import * as mediasoupclient from "mediasoup-client";
 import RoomStore from "../stores/RoomStore";
 
 class RoomService {
-    reset() {
+    static reset() {
         RoomStore.info = undefined;
         RoomStore.device = new mediasoupclient.Device();
         RoomStore.mediasoup = {
@@ -10,7 +10,7 @@ class RoomService {
         };
     }
 
-    getGroup(groupId: string) {
+    static getGroup(groupId: string) {
         return RoomStore.groups.find(group => group.id === groupId);
     }
 }

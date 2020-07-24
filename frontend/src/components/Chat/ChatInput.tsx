@@ -4,12 +4,15 @@ import ChatStore from "../../stores/ChatStore";
 import './ChatInput.css';
 import Participant from "../../models/Participant";
 import ParticipantsStore from "../../stores/ParticipantsStore";
+import {SelectedRoom} from "./ChatContainer";
+import ChatStoreService from "../../services/ChatStoreService";
+import ParticipantService from "../../services/ParticipantService";
 
 interface IChatInputProps {
-    selectedUser: string
+    selectedRoom: SelectedRoom
 }
 
-const ChatInput: React.FunctionComponent<IChatInputProps> = ({selectedUser}) => {
+const ChatInput: React.FunctionComponent<IChatInputProps> = ({selectedRoom}) => {
     const textAreaRef = useRef<HTMLTextAreaElement>(null);
     const [inputValue, setInputValue] = useState("");
     const [mentions, setMentions] = useState<Participant[]>([]);
@@ -19,12 +22,12 @@ const ChatInput: React.FunctionComponent<IChatInputProps> = ({selectedUser}) => 
         if (e.key === "Enter" && !e.shiftKey) {
             e.preventDefault();
             if (inputValue.trim().length > 0) {
-                IO.send(selectedUser, inputValue);
+                IO.send(selectedRoom.type, selectedRoom.id, inputValue);
                 setInputValue("");
             }
         }
         if (e.key === "ArrowUp" && inputValue === "") {
-            ChatStore.editNextMessage({selectedUser});
+           // ChatStoreService.editNextMessage({selectedUser});
         }
     }
 
@@ -49,7 +52,7 @@ const ChatInput: React.FunctionComponent<IChatInputProps> = ({selectedUser}) => 
             return;
         }
         const searchString = inputValue.substring(latestAtIndex, indexOfNextSpace > 0 ? indexOfNextSpace : undefined);
-        setMentions(ParticipantsStore.filterByMentionString(searchString).slice(0, 5));
+        setMentions(ParticipantService.filterByMentionString(searchString).slice(0, 5));
     }, [inputValue, textAreaRef]);
 
     function handleMentionSelection(participant: Participant){
@@ -87,8 +90,8 @@ const ChatInput: React.FunctionComponent<IChatInputProps> = ({selectedUser}) => 
                     <div className={"mention-wrapper"}>
                     {
                         mentions.map(mention =>
-                            <div onClick={() => handleMentionSelection(mention)} key={mention.id} className={"mention-container__mention"}>
-                                {mention.name}
+                            <div onClick={() => handleMentionSelection(mention)} key={mention.info.id} className={"mention-container__mention"}>
+                                {mention.info.name}
                             </div>
                         )
                     }

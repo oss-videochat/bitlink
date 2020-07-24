@@ -10,7 +10,7 @@ interface handleUpdatedRoomSettingsParam {
     newSettings: RoomSettings
 }
 
-export const handleUpdatedRoomSettings: handleEvent<handleUpdatedRoomSettingsParam> = async ({newSettings}, cb) => {
+export const handleUpdatedRoomSettings: handleEvent<handleUpdatedRoomSettingsParam> = ({newSettings}, cb) => {
     if (RoomStore.info!.name !== newSettings.name) {
         RoomStore.info!.name = newSettings.name;
     }

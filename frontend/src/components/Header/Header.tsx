@@ -8,6 +8,7 @@ import {faCogs, faComments, faExpand, faUsers} from '@fortawesome/free-solid-svg
 import UIStore from "../../stores/UIStore";
 import RoomId from "./RoomId";
 import MyInfo from "../../stores/MyInfoStore";
+import UIStoreService from "../../services/UIStoreService";
 
 interface IHeaderProps {
     toggleFullscreen: () => void
@@ -29,12 +30,12 @@ const Header: React.FunctionComponent<IHeaderProps> = ({toggleFullscreen}) => {
                 <nav className={"header--nav"}>
                     <ul>
                         <li onClick={() => {
-                            UIStore.toggle('participantPanel');
+                            UIStoreService.toggle('participantPanel');
                             UIStore.store.chatPanel = true;
                         }}><FontAwesomeIcon icon={faUsers}/></li>
-                        <li onClick={() => UIStore.toggle('chatPanel')}><FontAwesomeIcon icon={faComments}/></li>
+                        <li onClick={() => UIStoreService.toggle('chatPanel')}><FontAwesomeIcon icon={faComments}/></li>
                         {
-                            MyInfo.info ?
+                            MyInfo.participant ?
                                 <React.Fragment>
                                     <li onClick={() => UIStore.store.modalStore.settings = true}>
                                         <FontAwesomeIcon icon={faCogs}/>

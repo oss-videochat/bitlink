@@ -4,7 +4,7 @@ import {UINotification, UINotificationOptions} from "../interfaces/UINotificatio
 
 
 class NotificationService {
-    static createUINotification(message: string, type: NotificationType, options: Partial<UINotificationOptions> = {}): UINotification{
+    static createUINotification(message: string, type: NotificationType, options: Partial<UINotificationOptions> = {}): UINotification {
         return {
             message,
             type,

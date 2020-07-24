@@ -1,14 +1,15 @@
 import {handleEvent} from "../../interfaces/handleEvent";
 import ParticipantsStore from "../../stores/ParticipantsStore";
+import ParticipantService from "../../services/ParticipantService";
 
 interface handleParticipantNameChangeParam {
     participantId: string,
     newName: string
 }
 
-export const handleParticipantNameChange: handleEvent<handleParticipantNameChangeParam> = async ({participantId, newName}, cb) => {
-    const participant = ParticipantsStore.getById(participantId);
+export const handleParticipantNameChange: handleEvent<handleParticipantNameChangeParam> = ({participantId, newName}, cb) => {
+    const participant = ParticipantService.getById(participantId);
     if (participant) {
-        participant.name = newName;
+        participant.info.name = newName;
     }
 };

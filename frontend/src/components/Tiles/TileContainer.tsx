@@ -23,6 +23,8 @@ import {
 import RoomStore from "../../stores/RoomStore";
 import ScreenTile from "./ScreenTile";
 import ScreenShareSlash from "./ScreenshareSlash";
+import HardwareService from "../../services/HardwareService";
+import ParticipantService from "../../services/ParticipantService";
 
 export interface ITileProps {
     flexBasis: string,
@@ -53,10 +55,10 @@ export class TileContainer extends React.Component<any, any> {
     }
 
     async updateMedia() {
-        if (!MyInfo.info?.mediaState.camera) {
+        if (!MyInfo.participant?.mediaState.camera) {
             return;
         }
-        const stream = await MyInfo.getStream("camera");
+        const stream = await HardwareService.getStream("camera");
         const srcObject: MediaStream | undefined = this.previewRef!.current!.srcObject as MediaStream | undefined;
         if (srcObject?.getVideoTracks()[0].id !== stream.getVideoTracks()[0].id) {
             this.previewRef!.current!.srcObject = stream;
@@ -73,7 +75,7 @@ export class TileContainer extends React.Component<any, any> {
             this.previewRef!.current!.play();
         });
         this.updateBasis = reaction(() => {
-            const living = ParticipantsStore.getLiving(true);
+            const living = ParticipantService.getLiving(true);
             const numSquares = living.filter(participant => participant.hasAudio || participant.hasVideo).length + living.filter(participant => participant.hasScreen).length;
 
             return {
@@ -102,7 +104,7 @@ export class TileContainer extends React.Component<any, any> {
     }
 
     render() {
-        const participantsLiving: Participant[] = ParticipantsStore.getLiving();
+        const participantsLiving: Participant[] = ParticipantService.getLiving();
 
         const participantsMedia = participantsLiving.filter(participant => participant.hasAudio || participant.hasVideo);
         const participantsScreen = participantsLiving.filter(participant => participant.hasScreen);
@@ -110,12 +112,12 @@ export class TileContainer extends React.Component<any, any> {
         return (
             <div ref={this.containerRef} className={"video-container"}>
                 {
-                    MyInfo.info?.mediaState.screen &&
+                    MyInfo.participant?.mediaState.screen &&
                         <div className={"screen-sharing-warning"}>
                             <span>You are sharing your screen</span>
                         </div>
                 }
-                <div data-private={""} className={"preview-video"} hidden={!MyInfo.info?.mediaState.camera}>
+                <div data-private={""} className={"preview-video"} hidden={!MyInfo.participant?.mediaState.camera}>
                     <div className={"preview-video-wrapper"}>
                         <video playsInline={true} muted={true} autoPlay={true} ref={this.previewRef}/>
                     </div>
@@ -125,7 +127,7 @@ export class TileContainer extends React.Component<any, any> {
                     RoomStore.info ?
                         <div className={"controls-wrapper"}>
                             <span onClick={() => IO.toggleMedia("camera")}>
-                                {MyInfo.info?.mediaState.camera ?
+                                {MyInfo.participant?.mediaState.camera ?
                                     <FontAwesomeIcon icon={faVideo}/> :
                                     <FontAwesomeIcon icon={faVideoSlash}/>
                                 }
@@ -140,7 +142,7 @@ export class TileContainer extends React.Component<any, any> {
                                 <FontAwesomeIcon icon={faPhone}/>
                             </span>
                             <span onClick={() => IO.toggleMedia("microphone")}>
-                                {MyInfo.info?.mediaState.microphone ?
+                                {MyInfo.participant?.mediaState.microphone ?
                                     <FontAwesomeIcon icon={faMicrophone}/> :
                                     <FontAwesomeIcon icon={faMicrophoneSlash}/>
                                 }
@@ -148,7 +150,7 @@ export class TileContainer extends React.Component<any, any> {
                             {window.matchMedia('(max-width: 600px)').matches ?
                                 null :
                                 <span onClick={() => IO.toggleMedia("screen")}>
-                                    {MyInfo.info?.mediaState.screen ?
+                                    {MyInfo.participant?.mediaState.screen ?
                                         <FontAwesomeIcon icon={faDesktop}/> :
                                         <ScreenShareSlash/>
                                     }
@@ -164,17 +166,17 @@ export class TileContainer extends React.Component<any, any> {
                             ...participantsMedia.map((participant, i, arr) => {
                                 if (participant.hasVideo) {
                                     return <VideoTile flexBasis={this.state.basis} maxWidth={this.state.maxWidth}
-                                                      key={participant.id + "videop"}
+                                                      key={participant.info.id + "videop"}
                                                       participant={participant}/>
                                 } else {
                                     return <AudioTile flexBasis={this.state.basis} maxWidth={this.state.maxWidth}
-                                                      key={participant.id + "audiop"}
+                                                      key={participant.info.id + "audiop"}
                                                       participant={participant}/>
                                 }
                             }),
                             ...participantsScreen.map(participant => {
                                     return <ScreenTile flexBasis={this.state.basis} maxWidth={this.state.maxWidth}
-                                                       key={participant.id + "screenp"}
+                                                       key={participant.info.id + "screenp"}
                                                        participant={participant}/>
                                 }
                             )

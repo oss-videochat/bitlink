@@ -4,12 +4,17 @@ import handleGetRTPCapabilities from "../socketHandlers/handleGetRTPCapabilities
 import handleJoinRoom from "../socketHandlers/handleJoinRoom";
 import handleCreateRoom from "../socketHandlers/handleCreateRoom";
 import handleDisconnectSocket from "../socketHandlers/handleDisconnectSocket";
+import {APIResponseCallback, handleSocketEvent} from "../../interfaces/handleEvent";
 
 function handleConnection(socket: socketio.Socket) {
-    socket.on("get-rtp-capabilities", handleGetRTPCapabilities);
-    socket.on("create-room", handleCreateRoom);
-    socket.on("join-room", handleJoinRoom);
-    socket.on("disconnect", handleDisconnectSocket);
+    function sw(func: handleSocketEvent<any>){
+        return (data: any, cb: APIResponseCallback) => func({socket, ...data}, cb);
+    }
+
+    socket.on("get-rtp-capabilities", sw(handleGetRTPCapabilities));
+    socket.on("create-room", sw(handleCreateRoom));
+    socket.on("join-room", sw(handleJoinRoom));
+    socket.on("disconnect", sw(handleDisconnectSocket));
     SocketService.addSocket(socket);
 }
 

@@ -13,12 +13,13 @@ import {handleParticipantEvent} from "../interfaces/handleEvent";
 import {UpdateRoomSettingsValidation} from "../helpers/validation/UpdateRoomSettings";
 import {DirectMessage, GroupMessage, Message, SystemMessage} from "../interfaces/Message";
 import * as Handlers from "../handlers/participantHandlers";
+import cryptoRandomString = require("crypto-random-string");
 
 const log = debug("Services:RoomService");
 
 class RoomService {
     static create(router: mediasoup.types.Router, settings: RoomSettings): Room {
-        const id = uuidv4();
+        const id = cryptoRandomString({length: 9, type: 'numeric'});
         return {
             created: new Date(),
             id,

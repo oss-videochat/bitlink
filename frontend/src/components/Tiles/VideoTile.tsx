@@ -30,10 +30,10 @@ const VideoTile: React.FunctionComponent<ITileProps> = ({participant, flexBasis,
                 return;
             }
 
-            videoRef.current.srcObject = new MediaStream([participant.mediasoup.consumer.camera!.track]);
+            videoRef.current.srcObject = new MediaStream([participant.consumers.camera!.track]);
 
             if (participant.hasAudio) {
-                setAudioSrcObject(new MediaStream([participant.mediasoup.consumer.microphone!.track]));
+                setAudioSrcObject(new MediaStream([participant.consumers.microphone!.track]));
             }
         });
     }, [participant])
@@ -47,7 +47,7 @@ const VideoTile: React.FunctionComponent<ITileProps> = ({participant, flexBasis,
                     audioSrcObject &&
                     <AutoPlayAudio srcObject={audioSrcObject}/>
                 }
-                <span className={"video-participant--name"}>{participant.name}</span>
+                <span className={"video-participant--name"}>{participant.info.name}</span>
             </div>
         </div>
     ));

@@ -6,6 +6,6 @@ interface handleJoinRoomParam {
     id: string
 }
 
-export const handleJoinRoom: handleEvent<handleJoinRoomParam>= async ({id}) => {
+export const handleJoinRoom: handleEvent<handleJoinRoomParam>= ({id}) => {
     IO.joinRoom(id, MyInfo.chosenName);
 };

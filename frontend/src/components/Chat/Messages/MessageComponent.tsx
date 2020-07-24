@@ -8,7 +8,7 @@ import {useObserver} from "mobx-react"
 import UIStore from "../../../stores/UIStore";
 import ChatStore from "../../../stores/ChatStore";
 import MessageContent from "./MessageContent";
-import {Message} from "../../../interfaces/Messages";
+import {DirectMessage, GroupMessage, Message} from "../../../interfaces/Message";
 
 //  startGroup={lastParticipant !== message.from.id || message.created - lastTime > 1000 * 60 * 5}
 //                                         key={message.id}
@@ -20,7 +20,7 @@ interface IMessageComponentProps {
     startGroup: boolean,
     messageId: string,
     fromMe: boolean,
-    message: Message
+    message: GroupMessage | DirectMessage
 }
 
 const MessageComponent: React.FunctionComponent<IMessageComponentProps> = ({startGroup, message, fromMe, messageId}) => {
@@ -37,13 +37,13 @@ const MessageComponent: React.FunctionComponent<IMessageComponentProps> = ({star
         }
         if (e.key === "ArrowUp" && !userIsTyping) {
             cancelEdit();
-            ChatStore.editNextMessage({messageId: messageId});
+           // ChatStore.editNextMessage({messageId: messageId});
             return;
         }
 
         if (e.key === "ArrowDown" && !userIsTyping) {
             cancelEdit();
-            ChatStore.editPreviewMessage(messageId);
+           // ChatStore.editPreviewMessage(messageId);
             return;
         }
 
@@ -75,7 +75,7 @@ const MessageComponent: React.FunctionComponent<IMessageComponentProps> = ({star
             }>
                 {startGroup ?
                     <div className={"message--meta"}>
-                        <span data-private={"lipsum"} className={"message--name"}>{message.from.name}</span>
+                        <span data-private={"lipsum"} className={"message--name"}>{message.from.info.name}</span>
                         <span
                             className={"message--date"}>{(new Date(message.created)).toLocaleString()}</span>
                     </div>
@@ -108,10 +108,6 @@ const MessageComponent: React.FunctionComponent<IMessageComponentProps> = ({star
                             </React.Fragment>
 
                     }
-                </div>
-
-                <div className={"message--reaction-wrapper"}>
-                    <ReactionsDisplayer reactions={message.reactions}/>
                 </div>
             </div>
         );

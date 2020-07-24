@@ -19,7 +19,7 @@ const ScreenTile: React.FunctionComponent<ITileProps> = ({participant, flexBasis
 
         element.addEventListener("canplay", canplay);
 
-        videoRef.current.srcObject = new MediaStream([participant.mediasoup.consumer.screen!.track]);
+        videoRef.current.srcObject = new MediaStream([participant.consumers.screen!.track]);
 
         return () => element.removeEventListener("canplay", canplay);
     }, [videoRef, participant]);
@@ -30,7 +30,7 @@ const ScreenTile: React.FunctionComponent<ITileProps> = ({participant, flexBasis
             <div className={"video-participant-wrapper"}>
                 <video autoPlay={true} playsInline={true} muted={true} ref={videoRef}
                        className={"screen-participant--video"}/>
-                <span className={"video-participant--name"}>{participant.name}'s Screen</span>
+                <span className={"video-participant--name"}>{participant.info.name}'s Screen</span>
             </div>
         </div>
     ));

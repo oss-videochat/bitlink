@@ -7,9 +7,9 @@ import {ITileProps} from "./TileContainer";
 const AudioTile: React.FunctionComponent<ITileProps> = ({flexBasis, participant, maxWidth}) => useObserver(() => (
         <div className={"video-participant-wrapper audio video-pad"} style={{flexBasis, maxWidth}}>
             <div className={"audio-participant--spacer"}>
-                <span className={"audio-participant--name"}>{participant.name}</span>
+                <span className={"audio-participant--name"}>{participant.info.name}</span>
             </div>
-            <AutoPlayAudio srcObject={new MediaStream([participant.mediasoup.consumer.microphone!.track])}/>
+            <AutoPlayAudio srcObject={new MediaStream([participant.consumers.microphone!.track])}/>
         </div>
     )
 )

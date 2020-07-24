@@ -1,21 +1,35 @@
 import debug from "../util/debug";
 import io from 'socket.io-client';
-import ParticipantsStore from "../stores/ParticipantsStore";
 import {action, reaction} from 'mobx';
 
-import CurrentUserInformationStore from "../stores/MyInfoStore";
 import MyInfo from "../stores/MyInfoStore";
+import MyInfoStore from "../stores/MyInfoStore";
 import RoomStore from "../stores/RoomStore";
-import ChatStore from "../stores/ChatStore";
-import NotificationStore, {NotificationType, UINotification} from "../stores/NotificationStore";
 import UIStore from "../stores/UIStore";
 import {ResetStores} from "../util/ResetStores";
 import * as mediasoupclient from 'mediasoup-client';
-import Participant, {ParticipantData} from "../models/Participant";
-import {MediaAction, MediaSource, MessageType, ParticipantSummary, MessageSummary, RoomSummary, ParticipantRole, DirectMessageSummary, GroupMessageSummary} from "@bitlink/common";
+import Participant from "../models/Participant";
+import {
+    DirectMessageSummary,
+    GroupMessageSummary,
+    MediaAction,
+    MediaSource,
+    MessageSummary,
+    MessageType,
+    ParticipantSummary,
+    RoomSummary
+} from "@bitlink/common";
 import {handleEvent} from "../interfaces/handleEvent";
 import * as Handlers from './handlers';
 import {DirectMessage, GroupMessage, Message, SystemMessage} from "../interfaces/Message";
+import ParticipantService from "../services/ParticipantService";
+import NotificationService from "../services/NotificationService";
+import {NotificationType} from "../enum/NotificationType";
+import RoomService from "../services/RoomService";
+import MyInfoService from "../services/MyInfoService";
+import ChatStoreService from "../services/ChatStoreService";
+import HardwareService from "../services/HardwareService";
+
 const log = debug("IO");
 
 interface APIResponse {
@@ -60,21 +74,21 @@ class IO {
         this.io.on("participant-updated-media-state", iw(Handlers.handleMediaStateUpdate));
         this.io.on("participant-left", iw(Handlers.handleParticipantLeft));
         this.io.on("participant-changed-name", iw(Handlers.handleParticipantNameChange));
-        this.io.on("participant-update-role",  iw(Handlers.handleParticipantUpdateRole));
+        this.io.on("participant-update-role", iw(Handlers.handleParticipantUpdateRole));
 
         this.io.on("updated-room-settings", iw(Handlers.handleUpdatedRoomSettings));
         this.io.on("updated-room-settings-host", iw(Handlers.handleUpdatedRoomSettings));
 
 
         this.io.on("new-message", iw(Handlers.handleNewMessage));
-        this.io.on("edit-message",  iw(Handlers.handleEditMessage));
-        this.io.on("delete-message",  iw(Handlers.handleDeleteMessage));
+        this.io.on("edit-message", iw(Handlers.handleEditMessage));
+        this.io.on("delete-message", iw(Handlers.handleDeleteMessage));
 
         // ##################
         // ## WebRTC stuff ## ASCII Art, Yey! :D
         // ##################
 
-        this.io.on("new-consumer",  iw(Handlers.handleNewConsumer));
+        this.io.on("new-consumer", iw(Handlers.handleNewConsumer));
 
         reaction(() => {
             return {
@@ -87,25 +101,24 @@ class IO {
             log("Preferred input changed detected");
             if (
                 MyInfo.preferredInputs.audio
-                && MyInfo.mediasoup.producers.microphone
-                && MyInfo.mediasoup.producers.microphone.track?.getSettings().deviceId !== MyInfo.preferredInputs.audio
+                && MyInfo.producers.microphone
+                && MyInfo.producers.microphone.track?.getSettings().deviceId !== MyInfo.preferredInputs.audio
             ) {
                 log("Preferred audio input changed detected");
-                (MyInfo.mediasoup.producers.microphone.track as MediaStreamTrack).stop();
-                MyInfo.getStream("microphone").then((stream) => {
-                    MyInfo.mediasoup.producers.microphone?.replaceTrack({track: stream.getAudioTracks()[0]});
+                MyInfo.producers.microphone.track!.stop();
+                HardwareService.getStream("microphone").then((stream) => {
+                    MyInfo.producers.microphone!.replaceTrack({track: stream.getAudioTracks()[0]});
                 });
             }
             if (
                 MyInfo.preferredInputs.video
-                && MyInfo.mediasoup.producers.camera
-                && MyInfo.mediasoup.producers.camera.track?.getSettings().deviceId !== MyInfo.preferredInputs.video
+                && MyInfo.producers.camera
+                && MyInfo.producers.camera.track?.getSettings().deviceId !== MyInfo.preferredInputs.video
             ) {
                 log("Preferred video input changed detected");
-                (MyInfo.mediasoup.producers.camera.track as MediaStreamTrack).stop();
-
-                MyInfo.getStream("camera").then((stream) => {
-                    MyInfo.mediasoup.producers.camera!.replaceTrack({track: stream.getVideoTracks()[0]});
+                MyInfo.producers.camera.track!.stop();
+                HardwareService.getStream("camera").then((stream) => {
+                    MyInfo.producers.camera!.replaceTrack({track: stream.getVideoTracks()[0]});
                 });
             }
         });
@@ -113,7 +126,7 @@ class IO {
     }
 
     leave() {
-        if(RoomStore.info && MyInfo.info?.isHost && ParticipantsStore.getLiving(true).slice(2).length > 0){
+        if (RoomStore.info && MyInfo.isHost && ParticipantService.getLiving(true).length > 0) {
             UIStore.store.modalStore.leaveMenu = true;
         } else {
             // eslint-disable-next-line no-restricted-globals
@@ -124,19 +137,19 @@ class IO {
         }
     }
 
-    _leave(){
+    _leave() {
         log("Leaving room");
         this.io.emit("leave");
         this.reset();
     }
 
-    endRoomForAll(){
-      return this.socketRequest("end-room");
+    endRoomForAll() {
+        return this.socketRequest("end-room");
     }
 
-    transferHost(participant: Participant){
+    transferHost(participant: Participant) {
         return this.socketRequest("transfer-host", {
-            participantId: participant.id
+            participantId: participant.info.id
         });
     }
 
@@ -148,16 +161,16 @@ class IO {
 
     createRoom(name: string) {
         log("Creating room with name %s", name);
-        if(!this.io.connected){
+        if (!this.io.connected) {
             log("IO is not connected");
             throw "Could not connect to server";
         }
-        this.io.emit("create-room", name);
+        this.io.emit("create-room", {name});
     }
 
     joinRoom(id: string, name?: string) {
         log("Joining room with id: %s", id);
-        if(!this.io.connected){
+        if (!this.io.connected) {
             log("IO is not connected");
             throw "Could not connect to server";
         }
@@ -171,7 +184,7 @@ class IO {
                 return RoomStore.device.load({routerRtpCapabilities: response.data});
             })
             .then(() => {
-                this.io.emit("join-room", id, name, RoomStore.device!.rtpCapabilities, (response: APIResponse) => {
+                this.io.emit("join-room", {roomId: id, name, rtpCapabilities: RoomStore.device!.rtpCapabilities}, (response: APIResponse) => {
                     if (!response.success) {
                         if (response.status !== 403) {
                             throw response.error;
@@ -193,7 +206,7 @@ class IO {
                 console.error("Join Error:" + error.toString());
                 UIStore.store.modalStore.joiningRoom = false;
                 UIStore.store.modalStore.join = true;
-                NotificationStore.add(new UINotification(`Join Error: ${error}`, NotificationType.Error));
+                NotificationService.add(NotificationService.createUINotification(`Join Error: ${error}`, NotificationType.Error))
                 return;
             });
     }
@@ -205,10 +218,13 @@ class IO {
 
             transport.on("connect", async ({dtlsParameters}, callback, errback) => {
                 log("Transport connect event emitted");
-                const response = await this.socketRequest("connect-transport", {transportId: transport.id, dtlsParameters: dtlsParameters});
+                const response = await this.socketRequest("connect-transport", {
+                    transportId: transport.id,
+                    dtlsParameters: dtlsParameters
+                });
                 if (!response.success) {
                     log("connect-transport request error");
-                    NotificationStore.add(new UINotification(`An error occurred connecting to the transport: ${response.error}`, NotificationType.Error));
+                    NotificationService.add(NotificationService.createUINotification(`An error occurred connecting to the transport: ${response.error}`, NotificationType.Error))
                     errback();
                     return;
                 }
@@ -219,7 +235,12 @@ class IO {
             transport.on("produce", async ({kind, rtpParameters, appData}, callback, errback) => {
                 log("Producing type: %s", appData.source);
                 try {
-                    const response: APIResponse = await this.socketRequest("create-producer", {transportId: transport.id, kind, source: appData.source, rtpParameters});
+                    const response: APIResponse = await this.socketRequest("create-producer", {
+                        transportId: transport.id,
+                        kind,
+                        source: appData.source,
+                        rtpParameters
+                    });
                     if (!response.success) {
                         errback(response.error);
                         errback(response.error);
@@ -234,13 +255,16 @@ class IO {
         };
 
         return Promise.all([
-            this.socketRequest("create-transport", {type: "webrtc", kind: "receiving"}).then((response: APIResponse) => {
-                MyInfo.mediasoup.transports.receiving = RoomStore.device!.createRecvTransport(response.data.transportInfo);
-                return addTransportListeners(MyInfo.mediasoup.transports.receiving);
+            this.socketRequest("create-transport", {
+                type: "webrtc",
+                kind: "receiving"
+            }).then((response: APIResponse) => {
+                MyInfo.transports.receiving = RoomStore.device!.createRecvTransport(response.data.transportInfo);
+                return addTransportListeners(MyInfo.transports.receiving);
             }),
             this.socketRequest("create-transport", {type: "webrtc", kind: "sending"}).then((response: APIResponse) => {
-                MyInfo.mediasoup.transports.sending = RoomStore.device!.createSendTransport(response.data.transportInfo);
-                return addTransportListeners(MyInfo.mediasoup.transports.sending);
+                MyInfo.transports.sending = RoomStore.device!.createSendTransport(response.data.transportInfo);
+                return addTransportListeners(MyInfo.transports.sending);
             })
         ]);
 
@@ -264,16 +288,16 @@ class IO {
                 const groupMessage = message as GroupMessageSummary;
                 return {
                     ...common,
-                    group: RoomStore.getGroup(groupMessage.group),
-                    from: ParticipantsStore.getById(groupMessage.from)
+                    group: RoomService.getGroup(groupMessage.group),
+                    from: ParticipantService.getById(groupMessage.from)
                 } as GroupMessage
             }
             case MessageType.DIRECT: {
                 const groupMessage = message as DirectMessageSummary;
                 return {
                     ...common,
-                    from: ParticipantsStore.getById(groupMessage.from),
-                    to: ParticipantsStore.getById(groupMessage.to)
+                    from: ParticipantService.getById(groupMessage.from),
+                    to: ParticipantService.getById(groupMessage.to)
                 } as DirectMessage
             }
             default: {
@@ -282,67 +306,51 @@ class IO {
         }
     }
 
-    @action
-    _handleWaitingRoomNewParticipant(data: { participant: ParticipantData }) {
-        ParticipantsStore.waitingRoom.push(new Participant(data.participant));
-    }
-
-    _handleMediaStateUpdate(update: MediaStateUpdate) {
-        const participant = ParticipantsStore.getById(update.id);
-        if (!participant) {
-            return;
-        }
-        log("Media state update %s: %s - %s", participant.name, update.source, update.action);
-        if(participant.mediasoup.consumer[update.source]){
-            participant.mediasoup.consumer[update.source]![update.action]();
-            if(update.action === "close"){
-                participant.mediasoup.consumer[update.source] = null;
-            }
-        }
-        participant.mediaState[update.source] = update.action === "resume";
-    }
-
     async toggleMedia(source: MediaSource) {
-        if (MyInfo.mediasoup.producers[source]) {
-            let action: "resume" | "pause" | "close" = MyInfo.mediasoup.producers[source]!.paused ? "resume" : "pause";
-            if(action === "pause" && source === "screen"){
+        if (MyInfo.producers[source]) {
+            let action: MediaAction = MyInfo.producers[source]!.paused ? "resume" : "pause";
+            if (action === "pause" && source === "screen") {
                 action = "close";
             }
-            MyInfo[action](source);
+            MyInfoService[action](source);
             this.socketRequest("producer-action", {source, action});
             return;
         }
-        const stream = await MyInfo.getStream(source);
+        const stream = await HardwareService.getStream(source);
         if (!stream) {
-            NotificationStore.add(new UINotification(`An error occurred accessing the ${source}`, NotificationType.Error));
+            NotificationService.add(NotificationService.createUINotification(`An error occurred accessing the ${source}`, NotificationType.Error))
             return;
         }
         log("Producing media: %s", source);
-        MyInfo.mediasoup.producers[source] = await MyInfo.mediasoup.transports.sending!.produce({
+        MyInfo.producers[source] = await MyInfo.transports.sending!.produce({
             track: stream.getTracks()[0],
             appData: {source}
         });
-        MyInfo.resume(source);
+        MyInfoService.resume(source);
     }
 
     @action
     async send(messageType: MessageType, toId: string, content: string) {
         let response;
-        if(messageType === MessageType.GROUP){
+        if (messageType === MessageType.GROUP) {
             response = await this.socketRequest("send-message", {
-                type: messageType,
-                group: toId,
-                content
+                messageInput: {
+                    type: messageType,
+                    group: toId,
+                    content
+                }
             });
         } else {
             response = await this.socketRequest("send-message", {
-                type: messageType,
-                to: toId,
-                content
+                messageInput: {
+                    type: messageType,
+                    to: toId,
+                    content
+                }
             });
         }
         if (!response.success) {
-            NotificationStore.add(new UINotification(`An error occurred sending the message: "${response.error}"`, NotificationType.Error));
+            NotificationService.add(NotificationService.createUINotification(`An error occurred sending the message: "${response.error}"`, NotificationType.Error))
             console.error("Sending Error: " + response.error);
             return false;
         }
@@ -354,12 +362,12 @@ class IO {
         const response = await this.socketRequest("edit-message", {messageId: messageId, newContent: content});
 
         if (!response.success) {
-            NotificationStore.add(new UINotification(`An error occurred editing the message: "${response.error}"`, NotificationType.Error));
+            NotificationService.add(NotificationService.createUINotification(`An error occurred editing the message: "${response.error}"`, NotificationType.Error))
             console.error("Editing Error: " + response.error);
             return false;
         }
 
-        ChatStore.editMessage(messageId, content);
+        ChatStoreService.editMessage(messageId, content);
         return true;
     }
 
@@ -368,20 +376,23 @@ class IO {
         const response = await this.socketRequest("delete-message", {messageId: messageId});
 
         if (!response.success) {
-            NotificationStore.add(new UINotification(`An error occurred deleting the message: "${response.error}"`, NotificationType.Error));
+            NotificationService.add(NotificationService.createUINotification(`An error occurred deleting the message: "${response.error}"`, NotificationType.Error))
             console.error("Deleting Error: " + response.error);
             return false;
         }
-        ChatStore.removeMessage(messageId);
+        ChatStoreService.removeMessage(messageId);
         return true;
     }
 
 
     async waitingRoomDecision(id: string, accept: boolean) {
-        const response = await this.socketRequest("waiting-room-decision", { id, decision: accept ? "accept" : "reject"});
+        const response = await this.socketRequest("waiting-room-decision", {
+            id,
+            decision: accept ? "accept" : "reject"
+        });
 
         if (!response.success) {
-            NotificationStore.add(new UINotification(`An error occurred while deciding on waiting room member: "${response.error}"`, NotificationType.Error));
+            NotificationService.add(NotificationService.createUINotification(`An error occurred while deciding on waiting room member: "${response.error}"`, NotificationType.Error))
             console.error("Waiting Room Error: " + response.error);
             return false;
         }
@@ -391,7 +402,7 @@ class IO {
     async changeName(newName: string) {
         const response = await this.socketRequest("change-name", {newName});
         if (response.success) {
-            MyInfo.info!.name = newName;
+            MyInfo.participant!.name = newName;
         }
     }
 
@@ -399,7 +410,7 @@ class IO {
     async getRoomSettings(): Promise<RoomSettingsObj> {
         const response = await this.socketRequest("get-room-settings");
         if (!response.success) {
-            NotificationStore.add(new UINotification("Error Getting Settings: " + response.error, NotificationType.Error))
+            NotificationService.add(NotificationService.createUINotification("Error Getting Settings: " + response.error, NotificationType.Error));
             throw response.error;
         }
         return response.data.settings;
@@ -408,7 +419,7 @@ class IO {
     async changeRoomSettings(newSettings: RoomSettingsObj): Promise<undefined> {
         const response = await this.socketRequest("update-room-settings", {newSettings});
         if (!response.success) {
-            NotificationStore.add(new UINotification("Error Getting Settings: " + response.error, NotificationType.Error))
+            NotificationService.add(NotificationService.createUINotification("Error Getting Settings: " + response.error, NotificationType.Error));
             throw response.error;
         }
         RoomStore.info!.name = newSettings.name;
@@ -416,12 +427,11 @@ class IO {
     }
 
     async kick(participant: Participant): Promise<void> {
-        const response = await this.socketRequest("kick-participant", {participantId: participant.id});
+        const response = await this.socketRequest("kick-participant", {participantId: participant.info.id});
         if (!response.success) {
-            NotificationStore.add(new UINotification("Error Kicking Participant: " + response.error, NotificationType.Error))
+            NotificationService.add(NotificationService.createUINotification("Error Kicking Participant: " + response.error, NotificationType.Error));
             throw response.error;
         }
-        ChatStore.addSystemMessage({content: `${participant.name} was kicked`})
         return;
     }
 
@@ -429,27 +439,17 @@ class IO {
         const roomSummary = data.summary;
 
         const participants = roomSummary.participants.map((participantSummary: ParticipantSummary) => {
-            const participant = new Participant({
-                ...participantSummary,
-                mediasoup: {
-                    consumer: {
-                        camera: null,
-                        microphone: null,
-                        screen: null
-                    }
-                }
-            });
-            if (participant.id === roomSummary.myId) {
-                CurrentUserInformationStore.info = participant;
+            const participant = new Participant(participantSummary);
+            if (participant.info.id === roomSummary.myId) {
+                MyInfoStore.participant = participantSummary;
             }
             return participant;
         });
-        ParticipantsStore.replace(participants);
-        ChatStore.addParticipant(...participants);
+        ParticipantService.replace(participants);
 
         roomSummary.messages.forEach((message: MessageSummary) => {
             const realMessage = this.convertMessageSummaryToMessage(message);
-            ChatStore.addMessage(realMessage);
+            ChatStoreService.addMessage(realMessage);
         });
 
         RoomStore.info = roomSummary;

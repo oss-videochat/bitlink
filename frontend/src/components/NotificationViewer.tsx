@@ -1,7 +1,8 @@
 import React from 'react';
 import {useObserver} from "mobx-react"
 import './NotificationViewer.css'
-import NotificationStore, {UINotification} from "../stores/NotificationStore";
+import NotificationStore from "../stores/NotificationStore";
+import {UINotification} from "../interfaces/UINotification";
 
 const NotificationViewer: React.FunctionComponent = () => {
     return useObserver(() =>

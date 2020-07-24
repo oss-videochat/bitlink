@@ -1,6 +1,6 @@
 import React from 'react';
 import './SystemMessage.css'
-import {Message} from "../../../interfaces/Messages";
+import {Message} from "../../../interfaces/Message";
 
 interface ISystemMessageProps {
     message: Message,

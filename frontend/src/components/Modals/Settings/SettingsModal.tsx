@@ -6,8 +6,10 @@ import SettingsViewer from "./SettingsViewer";
 import {SettingsPanels} from "../../../enum/SettingsPanels";
 import UIStore from "../../../stores/UIStore";
 import * as Events from 'events';
-import NotificationStore, {NotificationType, UINotification} from "../../../stores/NotificationStore";
+import NotificationStore from "../../../stores/NotificationStore";
 import MyInfo from "../../../stores/MyInfoStore";
+import NotificationService from "../../../services/NotificationService";
+import {NotificationType} from "../../../enum/NotificationType";
 
 interface SettingsModalState {
     selectedPanel: SettingsPanels,
@@ -22,7 +24,7 @@ export class SettingsModal extends React.Component<any, SettingsModalState> {
     constructor(props: any) {
         super(props);
         this.state = {
-            selectedPanel: MyInfo.info?.isHost ? SettingsPanels.RoomSettings : SettingsPanels.Participants,
+            selectedPanel: MyInfo.isHost ? SettingsPanels.RoomSettings : SettingsPanels.Participants,
             saveEnabled: false,
             changesMade: false,
         };
@@ -40,10 +42,10 @@ export class SettingsModal extends React.Component<any, SettingsModalState> {
         this.setState({saveEnabled: false});
         this.events.emit("save", (err?: string) => {
             if (err) {
-                NotificationStore.add(new UINotification(err, NotificationType.Error));
+                NotificationService.add(NotificationService.createUINotification(err, NotificationType.Error))
                 return;
             }
-            NotificationStore.add(new UINotification("Settings Saved!", NotificationType.Success));
+            NotificationService.add(NotificationService.createUINotification("Settings Saved!", NotificationType.Success))
             UIStore.store.modalStore.settings = false;
         });
     }

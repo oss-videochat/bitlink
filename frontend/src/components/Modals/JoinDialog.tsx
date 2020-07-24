@@ -4,10 +4,12 @@ import IO from "../../controllers/IO";
 import MyInfo from "../../stores/MyInfoStore";
 import UIStore from "../../stores/UIStore";
 import RoomStore from "../../stores/RoomStore";
-import NotificationStore, {NotificationType, UINotification} from "../../stores/NotificationStore";
+import NotificationStore from "../../stores/NotificationStore";
 import {prepareAudioBank} from "../Tiles/AutoPlayAudio";
 import logo from "../../assets/logo/logo.svg";
 import LegalText from "../LegalText";
+import NotificationService from "../../services/NotificationService";
+import {NotificationType} from "../../enum/NotificationType";
 
 const JoinDialog: React.FunctionComponent = () => {
     const [roomId, setRoomId] = useState(UIStore.store.preFillJoinValue || "");
@@ -29,7 +31,7 @@ const JoinDialog: React.FunctionComponent = () => {
 
     function handleJoinRoom() {
         prepareAudioBank();
-        NotificationStore.requestPermission();
+        NotificationService.requestPermission();
         UIStore.store.modalStore.join = false;
         MyInfo.chosenName = userName;
 
@@ -41,7 +43,7 @@ const JoinDialog: React.FunctionComponent = () => {
             setUserNameValidationEnabled(false)
         } catch (e) {
             UIStore.store.modalStore.join = true;
-            NotificationStore.add(new UINotification(e, NotificationType.Error));
+            NotificationService.add(NotificationService.createUINotification(e, NotificationType.Error))
         }
     }
 

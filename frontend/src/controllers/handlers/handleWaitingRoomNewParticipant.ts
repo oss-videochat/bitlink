@@ -1,11 +1,12 @@
 import {handleEvent} from "../../interfaces/handleEvent";
-import Participant, {ParticipantData} from "../../models/Participant";
+import Participant from "../../models/Participant";
 import ParticipantsStore from "../../stores/ParticipantsStore";
+import {ParticipantSummary} from "@bitlink/common";
 
 interface handleWaitingRoomNewParticipantParam {
-    participant: ParticipantData
+    participant: ParticipantSummary
 }
 
-export const handleWaitingRoomNewParticipant: handleEvent<handleWaitingRoomNewParticipantParam> = async ({participant}, cb) => {
+export const handleWaitingRoomNewParticipant: handleEvent<handleWaitingRoomNewParticipantParam> = ({participant}, cb) => {
     ParticipantsStore.waitingRoom.push(new Participant(participant));
 };

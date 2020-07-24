@@ -13,7 +13,7 @@ interface ISettingsPanelProps {
 const SettingsPanel: React.FunctionComponent<ISettingsPanelProps> = ({onSelect, selected}) => (
     <div className={"settings-panel"}>
         {
-            MyInfo.info?.isHost ?
+            MyInfo.isHost ?
                 <div onClick={() => onSelect(SettingsPanels.RoomSettings)}
                      className={"settings--item " + (selected === SettingsPanels.RoomSettings ? "selected" : "")}>
                             <span className={"settings--item--icon"}>

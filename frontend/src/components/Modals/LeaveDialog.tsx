@@ -5,10 +5,11 @@ import UIStore from "../../stores/UIStore";
 import ParticipantsStore from "../../stores/ParticipantsStore";
 import IO from "../../controllers/IO";
 import ParticipantList from "../Util/ParticipantList";
+import ParticipantService from "../../services/ParticipantService";
 
 const LeaveDialog: React.FunctionComponent = () => {
     const [transferHostOpen, setTransferHostOpen] = useState(false);
-    const isThereAnotherHost = ParticipantsStore.getLiving(true).filter(participant => participant.isHost).length > 0;
+    const isThereAnotherHost = ParticipantService.getLiving(true).filter(participant => participant.isHost).length > 0;
 
     return (
         <div className={"dialog-modal"}>

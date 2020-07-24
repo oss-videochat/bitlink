@@ -1,18 +1,25 @@
 import React, {useState} from 'react';
 import {useObserver} from "mobx-react"
-import ChatParticipantList from "./ParticipantList/ChatParticipantList";
+import ChatRoomList from "./ParticipantList/ChatRoomList";
 import MessagesContainer from "./Messages/MessagesContainer";
 import './ChatContainer.css';
 import UIStore from "../../stores/UIStore";
+import {MessageType} from "@bitlink/common";
+import RoomStore from "../../stores/RoomStore";
+
+export interface SelectedRoom {
+    type: MessageType,
+    id: string
+}
 
 const ChatContainer: React.FunctionComponent = () => {
-    const [selectedUser, setSelectedUser] = useState("everyone");
+    const [selectedRoom, setSelectedRoom] = useState<SelectedRoom>({type: MessageType.GROUP, id: RoomStore.groups[0]?.id || ""});
 
     return useObserver(() => (
         <div className={"chat-container " + (UIStore.store.chatPanel ? "open" : "")}>
             <div className={"chat-container--content"}>
-                <ChatParticipantList selectedUser={selectedUser} onUserSelect={setSelectedUser}/>
-                <MessagesContainer selectedUser={selectedUser}/>
+                <ChatRoomList selectedRoom={selectedRoom} onRoomSelect={setSelectedRoom}/>
+                <MessagesContainer selectedRoom={selectedRoom}/>
             </div>
         </div>
     ));

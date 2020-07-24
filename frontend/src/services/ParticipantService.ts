@@ -4,7 +4,7 @@ import ParticipantsStore from "../stores/ParticipantsStore";
 
 class ParticipantService {
     static getLiving(excludeSelf = false) {
-        return ParticipantsStore.participants.filter(participant => participant.info.isAlive && (excludeSelf ? participant.info.id !== MyInfo.participant.info.id : true));
+        return ParticipantsStore.participants.filter(participant => participant.info.isAlive && (excludeSelf ? participant.info.id !== MyInfo.participant?.id : true));
     }
 
     static reset() {

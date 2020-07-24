@@ -2,21 +2,6 @@ import {types} from "mediasoup-client";
 import {computed, observable} from 'mobx';
 import {MediaSource, MediaState, ParticipantRole, ParticipantSummary} from "@bitlink/common";
 
-
-export interface ParticipantData {
-    id: string,
-    name: string,
-    isHost: boolean,
-    isMe: boolean,
-    isAlive: boolean,
-    mediaState: MediaState,
-    mediasoup: {
-        consumer: {
-            [key in MediaSource]: types.Consumer | null
-        }
-    }
-}
-
 export default class Participant {
     @observable info: ParticipantSummary;
     @observable consumers: { [key in MediaSource]: types.Consumer | null } = {

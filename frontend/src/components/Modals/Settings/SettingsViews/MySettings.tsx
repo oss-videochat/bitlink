@@ -2,9 +2,10 @@ import React, {ChangeEvent, useEffect, useState} from 'react';
 import MyInfo from "../../../../stores/MyInfoStore";
 import IO from "../../../../controllers/IO";
 import {ISettingsPanelProps} from '../SettingsViewer';
+import HardwareService from "../../../../services/HardwareService";
 
 const MySettings: React.FunctionComponent<ISettingsPanelProps> = ({events, changesMade, handleChangesMade}) => {
-    const [nameInput, setNameInput] = useState(MyInfo.info!.name);
+    const [nameInput, setNameInput] = useState(MyInfo.participant!.name);
     const [preferredAudio, setPreferredAudio] = useState(MyInfo.preferredInputs.audio || null);
     const [preferredVideo, setPreferredVideo] = useState(MyInfo.preferredInputs.video || null);
     const [deviceList, setDeviceList] = useState([]);
@@ -18,7 +19,7 @@ const MySettings: React.FunctionComponent<ISettingsPanelProps> = ({events, chang
                     });
             };
 
-            MyInfo.getStream("camera")
+            HardwareService.getStream("camera")
                 .then((stream) => {
                     enumerate();
                 })
@@ -29,8 +30,8 @@ const MySettings: React.FunctionComponent<ISettingsPanelProps> = ({events, chang
 
     function onSave(cb: () => void) {
         IO.changeName(nameInput).then(cb);
-        MyInfo.setPreferredInput("video", preferredVideo);
-        MyInfo.setPreferredInput("audio", preferredAudio);
+        HardwareService.setPreferredInput("video", preferredVideo);
+        HardwareService.setPreferredInput("audio", preferredAudio);
     }
 
 
@@ -49,7 +50,7 @@ const MySettings: React.FunctionComponent<ISettingsPanelProps> = ({events, chang
 
     function checkChanges() {
         let changes = false;
-        if (nameInput !== MyInfo.info?.name) {
+        if (nameInput !== MyInfo.participant?.name) {
             changes = true;
         }
         if (MyInfo.preferredInputs.audio !== preferredAudio) {

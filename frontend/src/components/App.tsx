@@ -7,9 +7,11 @@ import ChatContainer from "./Chat/ChatContainer";
 import Modal from "./Modals/Modal";
 import UIStore from "../stores/UIStore";
 import NotificationViewer from "./NotificationViewer";
-import NotificationStore, {NotificationType, UINotification} from "../stores/NotificationStore";
+import NotificationStore from "../stores/NotificationStore";
 import msToTime from "../util/msToTime";
 import Footer from "./Footer/Footer";
+import NotificationService from "../services/NotificationService";
+import {NotificationType} from "../enum/NotificationType";
 
 
 const App: React.FunctionComponent = () => {
@@ -50,7 +52,7 @@ const App: React.FunctionComponent = () => {
     function toggleFullscreen() {
         if (!document.fullscreenElement) {
             appRef.current?.requestFullscreen().catch((err: Error) => {
-                NotificationStore.add(new UINotification("Could not enable fullscreen: " + err.toString(), NotificationType.Error))
+                NotificationService.add(NotificationService.createUINotification("Could not enable fullscreen: " + err.toString(), NotificationType.Error))
             });
             return;
         }

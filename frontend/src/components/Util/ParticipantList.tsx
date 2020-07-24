@@ -4,6 +4,7 @@ import {useObserver} from 'mobx-react';
 import ParticipantsStore from "../../stores/ParticipantsStore";
 import MyInfo from "../../stores/MyInfoStore";
 import IO from "../../controllers/IO";
+import ParticipantService from "../../services/ParticipantService";
 
 interface IParticipantListProps {
     onTransfer?: () => void
@@ -13,15 +14,15 @@ const ParticipantList: React.FunctionComponent<IParticipantListProps> = ({onTran
     useObserver(() => (
         <div className={"participant-list"}>
             {
-                ParticipantsStore
+                ParticipantService
                     .getLiving(true)
                     .slice(2)
                     .map(participant => {
                         return (
-                            <div key={participant.id} className={"participant"}>
+                            <div key={participant.info.id} className={"participant"}>
                                         <span data-private={""}
-                                              className={"participant--name"}>{participant.name}</span>
-                                {MyInfo.info?.isHost &&
+                                              className={"participant--name"}>{participant.info.name}</span>
+                                {MyInfo.isHost &&
                                 <>
                                     <span onClick={() => IO.kick(participant)}
                                               className={"participant--action-button"}>Kick</span>

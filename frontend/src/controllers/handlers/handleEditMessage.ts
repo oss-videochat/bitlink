@@ -1,11 +1,12 @@
 import {handleEvent} from "../../interfaces/handleEvent";
 import {MessageSummary} from "@bitlink/common";
 import ChatStore from "../../stores/ChatStore";
+import ChatStoreService from "../../services/ChatStoreService";
 
 interface handleEditMessageParam {
     messageSummary: MessageSummary
 }
 
-export const handleEditMessage: handleEvent<handleEditMessageParam> = async ({messageSummary}, cb) => {
-    ChatStore.editMessage(messageSummary.id, messageSummary.content);
+export const handleEditMessage: handleEvent<handleEditMessageParam> = ({messageSummary}, cb) => {
+    ChatStoreService.editMessage(messageSummary.id, messageSummary.content);
 };

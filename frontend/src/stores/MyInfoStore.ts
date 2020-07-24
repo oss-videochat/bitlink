@@ -1,7 +1,6 @@
-import {observable} from "mobx";
+import {computed, observable} from "mobx";
 import {types} from 'mediasoup-client'
-import {ParticipantData} from "../models/Participant";
-import {MediaSource, MediaSourceToTypeMap, MediaType, ParticipantSummary, TransportJob} from "@bitlink/common";
+import {MediaSource, ParticipantRole, MediaSourceToTypeMap, MediaType, ParticipantSummary, TransportJob} from "@bitlink/common";
 
 interface MediasoupObj {
     transports: {
@@ -37,6 +36,12 @@ class MyInfoStore {
         camera: null,
         microphone: null
     };
+
+    @computed
+    get isHost(){
+        return this.participant?.role === ParticipantRole.HOST;
+    }
+
     @observable public preferredInputs = {
         video: localStorage.getItem("preferred-video-input") ?? null,
         audio: localStorage.getItem("preferred-audio-input") ?? null,

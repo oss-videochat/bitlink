@@ -1,7 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import {useObserver} from "mobx-react"
 import ChatStore from "../../../stores/ChatStore";
-import {Message} from "../../../interfaces/Messages";
 import MyInfo from "../../../stores/MyInfoStore";
 import MessageComponent from "./MessageComponent";
 import './MessagesContainer.css'
@@ -11,12 +10,19 @@ import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
 import {faChevronLeft} from '@fortawesome/free-solid-svg-icons'
 import UIStore from "../../../stores/UIStore";
 import ChatInput from "../ChatInput";
+import {SelectedRoom} from "../ChatContainer";
+import ChatStoreService from "../../../services/ChatStoreService";
+import {MessageType} from "@bitlink/common";
+import {DirectMessage, GroupMessage} from "../../../interfaces/Message";
+import ParticipantService from "../../../services/ParticipantService";
+import RoomStore from "../../../stores/RoomStore";
+import RoomService from "../../../services/RoomService";
 
 interface IMessagesContainerProps {
-    selectedUser: string
+    selectedRoom: SelectedRoom
 }
 
-const MessagesContainer: React.FunctionComponent<IMessagesContainerProps> = ({selectedUser}) => {
+const MessagesContainer: React.FunctionComponent<IMessagesContainerProps> = ({selectedRoom}) => {
     const list = React.createRef<HTMLDivElement>();
     const [shouldScroll, setShouldScroll] = useState(true);
 
@@ -45,6 +51,13 @@ const MessagesContainer: React.FunctionComponent<IMessagesContainerProps> = ({se
             let lastParticipant = "";
             let lastTime = 0;
 
+            let name;
+            if(selectedRoom.type === MessageType.DIRECT){
+                name = ParticipantService.getById(selectedRoom.id)?.info.name
+            } else {
+                name = RoomService.getGroup(selectedRoom.id)?.name
+            }
+
             return (
                 <div className={"message-container"}>
                     <div className={"message-container--top-bar"}>
@@ -55,32 +68,50 @@ const MessagesContainer: React.FunctionComponent<IMessagesContainerProps> = ({se
                     </span>
                         <span
                             data-private={"lipsum"}
-                            className={"message-container--participant-name"}>{ParticipantsStore.getById(selectedUser)?.name}</span>
+                            className={"message-container--participant-name"}>{name}</span>
                     </div>
                     <div className={"message-list-wrapper"}>
                         <div ref={list} className={"message-list"}>
-                            {ChatStore.chatStore[selectedUser]?.map((message: Message, index) => {
+                            {ChatStoreService.getMessages(selectedRoom.type, selectedRoom.id).map((message, index) => {
                                     let el;
-                                    if (message.from.id === ParticipantsStore.system.id) {
-                                        el = <SystemMessage key={index} message={message}/>
-                                    } else {
-                                        el = <MessageComponent
-                                            startGroup={lastParticipant !== message.from.id || message.created - lastTime > 1000 * 60 * 5}
-                                            key={message.id}
-                                            messageId={message.id}
-                                            fromMe={message.from.id === MyInfo.info!.id}
-                                            message={message}
-                                        />;
+                                    switch (message.type) {
+                                        case MessageType.SYSTEM: {
+                                            el = <SystemMessage key={index} message={message}/>;
+                                            lastParticipant = "system";
+                                            break;
+                                        }
+                                        case MessageType.GROUP: {
+                                            const groupMessage = message as GroupMessage;
+                                            el = <MessageComponent
+                                                startGroup={lastParticipant !== groupMessage.from.info.id || groupMessage.created.getTime() - lastTime > 1000 * 60 * 5}
+                                                key={groupMessage.id}
+                                                messageId={groupMessage.id}
+                                                fromMe={groupMessage.from.info.id === MyInfo.participant!.id}
+                                                message={groupMessage}
+                                            />;
+                                            lastParticipant = groupMessage.group.id;
+                                            break;
+                                        }
+                                        case MessageType.DIRECT: {
+                                            const directMessage = message as DirectMessage;
+                                            el = <MessageComponent
+                                                startGroup={lastParticipant !== directMessage.from.info.id || directMessage.created.getTime() - lastTime > 1000 * 60 * 5}
+                                                key={directMessage.id}
+                                                messageId={directMessage.id}
+                                                fromMe={directMessage.from.info.id === MyInfo.participant!.id}
+                                                message={directMessage}
+                                            />;
+                                            lastParticipant = directMessage.from.info.id;
+                                        }
                                     }
-                                    lastTime = message.created;
-                                    lastParticipant = message.from.id;
+                                    lastTime = message.created.getTime();
                                     return el;
                                 }
                             )}
                         </div>
                     </div>
-                    {ParticipantsStore.getById(selectedUser)?.isAlive || selectedUser === "everyone" ?
-                        <ChatInput selectedUser={selectedUser}/>
+                    {selectedRoom.type === MessageType.GROUP || ParticipantService.getById(selectedRoom.id)?.info.isAlive ?
+                        <ChatInput selectedRoom={selectedRoom}/>
                         : null
                     }
                 </div>

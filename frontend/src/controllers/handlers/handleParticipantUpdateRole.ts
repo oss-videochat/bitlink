@@ -3,6 +3,7 @@ import {ParticipantRole} from "@bitlink/common";
 import ParticipantsStore from "../../stores/ParticipantsStore";
 import ChatStore from "../../stores/ChatStore";
 import MyInfo from "../../stores/MyInfoStore";
+import ParticipantService from "../../services/ParticipantService";
 
 interface handleParticipantUpdateRoleParam {
     participantId: string,
@@ -16,12 +17,11 @@ export const handleParticipantUpdateRole: handleEvent<handleParticipantUpdateRol
         [ParticipantRole.MEMBER]: 'member'
     }
 
-    const participant = ParticipantsStore.getById(participantId);
+    const participant = ParticipantService.getById(participantId);
     if (participant) {
-        ChatStore.addSystemMessage({content: `${participant.name} new role is ${roleLookup[participant.role]}`})
-        participant.role = newRole;
+        participant.info.role = newRole;
     }
-    if (participantId === MyInfo.info?.id) {
-        MyInfo.info.role = newRole;
+    if (participantId === MyInfo.participant!.id) {
+        MyInfo.participant!.role = newRole;
     }
 };

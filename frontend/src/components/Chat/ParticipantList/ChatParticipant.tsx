@@ -3,33 +3,59 @@ import {useObserver} from "mobx-react"
 import './ChatParticipant.css'
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
 import {faMicrophoneSlash, faVideoSlash} from '@fortawesome/free-solid-svg-icons'
-import ParticipantsStore from "../../../stores/ParticipantsStore";
 import Participant from "../../../models/Participant";
+import {MessageType} from "@bitlink/common";
+import {SelectedRoom} from "../ChatContainer";
+import {MessageGroup} from "../../../interfaces/MessageGroup";
+import {Message} from "../../../interfaces/Message";
 
 interface IChatParticipantProps {
-    onChosen: (chosen: string) => void,
+    onChosen: (info: SelectedRoom) => void,
     selected: boolean,
-    participant: Participant,
-    name?: string,
-    lastMessage: string | undefined
+    type: MessageType,
+    item: Participant | MessageGroup
+    lastMessage?: Message
 }
 
-const ChatParticipant: React.FunctionComponent<IChatParticipantProps> = ({onChosen, selected,participant, name, lastMessage}) => {
-        return useObserver(() => (
-            <div onClick={() => onChosen(participant.id)}
+const ChatParticipant: React.FunctionComponent<IChatParticipantProps> = ({onChosen, selected, type, item, lastMessage}) => {
+    return useObserver(() => {
+        let name;
+        let id: string;
+        let displayMediaState;
+        let hasAudio;
+        let hasVideo;
+
+        if (type === MessageType.DIRECT) {
+            const participant = item as Participant;
+            name = participant.info.name;
+            id = participant.info.id;
+            displayMediaState = participant.info.isAlive
+            hasAudio = participant.hasAudio;
+            hasVideo = participant.hasVideo;
+        } else {
+            const group = item as MessageGroup;
+            name = group.name;
+            id = group.id;
+            displayMediaState = false;
+            hasAudio = false;
+            hasVideo = false;
+        }
+
+        return (
+            <div onClick={() => onChosen({type, id})}
                  className={"chat-participant " + (selected ? "selected" : "")}>
                 <div className={"chat-participant-name-container"}>
-                    <span data-private={""} className={"chat-participant--name"}>{name || participant.name}</span>
-                    {participant.id !== ParticipantsStore.everyone.id && participant.isAlive ?
+                    <span data-private={""} className={"chat-participant--name"}>{name}</span>
+                    {displayMediaState ?
                         <div className={"chat-participant---media-state"}>
                              <span className={"participant--icon"}>
-                                 {participant.hasAudio ?
+                                 {hasAudio ?
                                      null :
                                      <FontAwesomeIcon icon={faMicrophoneSlash}/>
                                  }
                              </span>
                             <span className={"participant--icon"}>
-                                {participant.hasVideo ?
+                                {hasVideo ?
                                     null :
                                     <FontAwesomeIcon icon={faVideoSlash}/>
                                 }
@@ -43,6 +69,7 @@ const ChatParticipant: React.FunctionComponent<IChatParticipantProps> = ({onChos
                     : null
                 }
             </div>
-        ));
+        )
+    });
 }
 export default ChatParticipant;

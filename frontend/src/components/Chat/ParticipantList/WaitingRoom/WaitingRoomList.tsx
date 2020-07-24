@@ -9,7 +9,7 @@ const WaitingRoomList: React.FunctionComponent = () => useObserver(() => (
             <span className={"waiting-room--title"}>Waiting Room</span>
             {
                 ParticipantsStore.waitingRoom.map(patientParticipant =>
-                    <WaitingRoomListParticipant key={patientParticipant.id} participant={patientParticipant}/>
+                    <WaitingRoomListParticipant key={patientParticipant.info.id} participant={patientParticipant}/>
                 )
             }
         </div>

@@ -3,24 +3,26 @@ import RoomStore from "../../stores/RoomStore";
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
 import {faExternalLinkSquareAlt} from '@fortawesome/free-solid-svg-icons'
 import './RoomId.css';
-import NotificationStore, {NotificationType, UINotification} from "../../stores/NotificationStore";
+import NotificationStore from "../../stores/NotificationStore";
 import MyInfo from "../../stores/MyInfoStore";
+import NotificationService from "../../services/NotificationService";
+import {NotificationType} from "../../enum/NotificationType";
 
 const RoomId: React.FunctionComponent = () => {
     function copyLink() {
         if (navigator.clipboard) {
             navigator.clipboard.writeText(window.location.href);
-            NotificationStore.add(new UINotification(`Link copied!`, NotificationType.Success));
+            NotificationService.add(NotificationService.createUINotification(`Link copied!`, NotificationType.Success));
         } else {
             if (copyFallback(window.location.href)) {
-                NotificationStore.add(new UINotification(`Link copied!`, NotificationType.Success));
+                NotificationService.add(NotificationService.createUINotification(`Link copied!`, NotificationType.Success));
             }
         }
         const navigatior2: any = navigator;
         if (navigatior2.share) {
             navigatior2.share({
-                title: `${MyInfo.info?.name}'s BitLink Room`,
-                text: `${MyInfo.info?.name}'s BitLink Room`,
+                title: `${MyInfo.participant?.name}'s BitLink Room`,
+                text: `${MyInfo.participant?.name}'s BitLink Room`,
                 url: window.location.href
             })
         }
@@ -54,7 +56,7 @@ const RoomId: React.FunctionComponent = () => {
             document.execCommand('copy');
             return true;
         } catch (e) {
-            NotificationStore.add(new UINotification(`An error occurred copying.`, NotificationType.Error));
+            NotificationService.add(NotificationService.createUINotification(`An error occurred copying.`, NotificationType.Error));
             return false;
         }
     }

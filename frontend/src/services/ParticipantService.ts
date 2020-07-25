@@ -12,7 +12,7 @@ class ParticipantService {
     }
 
     static replace(array: Array<Participant>) {
-        ParticipantsStore.participants = [];
+        ParticipantsStore.participants = array;
     }
 
     static getById(id: string) {

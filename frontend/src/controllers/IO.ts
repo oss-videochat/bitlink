@@ -29,6 +29,7 @@ import RoomService from "../services/RoomService";
 import MyInfoService from "../services/MyInfoService";
 import ChatStoreService from "../services/ChatStoreService";
 import HardwareService from "../services/HardwareService";
+import ParticipantsStore from "../stores/ParticipantsStore";
 
 const log = debug("IO");
 
@@ -56,8 +57,10 @@ class IO {
     constructor(ioAddress: string) {
         this.io = io(ioAddress);
 
+        const iolocal = this.io;
+
         function iw(func: handleEvent<any>): handleEvent {
-            return (data: any, cb: any) => func({...data, io}, cb)
+            return (data: any, cb: any) => func({...data, io: iolocal}, cb)
         }
 
         this.io.on("kicked", iw(Handlers.handleKick));
@@ -435,7 +438,6 @@ class IO {
 
     processRoomSummary(data: { summary: RoomSummary, rtcCapabilities: any }) {
         const roomSummary = data.summary;
-
         const participants = roomSummary.participants.map((participantSummary: ParticipantSummary) => {
             const participant = new Participant(participantSummary);
             if (participant.info.id === roomSummary.myId) {

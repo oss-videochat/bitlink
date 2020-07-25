@@ -6,7 +6,6 @@ import debug from "../helpers/debug";
 import ParticipantService from "./ParticipantService";
 import MessageService from "./MessageService";
 import * as mediasoup from 'mediasoup';
-import {v4 as uuidv4} from "uuid";
 import * as crypto from "crypto";
 import MediasoupPeerService from "./MediasoupPeerService";
 import {handleParticipantEvent} from "../interfaces/handleEvent";
@@ -126,6 +125,12 @@ class RoomService {
     }
 
     static participantLeft(room: Room, participant: Participant) {
+        ParticipantService.leave(participant);
+        MediasoupPeerService.destroy(participant.mediasoupPeer);
+        RoomService.broadcast(room, "participant-left", [], {participantId: participant.id});
+    }
+
+    static participantDisconnected(room: Room, participant: Participant) {
         ParticipantService.disconnect(participant);
         MediasoupPeerService.destroy(participant.mediasoupPeer);
         RoomService.broadcast(room, "participant-left", [], {participantId: participant.id});
@@ -134,7 +139,10 @@ class RoomService {
     static participantChangedName(room: Room, participant: Participant, newName: string) {
         log("Participant changing name %s --> %s", participant.name, newName);
         ParticipantService.changeName(participant, name);
-        RoomService.broadcast(room, "participant-changed-name", [participant], {participantId: participant.id, newName: participant.name});
+        RoomService.broadcast(room, "participant-changed-name", [participant], {
+            participantId: participant.id,
+            newName: participant.name
+        });
         return {
             success: true,
             status: 200,
@@ -145,9 +153,11 @@ class RoomService {
     static mediaStateUpdate(room: Room, participant: Participant, source: MediaSource, action: MediaAction) {
         RoomService.broadcast(room, "participant-updated-media-state", [participant],
             {
-                id: participant.id,
-                source,
-                action
+                update: {
+                    id: participant.id,
+                    source,
+                    action
+                }
             }
         );
     }
@@ -281,9 +291,9 @@ class RoomService {
             return (data: any, cb: any) => func({...data, participant, room}, cb || (() => log("No CB Passed")))
         }
 
-        participant.socket.on("disconnect", pw(Handlers.handleLeaveParticipant));
+        participant.socket.on("disconnect", pw(Handlers.handleDisconnectParticipant));
         participant.socket.on("leave", pw(Handlers.handleLeaveParticipant));
-  //      participant.socket.on("update-name", pw(Handlers.handleUpdateName));
+        //      participant.socket.on("update-name", pw(Handlers.handleUpdateName));
         participant.socket.on("producer-action", pw(Handlers.handleProducerAction));
         participant.socket.on("get-room-settings", pw(Handlers.handleGetRoomSettings));
         participant.socket.on("update-room-settings", pw(Handlers.handleUpdateRoomSettings));
@@ -296,6 +306,7 @@ class RoomService {
         participant.socket.on("create-transport", pw(Handlers.handleCreateTransport));
         participant.socket.on("connect-transport", pw(Handlers.handleConnectTransport));
         participant.socket.on("create-producer", pw(Handlers.handleCreateProducer));
+        participant.socket.on("waiting-room-decision", pw(Handlers.handleWaitingRoomDecision));
 
         RoomService.broadcast(room, "new-participant", [participant], {participantSummary: ParticipantService.getSummary(participant)});
     }

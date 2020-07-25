@@ -1,5 +1,6 @@
 export * from './handleEditMessage'
 export * from './handleLeaveParticipant'
+export * from './handleDisconnectParticipant'
 export * from './handleDeleteMessage'
 export * from './handleEndRoom'
 export * from './handleGetRoomSettings'

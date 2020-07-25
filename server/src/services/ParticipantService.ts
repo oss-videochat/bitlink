@@ -4,6 +4,7 @@ import {v4 as uuidv4} from 'uuid';
 import {MediaAction, MediaSource, ParticipantRole, ParticipantSummary} from "@bitlink/common";
 import {MediasoupPeer} from "../interfaces/MediasoupPeer";
 import debug from "../helpers/debug";
+import SocketService from "./SocketService";
 
 const log = debug("Services:ParticipantService");
 
@@ -38,13 +39,21 @@ class ParticipantService {
         participant.name = name;
     }
 
-    static disconnect(participant: Participant) {
+    static leave(participant: Participant) {
         log("Forcing participant to leave", participant.name);
+        participant.socket.removeAllListeners();
+        SocketService.removeSocket(participant.socket);
+        SocketService.addSocket(participant.socket);
+    }
+
+    static disconnect(participant: Participant) {
+        log("Forcing participant to disconnect", participant.name);
         if (participant.socket.connected) {
             participant.socket.disconnect();
         }
         participant.isConnected = false;
         participant.socket.removeAllListeners();
+        SocketService.removeSocket(participant.socket);
     }
 
     static mediaStateUpdate(participant: Participant, source: MediaSource, action: MediaAction) {

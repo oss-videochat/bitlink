@@ -11,7 +11,7 @@ interface handleCreateProducerParam {
     rtpParameters: types.RtpParameters
 }
 
-const handleCreateProducer: handleParticipantEvent<handleCreateProducerParam> = async ({transportId, source, kind, rtpParameters, participant, room}, cb) => {
+export const handleCreateProducer: handleParticipantEvent<handleCreateProducerParam> = async ({transportId, source, kind, rtpParameters, participant, room}, cb) => {
     const transport = MediasoupPeerService.getTransport(participant.mediasoupPeer, transportId);
     if (!transport) {
         cb({
@@ -56,4 +56,3 @@ const handleCreateProducer: handleParticipantEvent<handleCreateProducerParam> = 
             });
         })
 };
-export default handleCreateProducer;

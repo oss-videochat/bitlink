@@ -13,7 +13,7 @@ export interface SelectedRoom {
 }
 
 const ChatContainer: React.FunctionComponent = () => {
-    const [selectedRoom, setSelectedRoom] = useState<SelectedRoom>({type: MessageType.GROUP, id: RoomStore.groups[0]?.id || ""});
+    const [selectedRoom, setSelectedRoom] = useState<SelectedRoom>({type: MessageType.GROUP, id: ""});
 
     return useObserver(() => (
         <div className={"chat-container " + (UIStore.store.chatPanel ? "open" : "")}>

@@ -278,11 +278,12 @@ class RoomService {
         room.participants.push(participant);
 
         function pw(func: handleParticipantEvent<any>): handleParticipantEvent {
-            return (data: any, cb: any) => func({...data, participant, room}, cb)
+            return (data: any, cb: any) => func({...data, participant, room}, cb || (() => log("No CB Passed")))
         }
 
-        participant.socket.on("disconnect", pw(Handlers.handleDisconnectParticipant));
-        participant.socket.on("update-name", pw(Handlers.handleDisconnectParticipant));
+        participant.socket.on("disconnect", pw(Handlers.handleLeaveParticipant));
+        participant.socket.on("leave", pw(Handlers.handleLeaveParticipant));
+  //      participant.socket.on("update-name", pw(Handlers.handleUpdateName));
         participant.socket.on("producer-action", pw(Handlers.handleProducerAction));
         participant.socket.on("get-room-settings", pw(Handlers.handleGetRoomSettings));
         participant.socket.on("update-room-settings", pw(Handlers.handleUpdateRoomSettings));
@@ -292,6 +293,9 @@ class RoomService {
         participant.socket.on("delete-message", pw(Handlers.handleDeleteMessage));
         participant.socket.on("transfer-host", pw(Handlers.handleTransferHost));
         participant.socket.on("change-name", pw(Handlers.handleUpdateName));
+        participant.socket.on("create-transport", pw(Handlers.handleCreateTransport));
+        participant.socket.on("connect-transport", pw(Handlers.handleConnectTransport));
+        participant.socket.on("create-producer", pw(Handlers.handleCreateProducer));
 
         RoomService.broadcast(room, "new-participant", [participant], {participantSummary: ParticipantService.getSummary(participant)});
     }

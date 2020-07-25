@@ -8,7 +8,7 @@ interface handleUpdateRoomSettingsParams {
 }
 
 export const handleUpdateRoomSettings: handleParticipantEvent<handleUpdateRoomSettingsParams> = ({newSettings, participant, room}, cb) => {
-    if (participant.role === ParticipantRole.HOST) {
+    if (participant.role !== ParticipantRole.HOST) {
         cb({
             success: false,
             status: 403,

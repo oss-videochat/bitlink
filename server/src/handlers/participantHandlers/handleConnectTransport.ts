@@ -7,7 +7,7 @@ interface handleConnectTransportParam {
     dtlsParameters: types.DtlsParameters
 }
 
-const handleConnectTransport: handleParticipantEvent<handleConnectTransportParam> = async ({transportId, dtlsParameters, room, participant}, cb) => {
+export const handleConnectTransport: handleParticipantEvent<handleConnectTransportParam> = async ({transportId, dtlsParameters, room, participant}, cb) => {
     const transport = MediasoupPeerService.getTransport(participant.mediasoupPeer, transportId);
     if (!transport) {
         cb({
@@ -42,4 +42,3 @@ const handleConnectTransport: handleParticipantEvent<handleConnectTransportParam
             });
         });
 };
-export default handleConnectTransport;

@@ -21,7 +21,7 @@ class ChatStoreService {
     }
 
     static getLatestMessage(type: MessageType.GROUP | MessageType.DIRECT, id: string) {
-        return ChatStore.messageStore.reverse().find(aMessage => (
+        return ChatStore.messageStore.slice().reverse().find(aMessage => (
             aMessage.type !== MessageType.SYSTEM
             && (type === MessageType.GROUP ? (aMessage as GroupMessage).group.id : (aMessage as DirectMessage).from.info.id) === id
         ));

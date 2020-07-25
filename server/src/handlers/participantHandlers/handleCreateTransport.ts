@@ -7,7 +7,7 @@ interface handleCreateTransportParam {
     kind: TransportJob
 }
 
-const handleCreateTransport: handleParticipantEvent<handleCreateTransportParam> = async ({room, participant, type, kind}, cb) => {
+export const handleCreateTransport: handleParticipantEvent<handleCreateTransportParam> = async ({room, participant, type, kind}, cb) => {
     if (!["webrtc", /*"plain"*/].includes(type)) {
         cb({
             success: false,
@@ -31,4 +31,3 @@ const handleCreateTransport: handleParticipantEvent<handleCreateTransportParam> 
         }
     });
 };
-export default handleCreateTransport;

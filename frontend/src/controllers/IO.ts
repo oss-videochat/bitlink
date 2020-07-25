@@ -218,6 +218,7 @@ class IO {
 
             transport.on("connect", async ({dtlsParameters}, callback, errback) => {
                 log("Transport connect event emitted");
+                console.log(dtlsParameters);
                 const response = await this.socketRequest("connect-transport", {
                     transportId: transport.id,
                     dtlsParameters: dtlsParameters
@@ -255,10 +256,7 @@ class IO {
         };
 
         return Promise.all([
-            this.socketRequest("create-transport", {
-                type: "webrtc",
-                kind: "receiving"
-            }).then((response: APIResponse) => {
+            this.socketRequest("create-transport", {type: "webrtc", kind: "receiving"}).then((response: APIResponse) => {
                 MyInfo.transports.receiving = RoomStore.device!.createRecvTransport(response.data.transportInfo);
                 return addTransportListeners(MyInfo.transports.receiving);
             }),
@@ -457,9 +455,9 @@ class IO {
         UIStore.store.joinedDate = new Date();
     }
 
-    socketRequest(event: string, ...args: any[]): Promise<APIResponse> {
+    socketRequest(event: string, data = {}): Promise<APIResponse> {
         return new Promise(async (resolve, reject) => {
-            this.io.emit(event, ...args, (json: APIResponse) => {
+            this.io.emit(event, data, (json: APIResponse) => {
                 resolve(json);
             });
         });

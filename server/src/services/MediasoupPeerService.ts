@@ -59,7 +59,7 @@ class MediasoupPeerService {
 
     static connectTransport(transport: types.Transport, dtlsParameters: types.DtlsParameters, participant: Participant) {
         log("Participant connecting to a transport %s:%s", participant.name, transport.id);
-        return transport.connect(dtlsParameters).then(() => transport.appData.connected = true)
+        return transport.connect({dtlsParameters}).then(() => transport.appData.connected = true)
     }
 
     static getTransport(mediasoupPeer: MediasoupPeer, transportId: string) {

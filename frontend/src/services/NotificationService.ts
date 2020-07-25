@@ -16,7 +16,7 @@ class NotificationService {
 
     static add(notification: UINotification, systemNotification = false) {
         notification.timer = setTimeout(() => {
-            NotificationStore.store.remove(notification);
+            NotificationStore.store.splice(NotificationStore.store.indexOf(notification), 1);
         }, (notification.created.getTime() + notification.options.timeout) - Date.now());
         NotificationStore.store.push(notification);
         if (systemNotification) {

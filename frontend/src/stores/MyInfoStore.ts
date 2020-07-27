@@ -1,6 +1,6 @@
 import {computed, observable} from "mobx";
 import {types} from 'mediasoup-client'
-import {MediaSource, ParticipantRole, MediaSourceToTypeMap, MediaType, ParticipantSummary, TransportJob} from "@bitlink/common";
+import {MediaSource, ParticipantRole, ParticipantSummary, TransportJob} from "@bitlink/common";
 
 interface MediasoupObj {
     transports: {
@@ -32,20 +32,20 @@ class MyInfoStore {
         microphone: null,
         screen: null
     }
-    public cachedStreams: Record< "camera" | "microphone", MediaStream | null> = {
+    public cachedStreams: Record<"camera" | "microphone", MediaStream | null> = {
         camera: null,
         microphone: null
     };
-
-    @computed
-    get isHost(){
-        return this.participant?.role === ParticipantRole.HOST;
-    }
-
     @observable public preferredInputs = {
         video: localStorage.getItem("preferred-video-input") ?? null,
         audio: localStorage.getItem("preferred-audio-input") ?? null,
     };
 
+    @computed
+    get isHost() {
+        return this.participant?.role === ParticipantRole.HOST;
+    }
+
 }
+
 export default new MyInfoStore();

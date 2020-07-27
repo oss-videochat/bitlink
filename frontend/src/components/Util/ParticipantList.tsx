@@ -1,7 +1,6 @@
 import React from 'react';
 import './ParticipantList.css';
 import {useObserver} from 'mobx-react';
-import ParticipantsStore from "../../stores/ParticipantsStore";
 import MyInfo from "../../stores/MyInfoStore";
 import IO from "../../controllers/IO";
 import ParticipantService from "../../services/ParticipantService";
@@ -24,7 +23,7 @@ const ParticipantList: React.FunctionComponent<IParticipantListProps> = ({onTran
                                 {MyInfo.isHost &&
                                 <>
                                     <span onClick={() => IO.kick(participant)}
-                                              className={"participant--action-button"}>Kick</span>
+                                          className={"participant--action-button"}>Kick</span>
                                     <span onClick={() => IO.transferHost(participant).then(onTransfer)}
                                           className={"participant--action-button"}>Transfer Host</span>
                                 </>

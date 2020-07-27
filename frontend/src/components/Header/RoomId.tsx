@@ -3,7 +3,6 @@ import RoomStore from "../../stores/RoomStore";
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
 import {faExternalLinkSquareAlt} from '@fortawesome/free-solid-svg-icons'
 import './RoomId.css';
-import NotificationStore from "../../stores/NotificationStore";
 import MyInfo from "../../stores/MyInfoStore";
 import NotificationService from "../../services/NotificationService";
 import {NotificationType} from "../../enum/NotificationType";

@@ -3,10 +3,12 @@
     max-width: 300px;
     margin: 10px auto;
 }
+
 .leave-button-cancel {
     margin-top: 20px;
     background: #d04e53;
 }
+
 .modal--button.leave-button-cancel:hover {
     background: #e6545a;
 }

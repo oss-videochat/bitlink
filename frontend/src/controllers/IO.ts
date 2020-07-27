@@ -29,7 +29,6 @@ import RoomService from "../services/RoomService";
 import MyInfoService from "../services/MyInfoService";
 import ChatStoreService from "../services/ChatStoreService";
 import HardwareService from "../services/HardwareService";
-import ParticipantsStore from "../stores/ParticipantsStore";
 
 const log = debug("IO");
 
@@ -187,7 +186,11 @@ class IO {
                 return RoomStore.device.load({routerRtpCapabilities: response.data});
             })
             .then(() => {
-                this.io.emit("join-room", {roomId: id, name, rtpCapabilities: RoomStore.device!.rtpCapabilities}, (response: APIResponse) => {
+                this.io.emit("join-room", {
+                    roomId: id,
+                    name,
+                    rtpCapabilities: RoomStore.device!.rtpCapabilities
+                }, (response: APIResponse) => {
                     if (!response.success) {
                         if (response.status !== 403) {
                             throw response.error;
@@ -259,7 +262,10 @@ class IO {
         };
 
         return Promise.all([
-            this.socketRequest("create-transport", {type: "webrtc", kind: "receiving"}).then((response: APIResponse) => {
+            this.socketRequest("create-transport", {
+                type: "webrtc",
+                kind: "receiving"
+            }).then((response: APIResponse) => {
                 MyInfo.transports.receiving = RoomStore.device!.createRecvTransport(response.data.transportInfo);
                 return addTransportListeners(MyInfo.transports.receiving);
             }),

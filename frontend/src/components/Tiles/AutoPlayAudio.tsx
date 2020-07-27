@@ -70,7 +70,7 @@ const AutoPlayAudio: React.FunctionComponent<IAutoPlayAudioProps> = ({srcObject}
             element.pause();
             element.removeEventListener("canplay", canplay);
             element.srcObject = null;
-            if(isiOS){
+            if (isiOS) {
                 audioBank.push(element); // recycling is good for the world
             }
         }

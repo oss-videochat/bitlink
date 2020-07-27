@@ -125,8 +125,8 @@ class RoomService {
         }
     }
 
-    static closeRoomIfNecessary(room: Room){
-        if(room.participants.filter(participant => participant.isConnected && participant.role === ParticipantRole.HOST).length === 0){
+    static closeRoomIfNecessary(room: Room) {
+        if (room.participants.filter(participant => participant.isConnected && participant.role === ParticipantRole.HOST).length === 0) {
             RoomService.destroy(room);
         }
     }

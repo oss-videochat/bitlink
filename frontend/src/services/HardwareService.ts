@@ -52,4 +52,5 @@ class HardwareService {
         return MyInfoStore.cachedStreams[source]!;
     }
 }
+
 export default HardwareService;

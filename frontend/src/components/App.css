@@ -55,15 +55,18 @@ input, textarea {
     flex: 1;
 
 }
+
 .legal-text {
     display: block;
     margin-top: 20px;
     color: #a1a1a1;
     font-size: 11px;
 }
+
 .legal-text a {
     color: #6b71ff;
 }
+
 .legal-text a:visited {
     color: #ac78a9;
 }

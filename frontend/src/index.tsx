@@ -6,11 +6,10 @@ import {autorun} from 'mobx';
 import RoomStore from "./stores/RoomStore";
 import UIStore from "./stores/UIStore";
 import debug from 'debug';
-import MyInfo from "./stores/MyInfoStore";
 import IO from "./controllers/IO";
 
 
-if(process.env.NODE_ENV === "development"){
+if (process.env.NODE_ENV === "development") {
     debug.enable("BitLink:*")
 } else {
     LogRocket.init('wbok98/bitlink');
@@ -43,7 +42,7 @@ if (!window.navigator.standalone) { // ios is stupid. If i try to change url bar
 }
 
 window.addEventListener("beforeunload", (e => {
-    if(RoomStore.info){
+    if (RoomStore.info) {
         e.preventDefault();
         e.returnValue = '';
         IO.leave();

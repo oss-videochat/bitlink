@@ -14,4 +14,5 @@ class RoomService {
         return RoomStore.groups.find(group => group.id === groupId);
     }
 }
+
 export default RoomService;

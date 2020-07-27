@@ -20,6 +20,7 @@ class UIStoreService {
             title: "BitLink"
         };
     }
+
     static reset() {
         UIStore.store = UIStoreService.defaultProperties;
     }
@@ -28,4 +29,5 @@ class UIStoreService {
         UIStore.store[property] = !UIStore.store[property];
     }
 }
+
 export default UIStoreService;

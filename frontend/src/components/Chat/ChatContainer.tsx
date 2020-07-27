@@ -5,7 +5,6 @@ import MessagesContainer from "./Messages/MessagesContainer";
 import './ChatContainer.css';
 import UIStore from "../../stores/UIStore";
 import {MessageType} from "@bitlink/common";
-import RoomStore from "../../stores/RoomStore";
 
 export interface SelectedRoom {
     type: MessageType,

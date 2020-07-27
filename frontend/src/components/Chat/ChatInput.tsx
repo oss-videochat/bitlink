@@ -1,11 +1,8 @@
 import React, {useCallback, useEffect, useRef, useState} from "react";
 import IO from "../../controllers/IO";
-import ChatStore from "../../stores/ChatStore";
 import './ChatInput.css';
 import Participant from "../../models/Participant";
-import ParticipantsStore from "../../stores/ParticipantsStore";
 import {SelectedRoom} from "./ChatContainer";
-import ChatStoreService from "../../services/ChatStoreService";
 import ParticipantService from "../../services/ParticipantService";
 
 interface IChatInputProps {
@@ -27,27 +24,27 @@ const ChatInput: React.FunctionComponent<IChatInputProps> = ({selectedRoom}) => 
             }
         }
         if (e.key === "ArrowUp" && inputValue === "") {
-           // ChatStoreService.editNextMessage({selectedUser});
+            // ChatStoreService.editNextMessage({selectedUser});
         }
     }
 
     const handleSelectionChange = useCallback(() => {
-        if(!textAreaRef.current){
+        if (!textAreaRef.current) {
             setMentions([]);
             return;
         }
         const textArea = textAreaRef.current;
-        if(textArea.selectionStart !== textArea.selectionEnd){ // they are selecting something we don't want to bother them
+        if (textArea.selectionStart !== textArea.selectionEnd) { // they are selecting something we don't want to bother them
             setMentions([]);
             return;
         }
         const latestAtIndex = inputValue.lastIndexOf("@", textArea.selectionStart - 1);
-        if(latestAtIndex === -1){
+        if (latestAtIndex === -1) {
             setMentions([]);
             return;
         }
         const indexOfNextSpace = inputValue.indexOf(" ", latestAtIndex);
-        if(indexOfNextSpace > 0 && indexOfNextSpace < textArea.selectionStart){
+        if (indexOfNextSpace > 0 && indexOfNextSpace < textArea.selectionStart) {
             setMentions([]);
             return;
         }
@@ -55,8 +52,8 @@ const ChatInput: React.FunctionComponent<IChatInputProps> = ({selectedRoom}) => 
         setMentions(ParticipantService.filterByMentionString(searchString).slice(0, 5));
     }, [inputValue, textAreaRef]);
 
-    function handleMentionSelection(participant: Participant){
-        if(!textAreaRef.current){
+    function handleMentionSelection(participant: Participant) {
+        if (!textAreaRef.current) {
             setMentions([]);
             return;
         }
@@ -64,7 +61,7 @@ const ChatInput: React.FunctionComponent<IChatInputProps> = ({selectedRoom}) => 
         const latestAtIndex = inputValue.lastIndexOf("@", textArea.selectionStart - 1);
         const indexOfNextSpace = inputValue.indexOf(" ", latestAtIndex);
         const firstPart = `${inputValue.substring(0, latestAtIndex + 1)}${participant.mentionString}`;
-        if(indexOfNextSpace > 0){
+        if (indexOfNextSpace > 0) {
             setInputValue(firstPart + inputValue.substring(indexOfNextSpace));
         } else {
             setInputValue(firstPart);
@@ -73,7 +70,7 @@ const ChatInput: React.FunctionComponent<IChatInputProps> = ({selectedRoom}) => 
     }
 
     useEffect(() => {
-        if(!textAreaRef.current){
+        if (!textAreaRef.current) {
             return;
         }
         textAreaRef.current.focus();
@@ -88,13 +85,14 @@ const ChatInput: React.FunctionComponent<IChatInputProps> = ({selectedRoom}) => 
                 mentions.length > 0 &&
                 <div className={"mention-container"}>
                     <div className={"mention-wrapper"}>
-                    {
-                        mentions.map(mention =>
-                            <div onClick={() => handleMentionSelection(mention)} key={mention.info.id} className={"mention-container__mention"}>
-                                {mention.info.name}
-                            </div>
-                        )
-                    }
+                        {
+                            mentions.map(mention =>
+                                <div onClick={() => handleMentionSelection(mention)} key={mention.info.id}
+                                     className={"mention-container__mention"}>
+                                    {mention.info.name}
+                                </div>
+                            )
+                        }
                     </div>
                 </div>
             }

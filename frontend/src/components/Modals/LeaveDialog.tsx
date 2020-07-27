@@ -2,7 +2,6 @@ import React, {useState} from 'react';
 import './Dialog.css';
 import './LeaveDialog.css';
 import UIStore from "../../stores/UIStore";
-import ParticipantsStore from "../../stores/ParticipantsStore";
 import IO from "../../controllers/IO";
 import ParticipantList from "../Util/ParticipantList";
 import ParticipantService from "../../services/ParticipantService";
@@ -15,30 +14,33 @@ const LeaveDialog: React.FunctionComponent = () => {
         <div className={"dialog-modal"}>
             <h2 className={"modal--title"}>Leave Room</h2>
             {isThereAnotherHost ?
-                 (
+                (
                     <>
                         <span className={"dialog-centered-text"}>Please choose to leave or end the room for all participants</span>
-                        <input onClick={() => IO._leave()} type={"button"} value={"Leave"} className={"modal--button leave-button"}/>
+                        <input onClick={() => IO._leave()} type={"button"} value={"Leave"}
+                               className={"modal--button leave-button"}/>
                     </>
                 ) : (
                     <>
                         <span className={"dialog-centered-text"}>Please choose to transfer the host to another participant or end the room for all participants</span>
-                        <input type={"button"} onClick={() => setTransferHostOpen(true)} value={"Transfer Host"} className={"modal--button leave-button"}/>
+                        <input type={"button"} onClick={() => setTransferHostOpen(true)} value={"Transfer Host"}
+                               className={"modal--button leave-button"}/>
                     </>
                 )
             }
             {
                 transferHostOpen &&
-                    <ParticipantList onTransfer={() => {
-                        IO._leave();
-                        UIStore.store.modalStore.leaveMenu = false
-                    }}/>
+                <ParticipantList onTransfer={() => {
+                    IO._leave();
+                    UIStore.store.modalStore.leaveMenu = false
+                }}/>
             }
             <input type={"button"} onClick={() => {
                 IO.endRoomForAll().catch(console.error)
                 UIStore.store.modalStore.leaveMenu = false
             }} value={"End Room for All"} className={"modal--button leave-button"}/>
-            <input type={"button"} onClick={() => UIStore.store.modalStore.leaveMenu = false} value={"Cancel"} className={"modal--button leave-button-cancel"}/>
+            <input type={"button"} onClick={() => UIStore.store.modalStore.leaveMenu = false} value={"Cancel"}
+                   className={"modal--button leave-button-cancel"}/>
         </div>
     );
 }

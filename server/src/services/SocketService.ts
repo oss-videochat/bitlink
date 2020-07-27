@@ -14,7 +14,7 @@ class SocketService {
     }
 
     static addSocket(socket: socketio.Socket) {
-        function sw(func: handleSocketEvent<any>){
+        function sw(func: handleSocketEvent<any>) {
             return (data: any, cb: APIResponseCallback) => func({socket, ...data}, cb);
         }
 

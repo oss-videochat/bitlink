@@ -6,7 +6,7 @@ import IO from "../IO";
 import NotificationService from "../../services/NotificationService";
 import {NotificationType} from "../../enum/NotificationType";
 
-interface handleWaitingRoomAcceptParam  {
+interface handleWaitingRoomAcceptParam {
     summary: RoomSummary,
     rtcCapabilities: types.RtpCapabilities
 }

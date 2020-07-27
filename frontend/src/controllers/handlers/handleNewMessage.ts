@@ -1,12 +1,9 @@
 import {handleEvent} from "../../interfaces/handleEvent";
-import {MessageSummary} from "@bitlink/common";
-import NotificationStore from "../../stores/NotificationStore";
+import {MessageSummary, MessageType} from "@bitlink/common";
 import UIStore from "../../stores/UIStore";
-import ChatStore from "../../stores/ChatStore";
 import IO from "../IO";
 import NotificationService from "../../services/NotificationService";
 import ChatStoreService from "../../services/ChatStoreService";
-import {MessageType} from "@bitlink/common";
 import {DirectMessage, GroupMessage} from "../../interfaces/Message";
 import {NotificationType} from "../../enum/NotificationType";
 
@@ -17,7 +14,7 @@ interface handleNewMessageParam {
 export const handleNewMessage: handleEvent<handleNewMessageParam> = ({messageSummary}, cb) => {
     const realMessage = IO.convertMessageSummaryToMessage(messageSummary);
     let notification;
-    if(realMessage.type === MessageType.SYSTEM){
+    if (realMessage.type === MessageType.SYSTEM) {
         notification = NotificationService.createUINotification(realMessage.content, NotificationType.Alert, {title: "System"});
     } else {
         notification = NotificationService.createUINotification(realMessage.content, NotificationType.Alert, {title: (realMessage as DirectMessage | GroupMessage).from.info.name});

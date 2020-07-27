@@ -1,5 +1,4 @@
 import React from "react";
-import ParticipantsStore from "../../../stores/ParticipantsStore";
 import './MessageContent.css'
 import ParticipantService from "../../../services/ParticipantService";
 
@@ -19,7 +18,7 @@ const MessageContent: React.FunctionComponent<IMessageContentProps> = ({content}
         }],
         [/@[^\s]+/g, (_, match) => {
             const participants = ParticipantService.getByMentionString(match[0]);
-            if(participants[0]) {
+            if (participants[0]) {
                 return <span key={id++} className={"participant-mention"}>@{participants[0].mentionString}</span>
             }
             return <span key={id++}>{match[0]}</span>;

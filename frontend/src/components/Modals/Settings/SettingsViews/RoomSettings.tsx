@@ -86,12 +86,14 @@ export class RoomSettings extends React.Component<any, any> {
                 <h2 className={"modal--title"}>Room Settings</h2>
                 <label>
                     Room Name
-                    <input data-private={"lipsum"} className={"modal--input"} onChange={this.handleChange} data-settings-key={"name"}
+                    <input data-private={"lipsum"} className={"modal--input"} onChange={this.handleChange}
+                           data-settings-key={"name"}
                            type={"text"} value={this.state.newSettings.name} placeholder={"Name"}/>
                 </label>
 
                 <label>
-                    <input data-private={"lipsum"} className={"modal--input"} onChange={this.handleChange} data-settings-key={"waitingRoom"}
+                    <input data-private={"lipsum"} className={"modal--input"} onChange={this.handleChange}
+                           data-settings-key={"waitingRoom"}
                            checked={this.state.newSettings.waitingRoom} type={"checkbox"} placeholder={"Name"}/>
                     Enable Waiting Room
                 </label>

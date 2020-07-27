@@ -4,7 +4,6 @@ import ChatParticipant from "./ChatParticipant";
 import RoomStore from "../../../stores/RoomStore";
 import ParticipantsStore from "../../../stores/ParticipantsStore";
 import MyInfo from "../../../stores/MyInfoStore";
-import ChatStore from "../../../stores/ChatStore";
 import SearchBar from "./SearchBar";
 import './ChatRoomList.css';
 import UIStore from "../../../stores/UIStore";
@@ -51,7 +50,8 @@ const ChatRoomList: React.FunctionComponent<IChatParticipantListProps> = ({selec
                                 .map(group => (
                                     <ChatParticipant onChosen={onChosen}
                                                      selected={selectedRoom.type === MessageType.GROUP && selectedRoom.id === group.id}
-                                                     key={"chat-" + group.id} lastMessage={ChatStoreService.getLatestMessage(MessageType.GROUP, group.id)}
+                                                     key={"chat-" + group.id}
+                                                     lastMessage={ChatStoreService.getLatestMessage(MessageType.GROUP, group.id)}
                                                      type={MessageType.GROUP}
                                                      item={group}/>
                                 ))

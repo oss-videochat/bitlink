@@ -1,5 +1,5 @@
 import MyInfoStore from "../stores/MyInfoStore";
-import {MediaSource, MediaSourceToTypeMap, MediaType} from '@bitlink/common';
+import {MediaSource} from '@bitlink/common';
 
 class MyInfoService {
     static reset() {

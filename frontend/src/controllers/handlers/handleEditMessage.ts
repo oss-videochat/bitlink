@@ -1,6 +1,5 @@
 import {handleEvent} from "../../interfaces/handleEvent";
 import {MessageSummary} from "@bitlink/common";
-import ChatStore from "../../stores/ChatStore";
 import ChatStoreService from "../../services/ChatStoreService";
 
 interface handleEditMessageParam {

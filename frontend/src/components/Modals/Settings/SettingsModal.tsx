@@ -6,7 +6,6 @@ import SettingsViewer from "./SettingsViewer";
 import {SettingsPanels} from "../../../enum/SettingsPanels";
 import UIStore from "../../../stores/UIStore";
 import * as Events from 'events';
-import NotificationStore from "../../../stores/NotificationStore";
 import MyInfo from "../../../stores/MyInfoStore";
 import NotificationService from "../../../services/NotificationService";
 import {NotificationType} from "../../../enum/NotificationType";

@@ -4,7 +4,6 @@ import IO from "../../controllers/IO";
 import MyInfo from "../../stores/MyInfoStore";
 import UIStore from "../../stores/UIStore";
 import RoomStore from "../../stores/RoomStore";
-import NotificationStore from "../../stores/NotificationStore";
 import {prepareAudioBank} from "../Tiles/AutoPlayAudio";
 import logo from "../../assets/logo/logo.svg";
 import LegalText from "../LegalText";
@@ -70,14 +69,22 @@ const JoinDialog: React.FunctionComponent = () => {
             <input data-private={"lipsum"} onBlur={() => setRoomIdValidationEnabled(true)}
                    value={roomId}
                    className={"modal--input " + ((!roomIdValidationEnabled || roomIdIsValid()) ? "" : "invalid")}
-                   onChange={(e) => { setRoomId(e.target.value); setRoomIdValidationEnabled(true)}}
+                   onChange={(e) => {
+                       setRoomId(e.target.value);
+                       setRoomIdValidationEnabled(true)
+                   }}
                    onPaste={handlePaste}
                    type={"tel"}
                    placeholder={"Room ID or Paste Link"}/>
-            <input data-private={"lipsum"} onBlur={() => {setUserNameValidationEnabled(true)}}
+            <input data-private={"lipsum"} onBlur={() => {
+                setUserNameValidationEnabled(true)
+            }}
                    value={userName}
                    className={"modal--input " + ((!userNameValidationEnabled || userNameIsValid()) ? "" : "invalid")}
-                   onChange={(e) => {setUserName(e.target.value); setUserNameValidationEnabled(true)}}
+                   onChange={(e) => {
+                       setUserName(e.target.value);
+                       setUserNameValidationEnabled(true)
+                   }}
                    placeholder={"Your Name"}/>
             <div className={"modal--button-container"}>
                 <input onClick={handleCancel} type={"button"} value={"Cancel"}

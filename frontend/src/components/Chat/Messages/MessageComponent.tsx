@@ -1,14 +1,12 @@
 import React, {KeyboardEvent, useState} from 'react';
-import {ReactionsDisplayer} from "./ReactionsDisplayer";
 import './MessageComponent.css';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
 import {faPencilAlt, faTrashAlt} from '@fortawesome/free-solid-svg-icons'
 import IO from "../../../controllers/IO";
 import {useObserver} from "mobx-react"
 import UIStore from "../../../stores/UIStore";
-import ChatStore from "../../../stores/ChatStore";
 import MessageContent from "./MessageContent";
-import {DirectMessage, GroupMessage, Message} from "../../../interfaces/Message";
+import {DirectMessage, GroupMessage} from "../../../interfaces/Message";
 
 //  startGroup={lastParticipant !== message.from.id || message.created - lastTime > 1000 * 60 * 5}
 //                                         key={message.id}
@@ -37,13 +35,13 @@ const MessageComponent: React.FunctionComponent<IMessageComponentProps> = ({star
         }
         if (e.key === "ArrowUp" && !userIsTyping) {
             cancelEdit();
-           // ChatStore.editNextMessage({messageId: messageId});
+            // ChatStore.editNextMessage({messageId: messageId});
             return;
         }
 
         if (e.key === "ArrowDown" && !userIsTyping) {
             cancelEdit();
-           // ChatStore.editPreviewMessage(messageId);
+            // ChatStore.editPreviewMessage(messageId);
             return;
         }
 
@@ -66,7 +64,7 @@ const MessageComponent: React.FunctionComponent<IMessageComponentProps> = ({star
         function textareaValue(): string {
             return editValue ?? message.content;
         }
-        
+
         return (
             <div className={
                 "message "

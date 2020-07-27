@@ -1,6 +1,6 @@
 import {types} from "mediasoup-client";
 import {computed, observable} from 'mobx';
-import {MediaSource, MediaState, ParticipantRole, ParticipantSummary} from "@bitlink/common";
+import {MediaSource, ParticipantRole, ParticipantSummary} from "@bitlink/common";
 
 export default class Participant {
     @observable info: ParticipantSummary;
@@ -15,12 +15,12 @@ export default class Participant {
     }
 
     @computed
-    get mentionString(){
+    get mentionString() {
         return this.info.name.replace(/\s+/g, '');
     }
 
     @computed
-    get isHost(){
+    get isHost() {
         return this.info.role === ParticipantRole.HOST;
     }
 

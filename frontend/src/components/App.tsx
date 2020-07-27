@@ -7,7 +7,6 @@ import ChatContainer from "./Chat/ChatContainer";
 import Modal from "./Modals/Modal";
 import UIStore from "../stores/UIStore";
 import NotificationViewer from "./NotificationViewer";
-import NotificationStore from "../stores/NotificationStore";
 import msToTime from "../util/msToTime";
 import Footer from "./Footer/Footer";
 import NotificationService from "../services/NotificationService";

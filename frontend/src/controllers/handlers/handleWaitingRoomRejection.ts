@@ -1,5 +1,4 @@
 import {handleEvent} from "../../interfaces/handleEvent";
-import NotificationStore from "../../stores/NotificationStore";
 import UIStore from "../../stores/UIStore";
 import NotificationService from "../../services/NotificationService";
 import {NotificationType} from "../../enum/NotificationType";

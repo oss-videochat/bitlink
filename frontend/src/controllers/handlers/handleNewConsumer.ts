@@ -1,6 +1,5 @@
 import {handleEvent} from "../../interfaces/handleEvent";
-import {MediaType, MediaSource} from "@bitlink/common";
-import ParticipantsStore from "../../stores/ParticipantsStore";
+import {MediaSource, MediaType} from "@bitlink/common";
 import MyInfo from "../../stores/MyInfoStore";
 import debug from "../../util/debug";
 import ParticipantService from "../../services/ParticipantService";

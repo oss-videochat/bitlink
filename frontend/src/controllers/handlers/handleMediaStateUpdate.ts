@@ -1,5 +1,4 @@
 import {handleEvent} from "../../interfaces/handleEvent";
-import ParticipantsStore from "../../stores/ParticipantsStore";
 import {MediaAction, MediaSource} from "@bitlink/common";
 import debug from "../../util/debug";
 import ParticipantService from "../../services/ParticipantService";
@@ -22,9 +21,9 @@ export const handleMediaStateUpdate: handleEvent<handleMediaStateUpdateParam> = 
         return;
     }
     log("Media state update %s: %s - %s", participant.info.name, update.source, update.action);
-    if(participant.consumers[update.source]){
+    if (participant.consumers[update.source]) {
         participant.consumers[update.source]![update.action]();
-        if(update.action === "close"){
+        if (update.action === "close") {
             participant.consumers[update.source] = null;
         }
     }

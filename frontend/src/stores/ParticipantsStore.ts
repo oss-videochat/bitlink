@@ -1,7 +1,5 @@
 import {observable} from "mobx"
 import Participant from "../models/Participant";
-import {ParticipantRole} from "@bitlink/common";
-import MyInfo from "./MyInfoStore";
 
 class ParticipantsStore {
     @observable public participants: Participant[] = [];

@@ -52,6 +52,7 @@ class RoomService {
 
     static destroy(room: Room) {
         log("Room destroyed %s" + room.settings.name);
+        room.participants.forEach(ParticipantService.leave);
         room.router.close();
         RoomService.broadcast(room, "destroy");
         delete RoomStore.rooms[room.id]
@@ -124,16 +125,25 @@ class RoomService {
         }
     }
 
+    static closeRoomIfNecessary(room: Room){
+        if(room.participants.filter(participant => participant.role === ParticipantRole.HOST).length === 0){
+            RoomService.destroy(room);
+        }
+    }
+
     static participantLeft(room: Room, participant: Participant) {
         ParticipantService.leave(participant);
         MediasoupPeerService.destroy(participant.mediasoupPeer);
         RoomService.broadcast(room, "participant-left", [], {participantId: participant.id});
+        RoomService.closeRoomIfNecessary(room);
     }
 
     static participantDisconnected(room: Room, participant: Participant) {
         ParticipantService.disconnect(participant);
         MediasoupPeerService.destroy(participant.mediasoupPeer);
         RoomService.broadcast(room, "participant-left", [], {participantId: participant.id});
+        RoomService.broadcast(room, "participant-left", [], {participantId: participant.id});
+        RoomService.closeRoomIfNecessary(room);
     }
 
     static participantChangedName(room: Room, participant: Participant, newName: string) {
@@ -269,6 +279,7 @@ class RoomService {
     }
 
     static deleteMessage(room: Room, message: Message) {
+        log("Participant deleting message: %s", message.id);
         const index = RoomService._getMessageIndex(room, message.id);
         if (index) {
             room.messages.splice(index, 1);
@@ -307,6 +318,7 @@ class RoomService {
         participant.socket.on("connect-transport", pw(Handlers.handleConnectTransport));
         participant.socket.on("create-producer", pw(Handlers.handleCreateProducer));
         participant.socket.on("waiting-room-decision", pw(Handlers.handleWaitingRoomDecision));
+        participant.socket.on("end-room", pw(Handlers.handleEndRoom));
 
         RoomService.broadcast(room, "new-participant", [participant], {participantSummary: ParticipantService.getSummary(participant)});
     }

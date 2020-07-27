@@ -30,8 +30,7 @@ class ChatStoreService {
     @action
     static removeMessage(id: string) {
         const index = ChatStore.messageStore.findIndex(aMessage => aMessage.id === id);
-        ;
-        if (index) {
+        if (index >= 0) {
             ChatStore.messageStore.splice(index, 1);
         }
     }
@@ -48,7 +47,7 @@ class ChatStoreService {
 
     static getMessages(type: MessageType, roomId: string) {
         return ChatStore.messageStore.filter(aMessage => {
-            let idMatch: boolean = false;
+            let idMatch = false;
             if (aMessage.type === MessageType.GROUP && (aMessage as GroupMessage).group.id === roomId) {
                 idMatch = true;
             }
@@ -61,11 +60,12 @@ class ChatStoreService {
             }
 
             if (type === MessageType.GROUP) {
-                if (RoomStore.groups[0].id === roomId && aMessage.type === MessageType.SYSTEM) {
+                if (RoomStore.groups[0]?.id === roomId && aMessage.type === MessageType.SYSTEM) {
                     return true;
                 }
                 return idMatch
             }
+            return idMatch;
         });
     }
 }

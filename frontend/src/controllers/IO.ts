@@ -368,7 +368,6 @@ class IO {
             return false;
         }
 
-        ChatStoreService.editMessage(messageId, content);
         return true;
     }
 
@@ -381,7 +380,6 @@ class IO {
             console.error("Deleting Error: " + response.error);
             return false;
         }
-        ChatStoreService.removeMessage(messageId);
         return true;
     }
 

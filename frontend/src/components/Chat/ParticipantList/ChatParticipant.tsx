@@ -64,9 +64,8 @@ const ChatParticipant: React.FunctionComponent<IChatParticipantProps> = ({onChos
                         : null
                     }
                 </div>
-                {lastMessage ?
-                    <span data-private={""} className={"chat-participant--content"}>{lastMessage}</span>
-                    : null
+                {lastMessage &&
+                    <span data-private={""} className={"chat-participant--content"}>{lastMessage.content}</span>
                 }
             </div>
         )

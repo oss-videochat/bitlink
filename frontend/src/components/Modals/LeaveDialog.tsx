@@ -29,9 +29,15 @@ const LeaveDialog: React.FunctionComponent = () => {
             }
             {
                 transferHostOpen &&
-                    <ParticipantList onTransfer={() => IO._leave()}/>
+                    <ParticipantList onTransfer={() => {
+                        IO._leave();
+                        UIStore.store.modalStore.leaveMenu = false
+                    }}/>
             }
-            <input type={"button"} onClick={() => IO.endRoomForAll().catch(console.error)} value={"End Room for All"} className={"modal--button leave-button"}/>
+            <input type={"button"} onClick={() => {
+                IO.endRoomForAll().catch(console.error)
+                UIStore.store.modalStore.leaveMenu = false
+            }} value={"End Room for All"} className={"modal--button leave-button"}/>
             <input type={"button"} onClick={() => UIStore.store.modalStore.leaveMenu = false} value={"Cancel"} className={"modal--button leave-button-cancel"}/>
         </div>
     );

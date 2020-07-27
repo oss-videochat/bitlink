@@ -16,7 +16,6 @@ const ParticipantList: React.FunctionComponent<IParticipantListProps> = ({onTran
             {
                 ParticipantService
                     .getLiving(true)
-                    .slice(2)
                     .map(participant => {
                         return (
                             <div key={participant.info.id} className={"participant"}>

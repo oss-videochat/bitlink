@@ -161,7 +161,7 @@ export class TileContainer extends React.Component<any, any> {
                 }
 
                 <div data-private={""} className={"videos-list-wrapper"}>
-                    {ParticipantsStore.participants.length > 3 ?
+                    {ParticipantsStore.participants.length > 1 ? // if your alone display the placeholder
                         [
                             ...participantsMedia.map((participant, i, arr) => {
                                 if (participant.hasVideo) {

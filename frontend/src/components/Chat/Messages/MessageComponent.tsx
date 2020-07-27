@@ -66,7 +66,7 @@ const MessageComponent: React.FunctionComponent<IMessageComponentProps> = ({star
         function textareaValue(): string {
             return editValue ?? message.content;
         }
-
+        
         return (
             <div className={
                 "message "

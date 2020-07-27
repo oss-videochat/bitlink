@@ -126,7 +126,7 @@ class RoomService {
     }
 
     static closeRoomIfNecessary(room: Room){
-        if(room.participants.filter(participant => participant.role === ParticipantRole.HOST).length === 0){
+        if(room.participants.filter(participant => participant.isConnected && participant.role === ParticipantRole.HOST).length === 0){
             RoomService.destroy(room);
         }
     }
@@ -148,7 +148,7 @@ class RoomService {
 
     static participantChangedName(room: Room, participant: Participant, newName: string) {
         log("Participant changing name %s --> %s", participant.name, newName);
-        ParticipantService.changeName(participant, name);
+        ParticipantService.changeName(participant, newName);
         RoomService.broadcast(room, "participant-changed-name", [participant], {
             participantId: participant.id,
             newName: participant.name
@@ -319,6 +319,7 @@ class RoomService {
         participant.socket.on("create-producer", pw(Handlers.handleCreateProducer));
         participant.socket.on("waiting-room-decision", pw(Handlers.handleWaitingRoomDecision));
         participant.socket.on("end-room", pw(Handlers.handleEndRoom));
+        participant.socket.once("transports-ready", pw(Handlers.handleTransportsReady));
 
         RoomService.broadcast(room, "new-participant", [participant], {participantSummary: ParticipantService.getSummary(participant)});
     }

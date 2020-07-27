@@ -52,7 +52,7 @@ class WebRTCRoomService {
                 return;
             }
             Object.keys(participantJoined.mediasoupPeer.producers).forEach(type => {
-                WebRTCRoomService.createConsumerAndNotify(room, participantJoined, participant, type as MediaSource);
+                WebRTCRoomService.createConsumerAndNotify(room, participantJoined, participant, type as MediaSource).catch(console.error);
             });
         });
     }

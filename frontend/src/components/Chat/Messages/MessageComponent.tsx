@@ -8,40 +8,44 @@ import UIStore from "../../../stores/UIStore";
 import MessageContent from "./MessageContent";
 import {DirectMessage, GroupMessage} from "../../../interfaces/Message";
 
-//  startGroup={lastParticipant !== message.from.id || message.created - lastTime > 1000 * 60 * 5}
-//                                         key={message.id}
-//                                         messageId={message.id}
-//                                         fromMe={message.from.id === MyInfo.info!.id}
-//                                         message={message}
-
 interface IMessageComponentProps {
     startGroup: boolean,
     messageId: string,
     fromMe: boolean,
-    message: GroupMessage | DirectMessage
+    message: GroupMessage | DirectMessage,
+    nextEdit?: () => void,
+    previousEdit?: () => void
 }
 
-const MessageComponent: React.FunctionComponent<IMessageComponentProps> = ({startGroup, message, fromMe, messageId}) => {
+const MessageComponent: React.FunctionComponent<IMessageComponentProps> = ({startGroup, message, fromMe, messageId, nextEdit, previousEdit}) => {
     const [userIsTyping, setUserIsTyping] = useState(false);
     const [editValue, setEditValue] = useState<null | string>(null);
 
     function handleKeyDown(e: KeyboardEvent<HTMLTextAreaElement>) {
         if (e.key === "Enter" && !e.shiftKey) {
             e.preventDefault();
-            if (editValue!.trim().length > 0) {
+            if(!editValue){
+                cancelEdit();
+                return;
+            }
+            if (editValue.trim().length > 0) {
                 cancelEdit();
                 IO.edit(messageId, editValue!);
             }
         }
         if (e.key === "ArrowUp" && !userIsTyping) {
             cancelEdit();
-            // ChatStore.editNextMessage({messageId: messageId});
+            if(nextEdit){
+                nextEdit();
+            }
             return;
         }
 
         if (e.key === "ArrowDown" && !userIsTyping) {
             cancelEdit();
-            // ChatStore.editPreviewMessage(messageId);
+            if(previousEdit){
+                previousEdit();
+            }
             return;
         }
 

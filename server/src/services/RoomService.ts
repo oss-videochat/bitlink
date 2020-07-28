@@ -12,6 +12,7 @@ import {handleParticipantEvent} from "../interfaces/handleEvent";
 import {UpdateRoomSettingsValidation} from "../helpers/validation/UpdateRoomSettings";
 import {DirectMessage, GroupMessage, Message, SystemMessage} from "../interfaces/Message";
 import * as Handlers from "../handlers/participantHandlers";
+import MessageGroupService from "./MessageGroupService";
 import cryptoRandomString = require("crypto-random-string");
 
 const log = debug("Services:RoomService");
@@ -24,7 +25,7 @@ class RoomService {
             id,
             idHash: crypto.createHash('md5').update(id).digest("hex"),
             latestMessage: {},
-            messageGroups: [],
+            messageGroups: [MessageGroupService.create(settings.name)],
             messages: [],
             participants: [],
             router: router,
@@ -77,7 +78,7 @@ class RoomService {
             room.waitingRoom.push(participant);
             RoomService.broadcastHosts(room, "new-waiting-room-participant", {
                 participant: ParticipantService.getSummary(participant)
-            })
+            });
             return {
                 success: false,
                 error: "In waiting room",
@@ -141,7 +142,6 @@ class RoomService {
     static participantDisconnected(room: Room, participant: Participant) {
         ParticipantService.disconnect(participant);
         MediasoupPeerService.destroy(participant.mediasoupPeer);
-        RoomService.broadcast(room, "participant-left", [], {participantId: participant.id});
         RoomService.broadcast(room, "participant-left", [], {participantId: participant.id});
         RoomService.closeRoomIfNecessary(room);
     }
@@ -231,6 +231,9 @@ class RoomService {
             this.broadcast(room, "updated-room-settings", RoomService.getConnectedParticipants(room).filter(participant => participant.role === ParticipantRole.HOST), {newSettings: safeVersion});
         }
         room.settings = newSettings;
+        if (room.settings.name !== room.messageGroups[0].name) {
+            MessageGroupService.changeName(room.messageGroups[0], room.settings.name);
+        }
         RoomService.broadcast(room, "updated-room-settings-host", RoomService.getConnectedParticipants(room).filter(participant => participant.role !== ParticipantRole.HOST), {newSettings});
     }
 
@@ -322,6 +325,7 @@ class RoomService {
         participant.socket.once("transports-ready", pw(Handlers.handleTransportsReady));
 
         RoomService.broadcast(room, "new-participant", [participant], {participantSummary: ParticipantService.getSummary(participant)});
+        MessageGroupService.addParticipant(room.messageGroups[0], participant);
     }
 
     private static _getSafeSettings(settings: RoomSettings) {

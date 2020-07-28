@@ -29,6 +29,9 @@ import RoomService from "../services/RoomService";
 import MyInfoService from "../services/MyInfoService";
 import ChatStoreService from "../services/ChatStoreService";
 import HardwareService from "../services/HardwareService";
+import {MessageGroupSummary} from "@bitlink/common";
+import {MessageGroup} from "../interfaces/MessageGroup";
+import ParticipantsStore from "../stores/ParticipantsStore";
 
 const log = debug("IO");
 
@@ -80,6 +83,10 @@ class IO {
 
         this.io.on("updated-room-settings", iw(Handlers.handleUpdatedRoomSettings));
         this.io.on("updated-room-settings-host", iw(Handlers.handleUpdatedRoomSettings));
+
+        this.io.on("added-to-group", iw(Handlers.handleAddedToGroup));
+        this.io.on("group-update-name", iw(Handlers.handleGroupUpdateName));
+        this.io.on("participant-joined-group", iw(Handlers.handleNewGroupParticipant));
 
 
         this.io.on("new-message", iw(Handlers.handleNewMessage));
@@ -310,6 +317,13 @@ class IO {
             default: {
                 throw "Unknown type"
             }
+        }
+    }
+
+    convertMessageGroupSummaryToMessageGroup(summary: MessageGroupSummary): MessageGroup {
+        return {
+            ...summary,
+            members: summary.members.map(id => ParticipantService.getById(id)!)
         }
     }
 

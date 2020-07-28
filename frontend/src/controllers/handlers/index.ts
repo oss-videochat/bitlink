@@ -14,3 +14,6 @@ export * from './handleNewMessage';
 export * from './handleEditMessage';
 export * from './handleDeleteMessage';
 export * from './handleNewConsumer';
+export * from './handleAddedToGroup';
+export * from './handleGroupUpdateName';
+export * from './handleNewGroupParticipant';

@@ -4,6 +4,7 @@ import './ChatInput.css';
 import Participant from "../../models/Participant";
 import {SelectedRoom} from "./ChatContainer";
 import ParticipantService from "../../services/ParticipantService";
+import ChatStoreService from "../../services/ChatStoreService";
 
 interface IChatInputProps {
     selectedRoom: SelectedRoom
@@ -24,7 +25,7 @@ const ChatInput: React.FunctionComponent<IChatInputProps> = ({selectedRoom}) => 
             }
         }
         if (e.key === "ArrowUp" && inputValue === "") {
-            // ChatStoreService.editNextMessage({selectedUser});
+            ChatStoreService.editNextMessage(selectedRoom.type, selectedRoom.id);
         }
     }
 
@@ -64,7 +65,7 @@ const ChatInput: React.FunctionComponent<IChatInputProps> = ({selectedRoom}) => 
         if (indexOfNextSpace > 0) {
             setInputValue(firstPart + inputValue.substring(indexOfNextSpace));
         } else {
-            setInputValue(firstPart);
+            setInputValue(firstPart + " ");
         }
         setSelectionLocation(firstPart.length + 1);
     }

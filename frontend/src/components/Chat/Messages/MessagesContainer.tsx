@@ -85,6 +85,8 @@ const MessagesContainer: React.FunctionComponent<IMessagesContainerProps> = ({se
                                             messageId={groupMessage.id}
                                             fromMe={groupMessage.from.info.id === MyInfo.participant!.id}
                                             message={groupMessage}
+                                            nextEdit={() => ChatStoreService.editNextMessage(selectedRoom.type, selectedRoom.id, message)}
+                                            previousEdit={() => ChatStoreService.editPreviousMessage(selectedRoom.type, selectedRoom.id, message)}
                                         />;
                                         lastParticipant = groupMessage.group.id;
                                         break;
@@ -97,6 +99,8 @@ const MessagesContainer: React.FunctionComponent<IMessagesContainerProps> = ({se
                                             messageId={directMessage.id}
                                             fromMe={directMessage.from.info.id === MyInfo.participant!.id}
                                             message={directMessage}
+                                            nextEdit={() => ChatStoreService.editNextMessage(selectedRoom.type, selectedRoom.id, message)}
+                                            previousEdit={() => ChatStoreService.editPreviousMessage(selectedRoom.type, selectedRoom.id, message)}
                                         />;
                                         lastParticipant = directMessage.from.info.id;
                                     }

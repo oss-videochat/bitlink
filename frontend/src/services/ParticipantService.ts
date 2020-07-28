@@ -36,7 +36,6 @@ class ParticipantService {
             mentionString = mentionString.substring(1);
         }
         return ParticipantsStore.participants
-            .slice(2)
             .filter(participant =>
                 participant
                     .mentionString
@@ -51,7 +50,6 @@ class ParticipantService {
             mentionString = mentionString.substring(1);
         }
         return ParticipantsStore.participants
-            .slice(2)
             .filter(participant => participant.mentionString.toLowerCase() === mentionString);
     }
 }

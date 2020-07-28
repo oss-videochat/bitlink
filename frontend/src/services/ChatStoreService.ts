@@ -3,6 +3,8 @@ import {action} from "mobx";
 import ChatStore from "../stores/ChatStore";
 import {MessageType} from "@bitlink/common"
 import RoomStore from "../stores/RoomStore";
+import MyInfoStore from "../stores/MyInfoStore";
+import UIStore from "../stores/UIStore";
 
 class ChatStoreService {
     static reset() {
@@ -23,7 +25,14 @@ class ChatStoreService {
     static getLatestMessage(type: MessageType.GROUP | MessageType.DIRECT, id: string) {
         return ChatStore.messageStore.slice().reverse().find(aMessage => (
             aMessage.type !== MessageType.SYSTEM
-            && (type === MessageType.GROUP ? (aMessage as GroupMessage).group.id : (aMessage as DirectMessage).from.info.id) === id
+            && type === aMessage.type
+            && (type === MessageType.GROUP ?
+                    (aMessage as GroupMessage).group.id === id
+                    : (
+                        (aMessage as DirectMessage).from.info.id === id
+                        || (aMessage as DirectMessage).to.info.id === id
+                    )
+            )
         ));
     }
 
@@ -66,6 +75,44 @@ class ChatStoreService {
                 return idMatch
             }
             return idMatch;
+        });
+    }
+
+    static editNextMessage(type: MessageType, roomId: string, message?: Message) {
+        const messagesInChat = ChatStoreService.getMessages(type, roomId);
+        if(!message){
+            UIStore.store.messageIdEditControl = messagesInChat[messagesInChat.length - 1]?.id || null;
+            return;
+        }
+        const nextEditableMessage = ChatStoreService.getNextEditableMessage(messagesInChat.slice().reverse(), message);
+        if(nextEditableMessage){
+            UIStore.store.messageIdEditControl = nextEditableMessage.id;
+        }
+    }
+
+    static editPreviousMessage(type: MessageType, roomId: string, message: Message) {
+        const messagesInChat = ChatStoreService.getMessages(type, roomId);
+        const previousMessage = ChatStoreService.getNextEditableMessage(messagesInChat, message);
+        if(previousMessage){
+            UIStore.store.messageIdEditControl = previousMessage.id;
+        }
+    }
+
+    private static getNextEditableMessage(messages: Message[], message: Message){
+        let hit = false;
+        return messages.find(messageInChat => {
+            if(messageInChat.type !== MessageType.DIRECT && messageInChat.type !== MessageType.GROUP){ // you can't edit a system message
+                return false;
+            }
+            const userMessageInChat = messageInChat as GroupMessage | DirectMessage;
+            if(hit
+                && userMessageInChat.from.info.id === MyInfoStore.participant!.id){ // must be editable
+                return true;
+            }
+            if(messageInChat.id === message.id){
+                hit = true;
+            }
+            return false;
         });
     }
 }

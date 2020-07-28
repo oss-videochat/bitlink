@@ -231,7 +231,6 @@ class IO {
 
             transport.on("connect", async ({dtlsParameters}, callback, errback) => {
                 log("Transport connect event emitted");
-                console.log(dtlsParameters);
                 const response = await this.socketRequest("connect-transport", {
                     transportId: transport.id,
                     dtlsParameters: dtlsParameters

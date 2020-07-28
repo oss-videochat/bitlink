@@ -10,4 +10,7 @@ interface handleAddedToGroupParam {
 export const handleAddedToGroup: handleEvent<handleAddedToGroupParam> = ({groupSummary}, cb) => {
     const group = IO.convertMessageGroupSummaryToMessageGroup(groupSummary);
     RoomStore.groups.push(group);
+    if(RoomStore.groups.length === 1){ // if its the room group, select it
+
+    }
 };

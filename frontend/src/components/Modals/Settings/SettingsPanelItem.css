@@ -1,0 +1,28 @@
+.settings--item {
+    color: #8d9db2;
+    width: 100%;
+    padding: 30px 10px;
+    text-align: center;
+    border-bottom: 2px solid #0c0c11;
+}
+
+.settings--item:hover {
+    color: white;
+    background: #303444;
+}
+
+.settings--item.selected {
+    color: white;
+    background: #14171f;
+    border-right: none;
+}
+
+
+.settings--item:last-child {
+    border: none;
+}
+
+.settings--item--icon {
+    font-size: 25px;
+    display: block;
+}

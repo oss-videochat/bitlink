@@ -8,7 +8,7 @@ import AudioTile from "./AudioTile";
 import TilePlaceholder from "./TilePlaceholder";
 import MyInfo from "../../stores/MyInfoStore";
 import UIStore from "../../stores/UIStore";
-import {LayoutSizeCalculation} from "../../util/LayoutSizeCalculation";
+import {LayoutSizeCalculation} from "../../util/layout/LayoutSizeCalculation";
 import Participant from "../../models/Participant";
 import IO from "../../controllers/IO";
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'

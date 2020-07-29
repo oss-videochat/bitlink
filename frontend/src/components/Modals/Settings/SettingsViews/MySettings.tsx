@@ -37,7 +37,6 @@ const MySettings: React.FunctionComponent<ISettingsPanelProps> = ({events, chang
 
     useEffect(() => {
         updateDeviceList();
-
     }, []);
 
     useEffect(() => {
@@ -78,6 +77,7 @@ const MySettings: React.FunctionComponent<ISettingsPanelProps> = ({events, chang
     return (
         <div className={"settings-view"}>
             <h2 className={"modal--title"}>My Settings</h2>
+            <h3>General</h3>
             <label>
                 Name
                 <input data-private={"lipsum"} className={"modal--input"}
@@ -86,8 +86,9 @@ const MySettings: React.FunctionComponent<ISettingsPanelProps> = ({events, chang
                        }}
                        value={nameInput} placeholder={"Name"}/>
             </label>
+            <h3>Input Settings</h3>
             <label>
-                Camera Input
+                Camera Input:
                 <select onChange={(e) => handleInputChange("video", e)} className={"modal--select"}
                         value={preferredVideo ?? undefined}>
                     {deviceList
@@ -101,7 +102,7 @@ const MySettings: React.FunctionComponent<ISettingsPanelProps> = ({events, chang
             </label>
 
             <label>
-                Audio Input
+                Audio Input:
                 <select onChange={(e) => handleInputChange("audio", e)} className={"modal--select"}
                         value={preferredAudio ?? undefined}>
                     {deviceList

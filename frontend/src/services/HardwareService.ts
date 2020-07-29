@@ -11,7 +11,7 @@ class HardwareService {
         localStorage.setItem(`preferred-${kind}-input`, deviceId);
     }
 
-    static async getStream(source: MediaSource): Promise<MediaStream> {
+    static async getRawStream(source: MediaSource): Promise<MediaStream> {
         if (source === "screen") {
             // @ts-ignore
             return await navigator.mediaDevices.getDisplayMedia().catch(e => console.error(e.toString()));
@@ -50,6 +50,13 @@ class HardwareService {
         MyInfoStore.preferredInputs[mediaType] = MyInfoStore.cachedStreams[source]!.getTracks()[0].getSettings().deviceId!;
 
         return MyInfoStore.cachedStreams[source]!;
+    }
+
+    static async getStream(source: MediaSource): Promise<MediaStream> {
+       if(source === "camera"){
+
+       }
+       return await HardwareService.getRawStream(source);
     }
 }
 

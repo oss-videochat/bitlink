@@ -38,3 +38,7 @@
 .settings--button-control .modal--button.cancel:hover {
     background: #d04e53;
 }
+
+.settings-view h3 {
+    margin: 10px 0;
+}

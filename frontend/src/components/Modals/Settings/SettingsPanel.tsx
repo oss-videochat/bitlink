@@ -1,9 +1,9 @@
 import React from 'react';
 import './SettingsPanel.css'
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
-import {faDoorClosed, faExclamationCircle, faUserCog, faUsers} from '@fortawesome/free-solid-svg-icons'
 import MyInfo from "../../../stores/MyInfoStore";
 import {SettingsPanels} from "../../../enum/SettingsPanels";
+import SettingsPanelItem from "./SettingsPanelItem";
+import {faDoorClosed, faExclamationCircle, faUserCog, faUsers} from "@fortawesome/free-solid-svg-icons";
 
 interface ISettingsPanelProps {
     selected: SettingsPanels,
@@ -13,33 +13,13 @@ interface ISettingsPanelProps {
 const SettingsPanel: React.FunctionComponent<ISettingsPanelProps> = ({onSelect, selected}) => (
     <div className={"settings-panel"}>
         {
-            MyInfo.isHost ?
-                <div onClick={() => onSelect(SettingsPanels.RoomSettings)}
-                     className={"settings--item " + (selected === SettingsPanels.RoomSettings ? "selected" : "")}>
-                            <span className={"settings--item--icon"}>
-                                <FontAwesomeIcon icon={faDoorClosed}/>
-                            </span>
-                </div>
-                : null
+            MyInfo.isHost &&
+                <SettingsPanelItem panel={SettingsPanels.RoomSettings} onSelect={onSelect} selected={selected} icon={faDoorClosed} text={"Room Settings"}/>
         }
-        <div onClick={() => onSelect(SettingsPanels.Participants)}
-             className={"settings--item " + (selected === SettingsPanels.Participants ? "selected" : "")}>
-                    <span className={"settings--item--icon"}>
-                        <FontAwesomeIcon icon={faUsers}/>
-                    </span>
-        </div>
-        <div onClick={() => onSelect(SettingsPanels.MySettings)}
-             className={"settings--item " + (selected === SettingsPanels.MySettings ? "selected" : "")}>
-                    <span className={"settings--item--icon"}>
-                        <FontAwesomeIcon icon={faUserCog}/>
-                    </span>
-        </div>
-        <div onClick={() => onSelect(SettingsPanels.Report)}
-             className={"settings--item " + (selected === SettingsPanels.Report ? "selected" : "")}>
-                    <span className={"settings--item--icon"}>
-                        <FontAwesomeIcon icon={faExclamationCircle}/>
-                    </span>
-        </div>
+        <SettingsPanelItem panel={SettingsPanels.Participants} onSelect={onSelect} selected={selected} icon={faUsers} text={"Participant List"}/>
+        <SettingsPanelItem panel={SettingsPanels.MySettings} onSelect={onSelect} selected={selected} icon={faUserCog} text={"My Settings"}/>
+        <SettingsPanelItem panel={SettingsPanels.CameraSettings} onSelect={onSelect} selected={selected} icon={faUserCog} text={"Camera Settings"}/>
+        <SettingsPanelItem panel={SettingsPanels.Report} onSelect={onSelect} selected={selected} icon={faExclamationCircle} text={"Report"}/>
     </div>
 );
 export default SettingsPanel;

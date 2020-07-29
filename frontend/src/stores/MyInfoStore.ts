@@ -45,7 +45,6 @@ class MyInfoStore {
     get isHost() {
         return this.participant?.role === ParticipantRole.HOST;
     }
-
 }
 
 export default new MyInfoStore();

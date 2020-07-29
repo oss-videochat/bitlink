@@ -6,6 +6,7 @@ import {RoomSettings} from "./SettingsViews/RoomSettings";
 import Participants from "./SettingsViews/Participants";
 import Report from "./SettingsViews/Report";
 import * as Events from 'events';
+import VideoEffects from "./SettingsViews/VideoEffects";
 
 interface ISettingsViewerProps {
     selected: SettingsPanels,
@@ -31,6 +32,8 @@ const SettingsViewer: React.FunctionComponent<ISettingsViewerProps> = ({selected
                 return RoomSettings;
             case SettingsPanels.Participants:
                 return Participants;
+            case SettingsPanels.CameraSettings:
+                return VideoEffects;
             case SettingsPanels.Report:
                 return Report;
         }
@@ -43,7 +46,10 @@ const SettingsViewer: React.FunctionComponent<ISettingsViewerProps> = ({selected
             <View handleChangesMade={handleChangesMade} changesMade={changesMade}
                   events={events}/>
             <div className={"settings--button-control"}>
-                <input data-private={"lipsum"} onClick={cancel} type={"button"} value={"Cancel"}
+                <input data-private={"lipsum"} onClick={() => {
+                    events.emit("cancel");
+                    cancel();
+                }} type={"button"} value={"Cancel"}
                        className={"modal--button cancel"}/>
                 <input data-private={"lipsum"} onClick={save} type={"button"} value={"Save"}
                        disabled={!changesMade} className={"modal--button save"}/>

@@ -102,7 +102,6 @@ class IO {
 
         reaction(() => StreamEffectStore.cameraStreamEffectRunner, () => {
             if (MyInfo.participant!.mediaState.camera) {
-                MyInfo.producers.camera!.track!.stop();
                 HardwareService.getStream("camera").then((stream) => {
                     MyInfo.producers.camera!.replaceTrack({track: stream.getVideoTracks()[0]});
                 });
@@ -124,7 +123,6 @@ class IO {
                 && MyInfo.producers.microphone.track?.getSettings().deviceId !== MyInfo.preferredInputs.audio
             ) {
                 log("Preferred audio input changed detected");
-                MyInfo.producers.microphone.track!.stop();
                 HardwareService.getStream("microphone").then((stream) => {
                     MyInfo.producers.microphone!.replaceTrack({track: stream.getAudioTracks()[0]});
                 });
@@ -136,7 +134,6 @@ class IO {
             ) {
                 log("Preferred video input changed detected");
                 await StreamEffectService.generateNewEffectRunner();
-                MyInfo.producers.camera.track!.stop();
                 HardwareService.getStream("camera").then((stream) => {
                     MyInfo.producers.camera!.replaceTrack({track: stream.getVideoTracks()[0]});
                 });
@@ -354,6 +351,7 @@ class IO {
         }
         log("Producing media: %s", source);
         MyInfo.producers[source] = await MyInfo.transports.sending!.produce({
+            stopTracks: false,
             track: stream.getTracks()[0],
             appData: {source}
         });

@@ -39,13 +39,13 @@ class CameraStreamEffectsRunner {
 
     private imageData: ImageData | null = null;
     private blur: boolean = false;
+    private outStream: MediaStream | null = null;
 
     constructor(bpModel: bodyPix.BodyPix, stream: MediaStream, blur: boolean, image?: HTMLImageElement) {
         this.bpModel = bpModel;
         this.stream = stream;
 
         this.blur = blur;
-
 
         this.tmpVideo.addEventListener('loadedmetadata', () => {
             this.setNewSettings(blur, image);
@@ -60,12 +60,13 @@ class CameraStreamEffectsRunner {
             finalCanvasCtx.drawImage(this.tmpVideo, 0, 0);
         });
 
-        this.tmpVideo.srcObject = stream;
-
         this.tmpVideo.addEventListener('loadeddata', () => {
             this.tmpVideo.play();
             this.tick();
         });
+
+        this.tmpVideo.srcObject = stream;
+
 
 
         this.tmpVideo.srcObject = stream;
@@ -202,8 +203,11 @@ class CameraStreamEffectsRunner {
     }
 
     getStream() {
-        // @ts-ignore
-        return this.finalCanvas.captureStream();
+        if(!this.outStream){
+            // @ts-ignore
+            this.outStream = this.finalCanvas.captureStream();
+        }
+        return this.outStream as MediaStream;
     }
 }
 

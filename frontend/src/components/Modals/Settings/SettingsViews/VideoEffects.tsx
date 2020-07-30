@@ -61,6 +61,7 @@ const VideoEffects: React.FunctionComponent<ISettingsPanelProps> = ({events, cha
         async function onSave(cb: () => void) {
             if(!shouldBlur && !image){
                 StreamEffectService.endEffects();
+                cb();
                 return;
             }
             if(shouldBlur){

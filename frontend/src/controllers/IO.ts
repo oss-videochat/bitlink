@@ -14,6 +14,7 @@ import {
     GroupMessageSummary,
     MediaAction,
     MediaSource,
+    MessageGroupSummary,
     MessageSummary,
     MessageType,
     ParticipantSummary,
@@ -29,9 +30,9 @@ import RoomService from "../services/RoomService";
 import MyInfoService from "../services/MyInfoService";
 import ChatStoreService from "../services/ChatStoreService";
 import HardwareService from "../services/HardwareService";
-import {MessageGroupSummary} from "@bitlink/common";
 import {MessageGroup} from "../interfaces/MessageGroup";
-import ParticipantsStore from "../stores/ParticipantsStore";
+import StreamEffectService from "../services/StreamEffectService";
+import StreamEffectStore from "../stores/StreamEffectStore";
 
 const log = debug("IO");
 
@@ -99,6 +100,15 @@ class IO {
 
         this.io.on("new-consumer", iw(Handlers.handleNewConsumer));
 
+        reaction(() => StreamEffectStore.cameraStreamEffectRunner, () => {
+            if (MyInfo.participant!.mediaState.camera) {
+                MyInfo.producers.camera!.track!.stop();
+                HardwareService.getStream("camera").then((stream) => {
+                    MyInfo.producers.camera!.replaceTrack({track: stream.getVideoTracks()[0]});
+                });
+            }
+        });
+
         reaction(() => {
             return {
                 audio: MyInfo.preferredInputs.audio,
@@ -106,7 +116,7 @@ class IO {
                 // no screen because we don't have a default
             }
 
-        }, (_) => {
+        }, async (_) => {
             log("Preferred input changed detected");
             if (
                 MyInfo.preferredInputs.audio
@@ -125,6 +135,7 @@ class IO {
                 && MyInfo.producers.camera.track?.getSettings().deviceId !== MyInfo.preferredInputs.video
             ) {
                 log("Preferred video input changed detected");
+                await StreamEffectService.generateNewEffectRunner();
                 MyInfo.producers.camera.track!.stop();
                 HardwareService.getStream("camera").then((stream) => {
                     MyInfo.producers.camera!.replaceTrack({track: stream.getVideoTracks()[0]});

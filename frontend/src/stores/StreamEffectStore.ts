@@ -1,9 +1,9 @@
 import {observable} from "mobx";
+import CameraStreamEffectsRunner from "../util/CameraStreamEffectsRunner";
 
 class StreamEffectStore {
-    @observable virtualBackground: boolean = false;
-    @observable virtualBackgroundImage: HTMLImageElement | null = null;
-    @observable virtualBackgroundImageData: ImageData | null = null;
-    @observable blurBackground: boolean = false;
+    @observable cameraStreamEffectRunner: CameraStreamEffectsRunner | null = null;
+    @observable image: HTMLImageElement | null = null;
+    @observable blur: boolean = false;
 }
 export default new StreamEffectStore();

@@ -1,5 +1,6 @@
 import MyInfoStore from "../stores/MyInfoStore";
 import {MediaSource, MediaSourceToTypeMap, MediaType} from '@bitlink/common';
+import StreamEffectStore from "../stores/StreamEffectStore";
 
 class HardwareService {
     static setPreferredInput(kind: "video" | "audio", deviceId: string | null) {
@@ -53,8 +54,8 @@ class HardwareService {
     }
 
     static async getStream(source: MediaSource): Promise<MediaStream> {
-       if(source === "camera"){
-
+       if(source === "camera" && StreamEffectStore.cameraStreamEffectRunner){
+           return await StreamEffectStore.cameraStreamEffectRunner.getStream();
        }
        return await HardwareService.getRawStream(source);
     }

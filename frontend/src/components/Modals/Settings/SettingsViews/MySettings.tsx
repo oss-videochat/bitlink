@@ -19,7 +19,7 @@ const MySettings: React.FunctionComponent<ISettingsPanelProps> = ({events, chang
                     });
             };
 
-            HardwareService.getStream("camera")
+            HardwareService.getRawStream("camera")
                 .then((stream) => {
                     enumerate();
                 })

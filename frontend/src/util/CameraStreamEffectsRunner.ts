@@ -38,23 +38,17 @@ class CameraStreamEffectsRunner {
     private shouldContinue = true;
 
     private imageData: ImageData | null = null;
-    private readonly blur: boolean = false;
+    private blur: boolean = false;
 
     constructor(bpModel: bodyPix.BodyPix, stream: MediaStream, blur: boolean, image?: HTMLImageElement) {
         this.bpModel = bpModel;
         this.stream = stream;
 
-        if (blur && image) {
-            throw "I can't blur and replace image...well I can...but that would be stupid."
-        }
-
         this.blur = blur;
 
 
         this.tmpVideo.addEventListener('loadedmetadata', () => {
-            if(image){
-                this.generateImageData(image);
-            }
+            this.setNewSettings(blur, image);
             this.finalCanvas.width = this.tmpVideo.videoWidth;
             this.finalCanvas.height = this.tmpVideo.videoHeight;
             this.videoRenderCanvas.width = this.tmpVideo.videoWidth;
@@ -122,15 +116,17 @@ class CameraStreamEffectsRunner {
                 );
                 return;
             }
-            const dataL = liveData.data;
-            for (let x = 0; x < this.finalCanvas.width; x++) {
-                for (let y = 0; y < this.finalCanvas.height; y++) {
-                    let n = y * this.finalCanvas.width + x;
-                    if (segmentation.data[n] === 0) {
-                        dataL[n * 4] = this.imageData!.data[n * 4];
-                        dataL[n * 4 + 1] = this.imageData!.data[n * 4 + 1];
-                        dataL[n * 4 + 2] = this.imageData!.data[n * 4 + 2];
-                        dataL[n * 4 + 3] = this.imageData!.data[n * 4 + 3];
+            if(this.imageData) {
+                const dataL = liveData.data;
+                for (let x = 0; x < this.finalCanvas.width; x++) {
+                    for (let y = 0; y < this.finalCanvas.height; y++) {
+                        let n = y * this.finalCanvas.width + x;
+                        if (segmentation.data[n] === 0) {
+                            dataL[n * 4] = this.imageData!.data[n * 4];
+                            dataL[n * 4 + 1] = this.imageData!.data[n * 4 + 1];
+                            dataL[n * 4 + 2] = this.imageData!.data[n * 4 + 2];
+                            dataL[n * 4 + 3] = this.imageData!.data[n * 4 + 3];
+                        }
                     }
                 }
             }
@@ -138,7 +134,21 @@ class CameraStreamEffectsRunner {
         ctx.putImageData(liveData, 0, 0)
     }
 
-    generateImageData(img: HTMLImageElement) {
+    setNewSettings(blur: boolean, image?: HTMLImageElement){
+        if (blur && image) {
+            throw "I can't blur and replace image...well I can...but that would be stupid."
+        }
+        if(blur){
+            this.blur = blur;
+        }
+        if(image){
+            this.generateImageData(image);
+        } else {
+            this.imageData = null;
+        }
+    }
+
+    private generateImageData(img: HTMLImageElement) {
         /**
          * https://stackoverflow.com/a/21961894/7886229
          * By Ken Fyrstenberg Nilsen

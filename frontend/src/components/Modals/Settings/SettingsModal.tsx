@@ -1,5 +1,4 @@
-import React from 'react';
-import {observer} from "mobx-react"
+import React, {useRef, useState} from 'react';
 import SettingsPanel from "./SettingsPanel";
 import './SettingsModal.css';
 import SettingsViewer from "./SettingsViewer";
@@ -16,30 +15,25 @@ interface SettingsModalState {
     changesMade: boolean,
 }
 
-@observer
-export class SettingsModal extends React.Component<any, SettingsModalState> {
-    private events = new Events.EventEmitter();
 
-    constructor(props: any) {
-        super(props);
-        this.state = {
-            selectedPanel: MyInfo.isHost ? SettingsPanels.RoomSettings : SettingsPanels.Participants,
-            saveEnabled: false,
-            changesMade: false,
-        };
+export const SettingsModal: React.FunctionComponent = () => {
+    const [selectedPanel, setSelectedPanel] = useState(MyInfo.isHost ? SettingsPanels.RoomSettings : SettingsPanels.Participants);
+    const [saveEnabled, setSaveEnabled] = useState(false);
+    const [changesMade, setChangesMade] = useState(false);
+    const events = useRef(new Events.EventEmitter());
+
+    function handleChangesMade(isChangesMade: boolean) {
+        setChangesMade(isChangesMade);
     }
 
-    handleChangesMade(isChangesMade: boolean) {
-        this.setState({changesMade: isChangesMade});
+    function handleSelect(settings: SettingsPanels) {
+        setSelectedPanel(settings);
+        setSaveEnabled(false);
     }
 
-    handleSelect(settings: SettingsPanels) {
-        this.setState({selectedPanel: settings, saveEnabled: false});
-    }
-
-    handleSave() {
-        this.setState({saveEnabled: false});
-        this.events.emit("save", (err?: string) => {
+    function handleSave() {
+        setSaveEnabled(false);
+        events.current.emit("save", (err?: string) => {
             if (err) {
                 NotificationService.add(NotificationService.createUINotification(err, NotificationType.Error))
                 return;
@@ -49,23 +43,21 @@ export class SettingsModal extends React.Component<any, SettingsModalState> {
         });
     }
 
-    handleCancel() {
+    function handleCancel() {
         UIStore.store.modalStore.settings = false;
     }
 
-    render() {
-        return (
-            <div className={"dialog-modal settings-modal"}>
-                <SettingsPanel selected={this.state.selectedPanel}
-                               onSelect={this.handleSelect.bind(this)}/>
-                <SettingsViewer events={this.events}
-                                cancel={this.handleCancel.bind(this)}
-                                save={this.handleSave.bind(this)}
-                                selected={this.state.selectedPanel}
-                                changesMade={this.state.changesMade}
-                                handleChangesMade={this.handleChangesMade.bind(this)}
-                />
-            </div>
-        );
-    }
+    return (
+        <div className={"dialog-modal settings-modal"}>
+            <SettingsPanel selected={selectedPanel}
+                           onSelect={handleSelect}/>
+            <SettingsViewer events={events.current}
+                            cancel={handleCancel}
+                            save={handleSave}
+                            selected={selectedPanel}
+                            changesMade={changesMade}
+                            handleChangesMade={handleChangesMade}
+            />
+        </div>
+    );
 }

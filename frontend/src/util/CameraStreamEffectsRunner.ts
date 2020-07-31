@@ -1,6 +1,8 @@
 import * as bodyPix from '@tensorflow-models/body-pix';
 import '@tensorflow/tfjs-backend-webgl';
 import {PersonInferenceConfig} from "@tensorflow-models/body-pix/dist/body_pix_model";
+import debug from "./debug";
+const log = debug("CameraStreamEffectsRunner");
 
 const bpModelPromise = bodyPix.load({
     architecture: 'MobileNetV1',
@@ -136,6 +138,7 @@ class CameraStreamEffectsRunner {
     }
 
     setNewSettings(blur: boolean, image?: HTMLImageElement){
+        log("Updating Camera Effects " + JSON.stringify({blur, image: !!image}))
         if (blur && image) {
             throw "I can't blur and replace image...well I can...but that would be stupid."
         }

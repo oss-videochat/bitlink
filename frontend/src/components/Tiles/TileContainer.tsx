@@ -1,6 +1,6 @@
-import React from 'react';
-import {observer} from "mobx-react"
-import {observable, reaction} from "mobx"
+import React, {useEffect, useRef, useState} from 'react';
+import {useObserver} from "mobx-react"
+import {reaction} from "mobx"
 import './TileContainer.css';
 import ParticipantsStore from "../../stores/ParticipantsStore";
 import VideoTile from "./VideoTile";
@@ -25,6 +25,7 @@ import ScreenTile from "./ScreenTile";
 import ScreenShareSlash from "./ScreenshareSlash";
 import HardwareService from "../../services/HardwareService";
 import ParticipantService from "../../services/ParticipantService";
+import StreamEffectStore from "../../stores/StreamEffectStore";
 
 export interface ITileProps {
     flexBasis: string,
@@ -32,85 +33,98 @@ export interface ITileProps {
     maxWidth: string
 }
 
-@observer
-export class TileContainer extends React.Component<any, any> {
-    @observable
-    windowSize = {
+export const TileContainer: React.FunctionComponent = () => {
+    const [windowSize, setWindowSize] = useState({
         height: window.innerHeight,
         width: window.innerWidth
-    };
-    updateMediaListener = reaction(() => {
-        return MyInfo.preferredInputs.video;
-    }, this.updateMedia.bind(this));
-    private previewRef: React.RefObject<HTMLVideoElement> = React.createRef();
-    private containerRef: React.RefObject<HTMLDivElement> = React.createRef();
-    private updateBasis?: any;
+    });
 
-    constructor(props: any) {
-        super(props);
-        this.state = {
-            basis: 0,
-            maxWidth: 0,
-        };
-    }
+    const [basis, setBasis] = useState("0");
+    const [maxWidth, setMaxWidth] = useState("0");
+    const previewRef = useRef<HTMLVideoElement>(null);
+    const containerRef = useRef<HTMLDivElement>(null);
 
-    async updateMedia() {
-        if (!MyInfo.participant?.mediaState.camera) {
+    async function updateMedia() {
+        if (!MyInfo.participant?.mediaState.camera || !previewRef.current) {
             return;
         }
         const stream = await HardwareService.getStream("camera");
-        const srcObject: MediaStream | undefined = this.previewRef!.current!.srcObject as MediaStream | undefined;
+        const srcObject = previewRef.current.srcObject as MediaStream | undefined;
         if (srcObject?.getVideoTracks()[0].id !== stream.getVideoTracks()[0].id) {
-            this.previewRef!.current!.srcObject = stream;
+            previewRef.current!.srcObject = stream;
         }
     }
 
-    componentWillUnmount(): void {
-        this.updateBasis();
-        this.updateMediaListener();
-    }
+    useEffect(() => {
+        if (!previewRef.current) {
+            return;
+        }
 
-    componentDidMount(): void {
-        this.previewRef!.current!.addEventListener("canplay", () => {
-            this.previewRef!.current!.play();
-        });
-        this.updateBasis = reaction(() => {
+        function play() {
+            previewRef.current!.play();
+        }
+
+        previewRef.current.addEventListener("canplay", play);
+        previewRef.current.removeEventListener("canplay", play);
+    }, [previewRef]);
+
+    useEffect(() => {
+        updateMedia();
+    });
+
+
+    useEffect(() => {
+        function handleResize() {
+            setWindowSize({
+                height: window.innerHeight,
+                width: window.innerWidth
+            });
+        }
+
+        window.addEventListener("resize", handleResize);
+
+        const runner = reaction(() => ({
+            video: MyInfo.preferredInputs.video,
+            effectRunner: StreamEffectStore.cameraStreamEffectRunner
+        }), updateMedia);
+
+        return () => {
+            window.removeEventListener("resize", handleResize);
+            runner();
+        }
+    }, []);
+
+    useEffect(() => {
+        return reaction(() => {
             const living = ParticipantService.getLiving(true);
             const numSquares = living.filter(participant => participant.hasAudio || participant.hasVideo).length + living.filter(participant => participant.hasScreen).length;
 
             return {
-                height: this.windowSize.height,
-                width: this.windowSize.width,
                 chatPanel: UIStore.store.chatPanel,
                 numSquares
             }
 
         }, (data) => {
-            const div = this.containerRef.current!;
-            const divWidth = UIStore.store.chatPanel ? data.width - 450 : data.width; // there's an animation with the chat panel so we need to figure out how large the div will be post animation
+            if (!containerRef.current) {
+                return;
+            }
+            const div = containerRef.current!;
+            const divWidth = UIStore.store.chatPanel ? windowSize.width - 450 : windowSize.width; // there's an animation with the chat panel so we need to figure out how large the div will be post animation
             const result = LayoutSizeCalculation(divWidth, div.offsetHeight, data.numSquares);
-            this.setState({basis: result.basis, maxWidth: result.maxWidth});
+            setBasis(result.basis);
+            setMaxWidth(result.maxWidth);
         });
+    }, [windowSize.width]);
 
-        this.updateMedia();
-        window.addEventListener("resize", () => {
-            this.windowSize.height = window.innerHeight;
-            this.windowSize.width = window.innerWidth;
-        });
-    }
 
-    componentDidUpdate(): void {
-        this.updateMedia();
-    }
-
-    render() {
+    return useObserver(() => {
         const participantsLiving: Participant[] = ParticipantService.getLiving();
 
         const participantsMedia = participantsLiving.filter(participant => participant.hasAudio || participant.hasVideo);
         const participantsScreen = participantsLiving.filter(participant => participant.hasScreen);
 
         return (
-            <div ref={this.containerRef} className={"video-container"}>
+            <div ref={containerRef} className={"video-container"}>
                 {
                     MyInfo.participant?.mediaState.screen &&
                     <div className={"screen-sharing-warning"}>
@@ -119,7 +133,7 @@ export class TileContainer extends React.Component<any, any> {
                 }
                 <div data-private={""} className={"preview-video"} hidden={!MyInfo.participant?.mediaState.camera}>
                     <div className={"preview-video-wrapper"}>
-                        <video playsInline={true} muted={true} autoPlay={true} ref={this.previewRef}/>
+                        <video playsInline={true} muted={true} autoPlay={true} ref={previewRef}/>
                     </div>
                 </div>
 
@@ -165,17 +179,17 @@ export class TileContainer extends React.Component<any, any> {
                         [
                             ...participantsMedia.map((participant, i, arr) => {
                                 if (participant.hasVideo) {
-                                    return <VideoTile flexBasis={this.state.basis} maxWidth={this.state.maxWidth}
+                                    return <VideoTile flexBasis={basis} maxWidth={maxWidth}
                                                       key={participant.info.id + "videop"}
                                                       participant={participant}/>
                                 } else {
-                                    return <AudioTile flexBasis={this.state.basis} maxWidth={this.state.maxWidth}
+                                    return <AudioTile flexBasis={basis} maxWidth={maxWidth}
                                                       key={participant.info.id + "audiop"}
                                                       participant={participant}/>
                                 }
                             }),
                             ...participantsScreen.map(participant => {
-                                    return <ScreenTile flexBasis={this.state.basis} maxWidth={this.state.maxWidth}
+                                    return <ScreenTile flexBasis={basis} maxWidth={maxWidth}
                                                        key={participant.info.id + "screenp"}
                                                        participant={participant}/>
                                 }
@@ -186,5 +200,5 @@ export class TileContainer extends React.Component<any, any> {
                 </div>
             </div>
         );
-    }
+    })
 }

@@ -52,13 +52,16 @@ const VideoEffects: React.FunctionComponent<ISettingsPanelProps> = ({events, cha
 
 
     useEffect(() => {
-        function onCancel(cb: () => void) {
+        function onCancel() {
             if (cameraStreamEffectsRunner.current) {
                 cameraStreamEffectsRunner.current.cancel();
             }
         }
 
         async function onSave(cb: () => void) {
+            if (cameraStreamEffectsRunner.current) {
+                cameraStreamEffectsRunner.current.cancel();
+            }
             if(!shouldBlur && !image){
                 StreamEffectService.endEffects();
                 cb();

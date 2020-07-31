@@ -70,3 +70,7 @@ input, textarea {
 .legal-text a:visited {
     color: #ac78a9;
 }
+
+input[hidden] {
+    display: none;
+}

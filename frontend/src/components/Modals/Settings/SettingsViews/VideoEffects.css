@@ -27,3 +27,33 @@
 .video-effects label input {
     display: inline-block;
 }
+
+.virtual-background-box-container {
+    display: flex;
+}
+
+.virtual-background-box {
+    display: inline-block;
+    border: 3px solid #a8a8a8;
+    border-radius: 9px;
+    margin: 10px;
+    height: 75px;
+    width: 110px;
+    color: rgba(15, 15, 15, 0.69);
+    overflow: hidden;
+}
+
+.virtual-background-box.selected {
+    border: 4px solid #4c5ef0;
+}
+
+.virtual-background-box {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.virtual-background-box__image {
+    width: 100%;
+    height: 100%;
+}

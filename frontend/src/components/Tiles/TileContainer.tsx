@@ -113,7 +113,7 @@ export const TileContainer: React.FunctionComponent = () => {
             const result = LayoutSizeCalculation(divWidth, div.offsetHeight, data.numSquares);
             setBasis(result.basis);
             setMaxWidth(result.maxWidth);
-        });
+        }, {fireImmediately: true});
     }, [windowSize.width]);
 
 

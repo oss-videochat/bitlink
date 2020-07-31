@@ -142,9 +142,7 @@ class CameraStreamEffectsRunner {
         if (blur && image) {
             throw "I can't blur and replace image...well I can...but that would be stupid."
         }
-        if(blur){
-            this.blur = blur;
-        }
+        this.blur = blur;
         if(image){
             this.generateImageData(image);
         } else {

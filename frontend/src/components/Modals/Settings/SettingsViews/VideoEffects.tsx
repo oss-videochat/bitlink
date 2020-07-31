@@ -1,4 +1,4 @@
-import React, {ChangeEvent, useEffect, useRef, useState} from 'react';
+import React, {ChangeEvent, MouseEvent, useEffect, useRef, useState} from 'react';
 import {ISettingsPanelProps} from '../SettingsViewer';
 import './VideoEffects.css';
 import StreamEffectStore from "../../../../stores/StreamEffectStore";
@@ -6,15 +6,35 @@ import HardwareService from "../../../../services/HardwareService";
 import CameraStreamEffectsRunner from "../../../../util/CameraStreamEffectsRunner";
 import StreamEffectService from "../../../../services/StreamEffectService";
 
+interface IVirtualBackgroundBox {
+    text?: string,
+    image?: HTMLImageElement,
+    onClick?: (event: MouseEvent<HTMLDivElement>) => void,
+    selected: boolean
+}
+
+const VirtualBackgroundBox: React.FunctionComponent<IVirtualBackgroundBox> = ({text, image, onClick, selected}) => (
+    <div onClick={onClick} className={"virtual-background-box " + (selected && "selected")}>
+        {image &&
+        <img className={"virtual-background-box__image"} src={image.src}/>
+        }
+        {text &&
+        <span className={"virtual-background-box__text"}>{text}</span>
+        }
+    </div>
+);
+
 const VideoEffects: React.FunctionComponent<ISettingsPanelProps> = ({events, changesMade, handleChangesMade}) => {
     const [shouldBlur, setShouldBlur] = useState(StreamEffectStore.blur);
-    const [image, setImage] = useState<HTMLImageElement | null>( StreamEffectStore.image);
+    const [image, setImage] = useState<HTMLImageElement | null>(StreamEffectStore.image);
     const videoRef = useRef<HTMLVideoElement>(null);
+    const fileUploadRef = useRef<HTMLInputElement>(null);
     const cameraStreamEffectsRunner = useRef<CameraStreamEffectsRunner>();
 
     useEffect(() => {
         const el = videoRef.current;
-        function canplay(){
+
+        function canplay() {
             el!.play();
         }
 
@@ -29,7 +49,7 @@ const VideoEffects: React.FunctionComponent<ISettingsPanelProps> = ({events, cha
                         cameraStreamEffectsRunner.current = cameraRunner;
                         videoRef.current!.srcObject = cameraRunner.getStream();
                     })
-            } else if(image) {
+            } else if (image) {
                 HardwareService.getRawStream("camera")
                     .then((stream: MediaStream) => CameraStreamEffectsRunner.create(stream, false, image))
                     .then((cameraRunner) => {
@@ -49,8 +69,6 @@ const VideoEffects: React.FunctionComponent<ISettingsPanelProps> = ({events, cha
     }, [shouldBlur, image]);
 
 
-
-
     useEffect(() => {
         function onCancel() {
             if (cameraStreamEffectsRunner.current) {
@@ -62,15 +80,15 @@ const VideoEffects: React.FunctionComponent<ISettingsPanelProps> = ({events, cha
             if (cameraStreamEffectsRunner.current) {
                 cameraStreamEffectsRunner.current.cancel();
             }
-            if(!shouldBlur && !image){
+            if (!shouldBlur && !image) {
                 StreamEffectService.endEffects();
                 cb();
                 return;
             }
-            if(shouldBlur){
+            if (shouldBlur) {
                 await StreamEffectService.enableBlur();
             }
-            if(image){
+            if (image) {
                 await StreamEffectService.enableVirtualBackground(image);
             }
             cb();
@@ -87,7 +105,7 @@ const VideoEffects: React.FunctionComponent<ISettingsPanelProps> = ({events, cha
     function handleFileUpload(e: ChangeEvent<HTMLInputElement>) {
         handleChangesMade(true);
         const files = e.target.files;
-        if(!files){
+        if (!files) {
             return;
         }
 
@@ -107,6 +125,21 @@ const VideoEffects: React.FunctionComponent<ISettingsPanelProps> = ({events, cha
         setShouldBlur(e.target.checked)
     }
 
+    function handleNoneSelect(){
+        handleChangesMade(true);
+        if(!image){
+            return;
+        }
+        setImage(null);
+    }
+
+    function handleAddNewImage(){
+        if(!fileUploadRef.current){
+            return;
+        }
+        fileUploadRef.current.click();
+    }
+
     return (
         <div className={"settings-view"}>
             <div className={"video-effects"}>
@@ -117,7 +150,14 @@ const VideoEffects: React.FunctionComponent<ISettingsPanelProps> = ({events, cha
                     </div>
                 </div>
                 <label><input type={"checkbox"} onChange={handleBlurChange} checked={shouldBlur}/> Blur</label>
-                <input type={"file"}  accept={"image/png, image/jpeg"} onChange={handleFileUpload}/>
+                <div className={"virtual-background-box-container"}>
+                    <VirtualBackgroundBox text={"None"} onClick={handleNoneSelect} selected={!image}/>
+                    { image &&
+                    <VirtualBackgroundBox image={image} selected={true}/>
+                    }
+                    <VirtualBackgroundBox text={"New +"} onClick={handleAddNewImage} selected={false}/>
+                    <input hidden type={"file"} accept={"image/png, image/jpeg"} ref={fileUploadRef} onChange={handleFileUpload}/>
+                </div>
             </div>
         </div>
     );

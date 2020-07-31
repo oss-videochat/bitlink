@@ -344,7 +344,7 @@ class IO {
             this.socketRequest("producer-action", {source, action});
             return;
         }
-        const stream = await HardwareService.getStream(source);
+        const stream = await HardwareService.getStream(source).catch(console.error);
         if (!stream) {
             NotificationService.add(NotificationService.createUINotification(`An error occurred accessing the ${source}`, NotificationType.Error))
             return;

@@ -12,20 +12,20 @@ don't tell the nonexistent marketing team.
 
 import React, {useEffect, useRef} from 'react';
 
-const isiOS = (/iPad|iPhone|iPod/.test(navigator.platform) ||
+const isSafari = ((/iPad|iPhone|iPod/.test(navigator.platform) ||
     (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)) &&
-    !window.MSStream;
+    !window.MSStream) || /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 
 let audioBank: HTMLAudioElement[] = [];
 
-if (isiOS) {
+if (isSafari) {
     audioBank = Array.from({length: 100}, el => document.createElement('audio') as unknown as HTMLAudioElement);
 }
 
 let prepared = false;
 
 export function prepareAudioBank() {
-    if (prepared || !isiOS) {
+    if (prepared || !isSafari) {
         return;
     }
 
@@ -51,7 +51,7 @@ const AutoPlayAudio: React.FunctionComponent<IAutoPlayAudioProps> = ({srcObject}
     const audioElement = useRef<HTMLAudioElement>(audioBank.pop() || document.createElement("audio")); // if the bank runs out, we just create another audio element. This will work for non-mobile/non-ios devices. But for those devices, we kind of screw them over here.
 
     useEffect(() => {
-        if (!prepared && isiOS) {
+        if (!prepared && isSafari) {
             throw new Error('Audios are not prepared');
         }
         if (!srcObject) {
@@ -60,7 +60,10 @@ const AutoPlayAudio: React.FunctionComponent<IAutoPlayAudioProps> = ({srcObject}
         const element = audioElement.current;
 
         function canplay() {
-            return element.play();
+            element.play().catch((e) => {
+                console.error(e);
+                //document.addEventListener("click", canplay)
+            });
         }
 
         element.addEventListener("canplay", canplay);
@@ -69,8 +72,9 @@ const AutoPlayAudio: React.FunctionComponent<IAutoPlayAudioProps> = ({srcObject}
         return () => {
             element.pause();
             element.removeEventListener("canplay", canplay);
+//            document.removeEventListener("click", canplay)
             element.srcObject = null;
-            if (isiOS) {
+            if (isSafari) {
                 audioBank.push(element); // recycling is good for the world
             }
         }

@@ -4,6 +4,8 @@ import {PersonInferenceConfig} from "@tensorflow-models/body-pix/dist/body_pix_m
 import debug from "./debug";
 import * as StackBlur from 'stackblur-canvas';
 
+import {TimerWorkerMessageType, timerWorkerScript} from './TimerWorker';
+
 const log = debug("CameraStreamEffectsRunner");
 
 const bpModelPromise = bodyPix.load({
@@ -39,7 +41,7 @@ class CameraStreamEffectsRunner {
     private previousSegmentationComplete = true;
     private lastSegmentation: bodyPix.SemanticPersonSegmentation | null = null;
 
-    private shouldContinue = true;
+    private worker: Worker;
 
     private imageData: ImageData | null = null;
     private blur: boolean = false;
@@ -50,6 +52,16 @@ class CameraStreamEffectsRunner {
         this.stream = stream;
 
         this.blur = blur;
+        this.worker = new Worker(timerWorkerScript, { name: 'Blur effect worker' });
+        this.worker.onmessage = (message) => {
+            if(message.data.type === TimerWorkerMessageType.TICK){
+                this.tick();
+            }
+        }
+        this.worker.postMessage({
+            type: TimerWorkerMessageType.START_TIMER,
+            timeMs: 1000 / 60,
+        })
 
         this.tmpVideo.addEventListener('loadedmetadata', () => {
             this.setNewSettings(blur, image);
@@ -72,9 +84,6 @@ class CameraStreamEffectsRunner {
         this.tmpVideo.srcObject = stream;
 
 
-
-        this.tmpVideo.srcObject = stream;
-
         this.finalCanvas.getContext('2d'); // firefox is stupid if we captureStream() without getting the context first
 
       /*  this.finalCanvas.style.position = "fixed";
@@ -89,7 +98,10 @@ class CameraStreamEffectsRunner {
     }
 
     cancel() {
-        this.shouldContinue = false;
+        this.worker.postMessage({
+            type: TimerWorkerMessageType.END_TIMER
+        })
+        this.worker.terminate();
     }
 
     private tick() {
@@ -102,9 +114,6 @@ class CameraStreamEffectsRunner {
             });
         }
         this.processSegmentation(this.lastSegmentation);
-        if (this.shouldContinue) {
-            setTimeout(this.tick.bind(this), 1000 / 60);
-        }
     }
 
     private processSegmentation(segmentation: bodyPix.SemanticPersonSegmentation | null) {

@@ -5,6 +5,7 @@ import StreamEffectStore from "../../../../stores/StreamEffectStore";
 import HardwareService from "../../../../services/HardwareService";
 import CameraStreamEffectsRunner from "../../../../util/CameraStreamEffectsRunner";
 import StreamEffectService from "../../../../services/StreamEffectService";
+import Spinner from "../../../Util/Spinner";
 
 interface IVirtualBackgroundBox {
     text?: string,
@@ -16,7 +17,7 @@ interface IVirtualBackgroundBox {
 const VirtualBackgroundBox: React.FunctionComponent<IVirtualBackgroundBox> = ({text, image, onClick, selected}) => (
     <div onClick={onClick} className={"virtual-background-box " + (selected && "selected")}>
         {image &&
-        <img className={"virtual-background-box__image"} src={image.src}/>
+        <img data-private={"lipsum"} className={"virtual-background-box__image"} src={image.src}/>
         }
         {text &&
         <span className={"virtual-background-box__text"}>{text}</span>
@@ -30,11 +31,14 @@ const VideoEffects: React.FunctionComponent<ISettingsPanelProps> = ({events, cha
     const videoRef = useRef<HTMLVideoElement>(null);
     const fileUploadRef = useRef<HTMLInputElement>(null);
     const cameraStreamEffectsRunner = useRef<CameraStreamEffectsRunner>();
+    const [videoReady, setVideoReady] = useState(false);
 
     useEffect(() => {
+        setVideoReady(false);
         const el = videoRef.current;
 
         function canplay() {
+            setVideoReady(true)
             el!.play();
         }
 
@@ -146,7 +150,14 @@ const VideoEffects: React.FunctionComponent<ISettingsPanelProps> = ({events, cha
                 <h2 className={"modal--title"}>Video Effects</h2>
                 <div className={"video-preview-container"}>
                     <div className={"video-preview-wrapper"}>
-                        <video className={"video-preview"} ref={videoRef}/>
+                        {
+                            !videoReady &&
+                                <div className={"video-spinner"}>
+                                    <Spinner size={"40px"}/>
+                                </div>
+
+                        }
+                        <video className={"video-preview " + (videoReady ? "ready" : "")} ref={videoRef}/>
                     </div>
                 </div>
                 <label><input type={"checkbox"} onChange={handleBlurChange} checked={shouldBlur}/> Blur</label>

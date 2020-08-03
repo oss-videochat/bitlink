@@ -41,7 +41,8 @@ class CameraStreamEffectsRunner {
     private previousSegmentationComplete = true;
     private lastSegmentation: bodyPix.SemanticPersonSegmentation | null = null;
 
-    private worker: Worker;
+   // private worker: Worker;
+    private shouldContinue = true;
 
     private imageData: ImageData | null = null;
     private blur: boolean = false;
@@ -52,7 +53,7 @@ class CameraStreamEffectsRunner {
         this.stream = stream;
 
         this.blur = blur;
-        this.worker = new Worker(timerWorkerScript, { name: 'Blur effect worker' });
+    /*    this.worker = new Worker(timerWorkerScript, { name: 'Blur effect worker' });
         this.worker.onmessage = (message) => {
             if(message.data.type === TimerWorkerMessageType.TICK){
                 this.tick();
@@ -61,7 +62,7 @@ class CameraStreamEffectsRunner {
         this.worker.postMessage({
             type: TimerWorkerMessageType.START_TIMER,
             timeMs: 1000 / 60,
-        })
+        })*/
 
         this.tmpVideo.addEventListener('loadedmetadata', () => {
             this.setNewSettings(blur, image);
@@ -83,7 +84,6 @@ class CameraStreamEffectsRunner {
 
         this.tmpVideo.srcObject = stream;
 
-
         this.finalCanvas.getContext('2d'); // firefox is stupid if we captureStream() without getting the context first
 
       /*  this.finalCanvas.style.position = "fixed";
@@ -98,10 +98,11 @@ class CameraStreamEffectsRunner {
     }
 
     cancel() {
-        this.worker.postMessage({
+    /*    this.worker.postMessage({
             type: TimerWorkerMessageType.END_TIMER
         })
-        this.worker.terminate();
+        this.worker.terminate();*/
+        this.shouldContinue = false;
     }
 
     private tick() {
@@ -114,6 +115,9 @@ class CameraStreamEffectsRunner {
             });
         }
         this.processSegmentation(this.lastSegmentation);
+        if(this.shouldContinue){
+            setTimeout(this.tick.bind(this), 1000 / 60)
+        }
     }
 
     private processSegmentation(segmentation: bodyPix.SemanticPersonSegmentation | null) {

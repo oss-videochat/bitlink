@@ -2,6 +2,8 @@ import * as bodyPix from '@tensorflow-models/body-pix';
 import '@tensorflow/tfjs-backend-webgl';
 import {PersonInferenceConfig} from "@tensorflow-models/body-pix/dist/body_pix_model";
 import debug from "./debug";
+import * as StackBlur from 'stackblur-canvas';
+
 const log = debug("CameraStreamEffectsRunner");
 
 const bpModelPromise = bodyPix.load({
@@ -15,7 +17,7 @@ const bpModelPromise = bodyPix.load({
 const segmentationProperties: PersonInferenceConfig = {
     flipHorizontal: false,
     internalResolution: "medium",
-    segmentationThreshold: 0.9,
+    segmentationThreshold: 0.7,
     scoreThreshold: 0.2,
     maxDetections: 1
 };
@@ -110,14 +112,20 @@ class CameraStreamEffectsRunner {
         const liveData = this.videoRenderCanvasCtx.getImageData(0, 0, this.videoRenderCanvas.width, this.videoRenderCanvas.height);
         if (segmentation) {
             if (this.blur) {
-                bodyPix.drawBokehEffect(
-                    this.finalCanvas,
-                    this.videoRenderCanvas,
-                    segmentation,
-                    12, // Constant for background blur, integer values between 0-20
-                    7 // Constant for edge blur, integer values between 0-20
-                );
-                return;
+                const blurData = new ImageData(liveData.data.slice(), liveData.width, liveData.height);
+                StackBlur.imageDataRGB(blurData, 0, 0, liveData.width, liveData.height, 12);
+                const dataL = liveData.data;
+                for (let x = 0; x < this.finalCanvas.width; x++) {
+                    for (let y = 0; y < this.finalCanvas.height; y++) {
+                        let n = y * this.finalCanvas.width + x;
+                        if (segmentation.data[n] === 0) {
+                            dataL[n * 4] =  blurData.data[n * 4];
+                            dataL[n * 4 + 1] = blurData.data[n * 4 + 1];
+                            dataL[n * 4 + 2] = blurData.data[n * 4 + 2];
+                            dataL[n * 4 + 3] = blurData.data[n * 4 + 3];
+                        }
+                    }
+                }
             }
             if(this.imageData) {
                 const dataL = liveData.data;

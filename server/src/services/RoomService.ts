@@ -148,6 +148,7 @@ class RoomService {
         ParticipantService.leave(participant);
         MediasoupPeerService.destroy(participant.mediasoupPeer);
         RoomService.broadcast(room, "participant-left", [], {participantId: participant.id});
+        RoomService.sendSystemMessage(room, `${participant.name} left the room`);
         RoomService.closeRoomIfNecessary(room);
     }
 
@@ -155,16 +156,19 @@ class RoomService {
         ParticipantService.disconnect(participant);
         MediasoupPeerService.destroy(participant.mediasoupPeer);
         RoomService.broadcast(room, "participant-left", [], {participantId: participant.id});
+        RoomService.sendSystemMessage(room, `${participant.name} left the room`);
         RoomService.closeRoomIfNecessary(room);
     }
 
     static participantChangedName(room: Room, participant: Participant, newName: string) {
+        const oldName = participant.name;
         log("Participant changing name %s --> %s", participant.name, newName);
         ParticipantService.changeName(participant, newName);
         RoomService.broadcast(room, "participant-changed-name",[], {
             participantId: participant.id,
             newName: participant.name
         });
+        RoomService.sendSystemMessage(room, `${oldName} changed their name to ${newName}`);
         return {
             success: true,
             status: 200,
@@ -250,9 +254,17 @@ class RoomService {
     }
 
     static kickParticipant(room: Room, participantToRemove: Participant) {
-        log("Participant kicked", participantToRemove.name)
+        log("Participant kicked", participantToRemove.name);
         RoomService.participantLeft(room, participantToRemove);
         participantToRemove.socket.emit("kicked");
+        RoomService.sendSystemMessage(room, `${participantToRemove.name} was kicked from the room`);
+    }
+
+    static sendSystemMessage(room: Room, content: string, permission: ParticipantRole = ParticipantRole.MEMBER){
+        RoomService.sendMessage(room, MessageService.create({
+            content: content,
+            type: MessageType.SYSTEM
+        }, undefined, {permission}));
     }
 
     static alertRelevantParticipantsAboutMessage(room: Room, message: Message, eventType: "new" | "edit" | "delete") {
@@ -308,11 +320,13 @@ class RoomService {
         to.role = ParticipantRole.HOST;
         this.broadcast(room, 'participant-update-role', [], {participantId: to.id, newRole: ParticipantRole.HOST});
         this.broadcast(room, 'participant-update-role', [], {participantId: from.id, newRole: ParticipantRole.MEMBER});
+        RoomService.sendSystemMessage(room, `Host transferred from ${from.name} to ${to.name}`);
     }
 
     static changeRole(room: Room, participant: Participant, role: ParticipantRole) {
         participant.role = role;
         this.broadcast(room, 'participant-update-role', [], {participantId: participant.id, newRole: role});
+        RoomService.sendSystemMessage(room, `${participant.name}'s role is now ${role === ParticipantRole.HOST ? "host": "member"}`);
     }
 
     private static _addParticipant(room: Room, participant: Participant) {
@@ -342,6 +356,7 @@ class RoomService {
         participant.socket.once("transports-ready", pw(Handlers.handleTransportsReady));
 
         RoomService.broadcast(room, "new-participant", [participant], {participantSummary: ParticipantService.getSummary(participant)});
+        RoomService.sendSystemMessage(room, `${participant.name} joined`);
         MessageGroupService.addParticipant(room.messageGroups[0], participant);
     }
 

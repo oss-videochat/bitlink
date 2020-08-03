@@ -13,7 +13,7 @@ import {v4 as uuidv4} from "uuid";
 import {MessageGroup} from "../interfaces/MessageGroup";
 
 class MessageService {
-    static create(outline: MessageInput, from: Participant, options: { permission?: ParticipantRole, group?: MessageGroup, to?: Participant }): Message {
+    static create(outline: MessageInput, from?: Participant, options: { permission?: ParticipantRole, group?: MessageGroup, to?: Participant } = {}): Message {
         const common: Message = {
             id: uuidv4(),
             created: new Date(),

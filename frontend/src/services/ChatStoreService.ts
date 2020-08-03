@@ -14,6 +14,9 @@ class ChatStoreService {
     @action
     static addMessage(...messages: Array<Message>) {
         messages.forEach((message: Message) => {
+            if(ChatStore.messageStore.find(messageInStore => messageInStore.id === message.id)){
+                return;
+            }
             ChatStore.messageStore.push(message);
         });
     }

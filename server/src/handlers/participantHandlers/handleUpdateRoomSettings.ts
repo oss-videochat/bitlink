@@ -1,7 +1,6 @@
 import {handleParticipantEvent} from "../../interfaces/handleEvent";
 import RoomService from "../../services/RoomService";
-import {RoomSettings} from "../../interfaces/Room";
-import {ParticipantRole} from "@bitlink/common";
+import {ParticipantRole, RoomSettings} from "@bitlink/common";
 
 interface handleUpdateRoomSettingsParams {
     newSettings: RoomSettings,

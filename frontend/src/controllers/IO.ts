@@ -18,7 +18,8 @@ import {
     MessageSummary,
     MessageType,
     ParticipantSummary,
-    RoomSummary
+    RoomSummary,
+    RoomSettings
 } from "@bitlink/common";
 import {handleEvent} from "../interfaces/handleEvent";
 import * as Handlers from './handlers';
@@ -47,11 +48,6 @@ interface MediaStateUpdate {
     id: string,
     source: MediaSource,
     action: MediaAction;
-}
-
-export interface RoomSettingsObj {
-    name: string
-    waitingRoom: boolean,
 }
 
 class IO {
@@ -434,7 +430,7 @@ class IO {
     }
 
 
-    async getRoomSettings(): Promise<RoomSettingsObj> {
+    async getRoomSettings(): Promise<RoomSettings> {
         const response = await this.socketRequest("get-room-settings");
         if (!response.success) {
             NotificationService.add(NotificationService.createUINotification("Error Getting Settings: " + response.error, NotificationType.Error));
@@ -443,7 +439,7 @@ class IO {
         return response.data.settings;
     }
 
-    async changeRoomSettings(newSettings: RoomSettingsObj): Promise<undefined> {
+    async changeRoomSettings(newSettings: RoomSettings): Promise<undefined> {
         const response = await this.socketRequest("update-room-settings", {newSettings});
         if (!response.success) {
             NotificationService.add(NotificationService.createUINotification("Error Getting Settings: " + response.error, NotificationType.Error));

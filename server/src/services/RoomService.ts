@@ -1,6 +1,14 @@
-import {Room, RoomSettings} from "../interfaces/Room";
+import {Room} from "../interfaces/Room";
 import RoomStore from "../stores/RoomStore";
-import {MediaAction, MediaSource, MessageType, ParticipantRole, RoomSummary} from "@bitlink/common";
+import {
+    HostDisconnectAction,
+    MediaAction,
+    MediaSource,
+    MessageType,
+    ParticipantRole,
+    RoomSettings,
+    RoomSummary
+} from "@bitlink/common";
 import {Participant} from "../interfaces/Participant";
 import debug from "../helpers/debug";
 import ParticipantService from "./ParticipantService";
@@ -128,6 +136,10 @@ class RoomService {
 
     static closeRoomIfNecessary(room: Room) {
         if (room.participants.filter(participant => participant.isConnected && participant.role === ParticipantRole.HOST).length === 0) {
+            if(room.settings.hostDisconnectAction === HostDisconnectAction.TRANSFER_HOST && room.participants.filter(participant => participant.isConnected).length > 0){
+                RoomService.changeRole(room, room.participants.filter(participant => participant.isConnected)[0], ParticipantRole.HOST);
+                return;
+            }
             RoomService.destroy(room);
         }
     }
@@ -149,7 +161,7 @@ class RoomService {
     static participantChangedName(room: Room, participant: Participant, newName: string) {
         log("Participant changing name %s --> %s", participant.name, newName);
         ParticipantService.changeName(participant, newName);
-        RoomService.broadcast(room, "participant-changed-name", [participant], {
+        RoomService.broadcast(room, "participant-changed-name",[], {
             participantId: participant.id,
             newName: participant.name
         });
@@ -296,6 +308,11 @@ class RoomService {
         to.role = ParticipantRole.HOST;
         this.broadcast(room, 'participant-update-role', [], {participantId: to.id, newRole: ParticipantRole.HOST});
         this.broadcast(room, 'participant-update-role', [], {participantId: from.id, newRole: ParticipantRole.MEMBER});
+    }
+
+    static changeRole(room: Room, participant: Participant, role: ParticipantRole) {
+        participant.role = role;
+        this.broadcast(room, 'participant-update-role', [], {participantId: participant.id, newRole: role});
     }
 
     private static _addParticipant(room: Room, participant: Participant) {

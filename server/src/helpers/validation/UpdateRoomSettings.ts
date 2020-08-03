@@ -1,13 +1,14 @@
-import {RoomSettings} from "../../interfaces/Room";
+import {HostDisconnectAction, RoomSettings} from "@bitlink/common";
 
-const Ajv = require('ajv');
+import * as Ajv from 'ajv';
 
 const JSON = {
-    additionalData: false,
+    additionalProperties: false,
     type: "object",
     properties: {
         name: {type: "string"},
-        waitingRoom: {type: "boolean"}
+        waitingRoom: {type: "boolean"},
+        hostDisconnectAction: {type: "number"}
     }
 };
 
@@ -18,5 +19,5 @@ export function UpdateRoomSettingsValidation(newSettings: RoomSettings) {
     }
     const ajv = new Ajv();
     const validate = ajv.compile(JSON);
-    return validate(newSettings);
+    return validate(newSettings) && Object.values(HostDisconnectAction).includes(newSettings.hostDisconnectAction);
 }

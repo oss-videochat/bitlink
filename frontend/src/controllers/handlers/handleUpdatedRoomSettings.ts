@@ -1,10 +1,7 @@
 import {handleEvent} from "../../interfaces/handleEvent";
 import RoomStore from "../../stores/RoomStore";
+import {RoomSettings} from "@bitlink/common";
 
-export interface RoomSettings {
-    name: string
-    waitingRoom: boolean,
-}
 
 interface handleUpdatedRoomSettingsParam {
     newSettings: RoomSettings

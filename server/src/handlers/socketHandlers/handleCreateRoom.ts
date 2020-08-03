@@ -2,7 +2,7 @@ import {handleSocketEvent} from "../../interfaces/handleEvent";
 import RoomService from "../../services/RoomService";
 import debug from "../../helpers/debug";
 import WorkerService from "../../services/WorkerService";
-import {RoomSettings} from "../../interfaces/Room";
+import {HostDisconnectAction, RoomSettings} from "@bitlink/common";
 
 const log = debug("handle:CreateRoom");
 
@@ -15,7 +15,8 @@ const handleCreateRoom: handleSocketEvent<handleCreateRoomParams> = async ({name
     const router = await WorkerService.getGoodRouter();
     const defaultRoomSettings: RoomSettings = {
         name,
-        waitingRoom: false
+        waitingRoom: false,
+        hostDisconnectAction: HostDisconnectAction.TRANSFER_HOST
     }
     const room = RoomService.create(router, defaultRoomSettings);
     RoomService.addRoom(room);

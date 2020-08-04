@@ -16,12 +16,14 @@ import MessageService from "./MessageService";
 import * as mediasoup from 'mediasoup';
 import * as crypto from "crypto";
 import MediasoupPeerService from "./MediasoupPeerService";
-import {handleParticipantEvent} from "../interfaces/handleEvent";
-import {UpdateRoomSettingsValidation} from "../helpers/validation/UpdateRoomSettings";
+import {APIResponseCallback, handleParticipantEvent} from "../interfaces/handleEvent";
+import {handleUpdateRoomSettings} from "../validation/handleUpdateRoomSettings";
 import {DirectMessage, GroupMessage, Message, SystemMessage} from "../interfaces/Message";
 import * as Handlers from "../handlers/participantHandlers";
+import * as Validation from "../validation";
 import MessageGroupService from "./MessageGroupService";
 import cryptoRandomString = require("crypto-random-string");
+import * as Ajv from "ajv";
 
 const log = debug("Services:RoomService");
 
@@ -239,9 +241,6 @@ class RoomService {
 
     static updateRoomSettings(room: Room, newSettings: RoomSettings) {
         log("Participant changing room settings %O", newSettings);
-        if (!UpdateRoomSettingsValidation(newSettings)) {
-            throw "Bad input";
-        }
         const safeVersion = RoomService._getSafeSettings(newSettings);
         if (JSON.stringify(RoomService._getSafeSettings(room.settings)) !== JSON.stringify(safeVersion)) {
             this.broadcast(room, "updated-room-settings", RoomService.getConnectedParticipants(room).filter(participant => participant.role === ParticipantRole.HOST), {newSettings: safeVersion});
@@ -332,22 +331,45 @@ class RoomService {
     private static _addParticipant(room: Room, participant: Participant) {
         room.participants.push(participant);
 
-        function pw(func: handleParticipantEvent<any>): handleParticipantEvent {
-            return (data: any, cb: any) => func({...data, participant, room}, cb || (() => log("No CB Passed")))
+        function pw(func: handleParticipantEvent<any>, validation?: ((data: any) => boolean) | object): handleParticipantEvent {
+            return (data: any, cb: any) => {
+                    if (validation) {
+                        if (typeof validation === "object") {
+                            const ajv = new Ajv();
+                            validation = ajv.compile({
+                                additionalProperties: false,
+                                type: "object",
+                                properties: {
+                                    ...validation as object
+                                }
+                            });
+                        }
+                        if (!(validation as Function)(data)) {
+                            cb({
+                                success: false,
+                                error: "Bad input",
+                                status: 400,
+                            })
+                            console.log(data);
+                            return;
+                        }
+                    }
+                func({...data, participant, room}, cb || (() => log("No CB Passed")))
+            }
         }
 
         participant.socket.on("disconnect", pw(Handlers.handleDisconnectParticipant));
         participant.socket.on("leave", pw(Handlers.handleLeaveParticipant));
         //      participant.socket.on("update-name", pw(Handlers.handleUpdateName));
-        participant.socket.on("producer-action", pw(Handlers.handleProducerAction));
+        participant.socket.on("producer-action", pw(Handlers.handleProducerAction, Validation.handleProducerAction));
         participant.socket.on("get-room-settings", pw(Handlers.handleGetRoomSettings));
-        participant.socket.on("update-room-settings", pw(Handlers.handleUpdateRoomSettings));
-        participant.socket.on("kick-participant", pw(Handlers.handleKickParticipant));
+        participant.socket.on("update-room-settings", pw(Handlers.handleUpdateRoomSettings, Validation.handleUpdateRoomSettings));
+        participant.socket.on("kick-participant", pw(Handlers.handleKickParticipant, {participantId: {type: "string"}}));
         participant.socket.on("send-message", pw(Handlers.handleSendMessage));
-        participant.socket.on("edit-message", pw(Handlers.handleEditMessage));
-        participant.socket.on("delete-message", pw(Handlers.handleDeleteMessage));
-        participant.socket.on("transfer-host", pw(Handlers.handleTransferHost));
-        participant.socket.on("change-name", pw(Handlers.handleUpdateName));
+        participant.socket.on("edit-message", pw(Handlers.handleEditMessage,  {messageId: {type: "string"}, newContent: {type: "string"}}));
+        participant.socket.on("delete-message", pw(Handlers.handleDeleteMessage, {messageId: {type: "string"}}));
+        participant.socket.on("transfer-host", pw(Handlers.handleTransferHost, {participantId: {type: "string"}}));
+        participant.socket.on("change-name", pw(Handlers.handleUpdateName, {newName: {type: "string"}}));
         participant.socket.on("create-transport", pw(Handlers.handleCreateTransport));
         participant.socket.on("connect-transport", pw(Handlers.handleConnectTransport));
         participant.socket.on("create-producer", pw(Handlers.handleCreateProducer));

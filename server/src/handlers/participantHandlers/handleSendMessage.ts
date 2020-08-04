@@ -1,6 +1,6 @@
 import {handleParticipantEvent} from "../../interfaces/handleEvent";
 import {DirectMessageInput, GroupMessageInput, MessageInput, MessageType} from "@bitlink/common";
-import {MessageSummaryValidation} from "../../helpers/validation/MessageSummaryValidation";
+import {MessageSummaryValidation} from "../../validation/MessageSummaryValidation";
 import RoomService from "../../services/RoomService";
 import MessageService from "../../services/MessageService";
 import {Message} from "../../interfaces/Message";

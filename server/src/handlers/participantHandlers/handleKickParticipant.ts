@@ -7,7 +7,7 @@ interface handleKickParticipantParam {
 }
 
 export const handleKickParticipant: handleParticipantEvent<handleKickParticipantParam> = ({participantId, room, participant}, cb) => {
-    if (participant.role === ParticipantRole.HOST) {
+    if (participant.role !== ParticipantRole.HOST) {
         cb({
             success: false,
             status: 403,

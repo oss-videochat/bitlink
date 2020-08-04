@@ -10,7 +10,7 @@ const common = {
 }
 
 const groupMessage = {
-    additionalData: false,
+    additionalProperties: false,
     type: "object",
     properties: {
         ...common,
@@ -19,7 +19,7 @@ const groupMessage = {
 };
 
 const directMessage = {
-    additionalData: false,
+    additionalProperties: false,
     type: "object",
     properties: {
         ...common,

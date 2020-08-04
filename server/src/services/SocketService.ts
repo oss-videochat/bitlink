@@ -6,6 +6,7 @@ import handleGetRTPCapabilities from "../handlers/socketHandlers/handleGetRTPCap
 import handleCreateRoom from "../handlers/socketHandlers/handleCreateRoom";
 import handleJoinRoom from "../handlers/socketHandlers/handleJoinRoom";
 import handleDisconnectSocket from "../handlers/socketHandlers/handleDisconnectSocket";
+import * as Ajv from "ajv";
 
 class SocketService {
     static init(io: socketio.Server) {
@@ -14,13 +15,35 @@ class SocketService {
     }
 
     static addSocket(socket: socketio.Socket) {
-        function sw(func: handleSocketEvent<any>) {
-            return (data: any, cb: APIResponseCallback) => func({socket, ...data}, cb);
+        function sw(func: handleSocketEvent<any>, validation?: ((data: any) => boolean) | object) {
+            return (data: any, cb: APIResponseCallback) => {
+                if (validation) {
+                    if (typeof validation === "object") {
+                        const ajv = new Ajv();
+                        validation = ajv.compile({
+                            additionalProperties: false,
+                            type: "object",
+                            properties: {
+                                ...validation as object
+                            }
+                        });
+                    }
+                    if (!(validation as Function)(data)) {
+                        cb({
+                            success: false,
+                            error: "Bad input",
+                            status: 400,
+                        })
+                        return;
+                    }
+                }
+                func({socket, ...data}, cb);
+            }
         }
 
-        socket.on("get-rtp-capabilities", sw(handleGetRTPCapabilities));
-        socket.on("create-room", sw(handleCreateRoom));
-        socket.on("join-room", sw(handleJoinRoom));
+        socket.on("get-rtp-capabilities", sw(handleGetRTPCapabilities, {roomId: {type: "string"}}));
+        socket.on("create-room", sw(handleCreateRoom, {name: {type: "string"}}));
+        socket.on("join-room", sw(handleJoinRoom, {name: {type: "string"}, roomId: {type: "string"}, rtpCapabilities: {type: "object", additionalProperties: true}}));
         socket.on("disconnect", sw(handleDisconnectSocket));
         SocketStore.sockets.push(socket);
     }

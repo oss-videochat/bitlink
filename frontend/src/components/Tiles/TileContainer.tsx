@@ -128,7 +128,7 @@ export const TileContainer: React.FunctionComponent = () => {
             setBasis(result.basis);
             setMaxWidth(result.maxWidth);
         }, {fireImmediately: true});
-    }, [windowSize.width]);
+    }, [windowSize]);
 
 
     return useObserver(() => {

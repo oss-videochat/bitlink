@@ -8,6 +8,7 @@ class RoomService {
         RoomStore.mediasoup = {
             rtcCapabilities: null,
         };
+        RoomStore.groups = [];
     }
 
     static getGroup(groupId: string) {

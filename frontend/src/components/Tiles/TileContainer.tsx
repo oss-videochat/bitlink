@@ -1,6 +1,6 @@
 import React, {useEffect, useRef, useState} from 'react';
 import {useObserver} from "mobx-react"
-import {reaction} from "mobx"
+import {reaction, when} from "mobx"
 import './TileContainer.css';
 import ParticipantsStore from "../../stores/ParticipantsStore";
 import VideoTile from "./VideoTile";
@@ -41,8 +41,22 @@ export const TileContainer: React.FunctionComponent = () => {
 
     const [basis, setBasis] = useState("0");
     const [maxWidth, setMaxWidth] = useState("0");
+    const [forceDisplayControls, setForceDisplayControls] = useState(true);
     const previewRef = useRef<HTMLVideoElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        let timeout: NodeJS.Timeout;
+        const disposer = when(() => !!UIStore.store.joinedDate, () => {
+            timeout = setTimeout(() => setForceDisplayControls(false), 5000);
+        })
+        return () => {
+            disposer();
+            if(timeout){
+                clearTimeout(timeout)
+            }
+        }
+    }, []);
 
     async function updateMedia() {
         if (!MyInfo.participant?.mediaState.camera || !previewRef.current) {
@@ -138,40 +152,32 @@ export const TileContainer: React.FunctionComponent = () => {
                 </div>
 
                 {
-                    RoomStore.info ?
-                        <div className={"controls-wrapper"}>
-                            <span onClick={() => IO.toggleMedia("camera")}>
-                                {MyInfo.participant?.mediaState.camera ?
-                                    <FontAwesomeIcon icon={faVideo}/> :
-                                    <FontAwesomeIcon icon={faVideoSlash}/>
-                                }
-                            </span>
-                            <span className={"controls-wrapper--leave-button"} onClick={() => {
-                                // eslint-disable-next-line no-restricted-globals
-                                const confirmed: boolean = confirm("Are you sure you would like to leave this room?");
-                                if (confirmed) {
-                                    IO.leave();
-                                }
-                            }}>
-                                <FontAwesomeIcon icon={faPhone}/>
-                            </span>
-                            <span onClick={() => IO.toggleMedia("microphone")}>
-                                {MyInfo.participant?.mediaState.microphone ?
-                                    <FontAwesomeIcon icon={faMicrophone}/> :
-                                    <FontAwesomeIcon icon={faMicrophoneSlash}/>
-                                }
-                            </span>
-                            {window.matchMedia('(max-width: 600px)').matches ?
-                                null :
-                                <span onClick={() => IO.toggleMedia("screen")}>
-                                    {MyInfo.participant?.mediaState.screen ?
-                                        <FontAwesomeIcon icon={faDesktop}/> :
-                                        <ScreenShareSlash/>
-                                    }
-                                </span>
+                    RoomStore.info &&
+                    <div className={"controls-wrapper " + (forceDisplayControls && "force-display")}>
+                        <span onClick={() => IO.toggleMedia("camera")}>
+                            {MyInfo.participant?.mediaState.camera ?
+                                <FontAwesomeIcon icon={faVideo}/> :
+                                <FontAwesomeIcon icon={faVideoSlash}/>
                             }
-                        </div>
-                        : null
+                        </span>
+                        <span onClick={() => IO.toggleMedia("microphone")}>
+                            {MyInfo.participant?.mediaState.microphone ?
+                                <FontAwesomeIcon icon={faMicrophone}/> :
+                                <FontAwesomeIcon icon={faMicrophoneSlash}/>
+                            }
+                        </span>
+                        <span className={"controls-wrapper--leave-button"} onClick={() => {
+                            IO.leave();
+                        }}>
+                            <FontAwesomeIcon icon={faPhone}/>
+                        </span>
+                        <span onClick={() => IO.toggleMedia("screen")}>
+                            {MyInfo.participant?.mediaState.screen ?
+                                <FontAwesomeIcon icon={faDesktop}/> :
+                                <ScreenShareSlash/>
+                            }
+                        </span>
+                    </div>
                 }
 
                 <div data-private={""} className={"videos-list-wrapper"}>

@@ -3,7 +3,7 @@ import UIStore from "../stores/UIStore";
 class UIStoreService {
     static get defaultProperties() {
         return {
-            chatPanel: true,
+            chatPanel: !window.matchMedia('(max-width: 600px)').matches,
             participantPanel: true,
             modalStore: {
                 joinOrCreate: false,

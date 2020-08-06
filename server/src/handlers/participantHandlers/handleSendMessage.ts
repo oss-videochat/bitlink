@@ -47,8 +47,16 @@ export const handleSendMessage: handleParticipantEvent<handleSendMessageParam> =
         message = MessageService.create(messageInput, participant, {group: toGroup});
 
     }
-    // TODO throttle
+    if(room.latestMessage[participant.id] && Date.now() - room.latestMessage[participant.id] < 250){
+        cb({
+            success: false,
+            status: 429,
+            error: "Please wait before sending messages"
+        });
+        return;
+    }
     RoomService.sendMessage(room, message);
+    room.latestMessage[participant.id] = Date.now();
     cb({
         success: true,
         status: 400,

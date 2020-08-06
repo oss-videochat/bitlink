@@ -91,13 +91,13 @@
     align-items: center;
 }
 
-.video-container:hover .controls-wrapper {
+.video-container:hover .controls-wrapper, .controls-wrapper.force-display {
     opacity: 1;
     transition-delay: 0ms;
 }
 
 .controls-wrapper span.controls-wrapper--leave-button {
-    display: none;
+    display: inline-flex;
     background: #e74848;
 }
 
@@ -114,9 +114,5 @@
     .preview-video {
         width: 150px;
         bottom: 80px;
-    }
-
-    .controls-wrapper span.controls-wrapper--leave-button {
-        display: inline-flex;
     }
 }

@@ -44,18 +44,6 @@ const Header: React.FunctionComponent<IHeaderProps> = ({toggleFullscreen}) => {
                                 : null
                         }
                     </ul>
-                    {RoomStore.info ?
-                        <React.Fragment>
-                            <span className={"divider"}/>
-                            <ul>
-                                <li className={"leave-button"} onClick={() => IO.leave()}>Leave Room
-                                </li>
-                            </ul>
-                        </React.Fragment>
-                        :
-                        null
-                    }
-
                     <span className={"divider"}/>
                     <ul>
                         <li onClick={toggleFullscreen}>

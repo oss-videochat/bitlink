@@ -49,12 +49,16 @@ const App: React.FunctionComponent = () => {
     }, []);
 
     function toggleFullscreen() {
-        if (!document.fullscreenElement) {
-            appRef.current?.requestFullscreen().catch((err: Error) => {
-                NotificationService.add(NotificationService.createUINotification("Could not enable fullscreen: " + err.toString(), NotificationType.Error))
-            });
+        if(!appRef.current){
             return;
         }
+        if (document.fullscreenElement) {
+            document.exitFullscreen();
+            return;
+        }
+        appRef.current?.requestFullscreen().catch((err: Error) => {
+            NotificationService.add(NotificationService.createUINotification("Could not enable fullscreen: " + err.toString(), NotificationType.Error))
+        });
     }
 
     return (

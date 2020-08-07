@@ -42,6 +42,7 @@ class ParticipantService {
     static leave(participant: Participant) {
         log("Forcing participant to leave", participant.name);
         participant.socket.removeAllListeners();
+        participant.isConnected = false;
         SocketService.removeSocket(participant.socket);
         SocketService.addSocket(participant.socket);
     }

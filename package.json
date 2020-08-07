@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "setup": "lerna bootstrap",
-    "start": "lerna run --stream start"
+    "start": "lerna run --parallel start"
   },
   "dependencies": {
     "lerna": "^3.22.1",

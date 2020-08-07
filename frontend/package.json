@@ -30,9 +30,8 @@
     "typescript": "~3.7.2"
   },
   "scripts": {
-    "start": "react-scripts start",
+    "start": "CI=true react-scripts start",
     "build": "react-scripts build",
-    "postinstall": "npm run build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },

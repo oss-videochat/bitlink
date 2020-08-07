@@ -5,8 +5,7 @@
   "main": "./build/index.js",
   "scripts": {
     "start": "tsc -w",
-    "build": "tsc",
-    "postinstall": "npm run build"
+    "build": "tsc"
   },
   "dependencies": {
     "typescript": "^3.9.6"

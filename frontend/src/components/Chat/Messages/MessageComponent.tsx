@@ -24,7 +24,7 @@ const MessageComponent: React.FunctionComponent<IMessageComponentProps> = ({star
     function handleKeyDown(e: KeyboardEvent<HTMLTextAreaElement>) {
         if (e.key === "Enter" && !e.shiftKey) {
             e.preventDefault();
-            if(!editValue){
+            if (!editValue) {
                 cancelEdit();
                 return;
             }
@@ -35,7 +35,7 @@ const MessageComponent: React.FunctionComponent<IMessageComponentProps> = ({star
         }
         if (e.key === "ArrowUp" && !userIsTyping) {
             cancelEdit();
-            if(nextEdit){
+            if (nextEdit) {
                 nextEdit();
             }
             return;
@@ -43,7 +43,7 @@ const MessageComponent: React.FunctionComponent<IMessageComponentProps> = ({star
 
         if (e.key === "ArrowDown" && !userIsTyping) {
             cancelEdit();
-            if(previousEdit){
+            if (previousEdit) {
                 previousEdit();
             }
             return;

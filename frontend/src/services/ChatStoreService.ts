@@ -14,7 +14,7 @@ class ChatStoreService {
     @action
     static addMessage(...messages: Array<Message>) {
         messages.forEach((message: Message) => {
-            if(ChatStore.messageStore.find(messageInStore => messageInStore.id === message.id)){
+            if (ChatStore.messageStore.find(messageInStore => messageInStore.id === message.id)) {
                 return;
             }
             ChatStore.messageStore.push(message);
@@ -83,12 +83,12 @@ class ChatStoreService {
 
     static editNextMessage(type: MessageType, roomId: string, message?: Message) {
         const messagesInChat = ChatStoreService.getMessages(type, roomId);
-        if(!message){
+        if (!message) {
             UIStore.store.messageIdEditControl = messagesInChat[messagesInChat.length - 1]?.id || null;
             return;
         }
         const nextEditableMessage = ChatStoreService.getNextEditableMessage(messagesInChat.slice().reverse(), message);
-        if(nextEditableMessage){
+        if (nextEditableMessage) {
             UIStore.store.messageIdEditControl = nextEditableMessage.id;
         }
     }
@@ -96,23 +96,23 @@ class ChatStoreService {
     static editPreviousMessage(type: MessageType, roomId: string, message: Message) {
         const messagesInChat = ChatStoreService.getMessages(type, roomId);
         const previousMessage = ChatStoreService.getNextEditableMessage(messagesInChat, message);
-        if(previousMessage){
+        if (previousMessage) {
             UIStore.store.messageIdEditControl = previousMessage.id;
         }
     }
 
-    private static getNextEditableMessage(messages: Message[], message: Message){
+    private static getNextEditableMessage(messages: Message[], message: Message) {
         let hit = false;
         return messages.find(messageInChat => {
-            if(messageInChat.type !== MessageType.DIRECT && messageInChat.type !== MessageType.GROUP){ // you can't edit a system message
+            if (messageInChat.type !== MessageType.DIRECT && messageInChat.type !== MessageType.GROUP) { // you can't edit a system message
                 return false;
             }
             const userMessageInChat = messageInChat as GroupMessage | DirectMessage;
-            if(hit
-                && userMessageInChat.from.info.id === MyInfoStore.participant!.id){ // must be editable
+            if (hit
+                && userMessageInChat.from.info.id === MyInfoStore.participant!.id) { // must be editable
                 return true;
             }
-            if(messageInChat.id === message.id){
+            if (messageInChat.id === message.id) {
                 hit = true;
             }
             return false;

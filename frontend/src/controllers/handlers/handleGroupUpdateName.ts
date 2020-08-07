@@ -8,7 +8,7 @@ interface handleGroupUpdateNameParam {
 
 export const handleGroupUpdateName: handleEvent<handleGroupUpdateNameParam> = ({groupId, newName}) => {
     const group = RoomService.getGroup(groupId);
-    if(group){
+    if (group) {
         group.name = newName;
     }
 };

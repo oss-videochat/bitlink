@@ -15,7 +15,7 @@ export const RoomSettingsSettings: React.FunctionComponent<ISettingsPanelProps> 
         });
     }, []);
 
-    useEffect(() =>{
+    useEffect(() => {
         events.on("save", (cb: () => void) => {
             IO.changeRoomSettings(newSettings!).then(cb).catch(cb);
         });

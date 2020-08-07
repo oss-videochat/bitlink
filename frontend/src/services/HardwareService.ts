@@ -54,10 +54,11 @@ class HardwareService {
     }
 
     static async getStream(source: MediaSource): Promise<MediaStream> {
-       if(source === "camera" && StreamEffectStore.cameraStreamEffectRunner){
-           return StreamEffectStore.cameraStreamEffectRunner.getStream();
-       }
-       return await HardwareService.getRawStream(source);
+        if (source === "camera" && StreamEffectStore.cameraStreamEffectRunner) {
+            return StreamEffectStore.cameraStreamEffectRunner.getStream();
+        }
+        return await HardwareService.getRawStream(source);
     }
 }
+
 export default HardwareService;

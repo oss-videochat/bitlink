@@ -18,8 +18,8 @@ import {
     MessageSummary,
     MessageType,
     ParticipantSummary,
-    RoomSummary,
-    RoomSettings
+    RoomSettings,
+    RoomSummary
 } from "@bitlink/common";
 import {handleEvent} from "../interfaces/handleEvent";
 import * as Handlers from './handlers';

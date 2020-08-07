@@ -52,7 +52,7 @@ export const TileContainer: React.FunctionComponent = () => {
         })
         return () => {
             disposer();
-            if(timeout){
+            if (timeout) {
                 clearTimeout(timeout)
             }
         }

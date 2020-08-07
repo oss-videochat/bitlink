@@ -21,8 +21,8 @@ import {DirectMessage, GroupMessage, Message, SystemMessage} from "../interfaces
 import * as Handlers from "../handlers/participantHandlers";
 import * as Validation from "../validation";
 import MessageGroupService from "./MessageGroupService";
-import cryptoRandomString = require("crypto-random-string");
 import * as Ajv from "ajv";
+import cryptoRandomString = require("crypto-random-string");
 
 const log = debug("Services:RoomService");
 
@@ -140,7 +140,7 @@ class RoomService {
 
     static closeRoomIfNecessary(room: Room) {
         if (room.participants.filter(participant => participant.isConnected && participant.role === ParticipantRole.HOST).length === 0) {
-            if(room.settings.hostDisconnectAction === HostDisconnectAction.TRANSFER_HOST && room.participants.filter(participant => participant.isConnected).length > 0){
+            if (room.settings.hostDisconnectAction === HostDisconnectAction.TRANSFER_HOST && room.participants.filter(participant => participant.isConnected).length > 0) {
                 RoomService.changeRole(room, room.participants.filter(participant => participant.isConnected)[0], ParticipantRole.HOST);
                 return;
             }
@@ -168,7 +168,7 @@ class RoomService {
         const oldName = participant.name;
         log("Participant changing name %s --> %s", participant.name, newName);
         ParticipantService.changeName(participant, newName);
-        RoomService.broadcast(room, "participant-changed-name",[], {
+        RoomService.broadcast(room, "participant-changed-name", [], {
             participantId: participant.id,
             newName: participant.name
         });
@@ -261,7 +261,7 @@ class RoomService {
         RoomService.sendSystemMessage(room, `${participantToRemove.name} was kicked from the room`);
     }
 
-    static sendSystemMessage(room: Room, content: string, permission: ParticipantRole = ParticipantRole.MEMBER){
+    static sendSystemMessage(room: Room, content: string, permission: ParticipantRole = ParticipantRole.MEMBER) {
         RoomService.sendMessage(room, MessageService.create({
             content: content,
             type: MessageType.SYSTEM
@@ -327,7 +327,7 @@ class RoomService {
     static changeRole(room: Room, participant: Participant, role: ParticipantRole) {
         participant.role = role;
         this.broadcast(room, 'participant-update-role', [], {participantId: participant.id, newRole: role});
-        RoomService.sendSystemMessage(room, `${participant.name}'s role is now ${role === ParticipantRole.HOST ? "host": "member"}`);
+        RoomService.sendSystemMessage(room, `${participant.name}'s role is now ${role === ParticipantRole.HOST ? "host" : "member"}`);
     }
 
     private static _addParticipant(room: Room, participant: Participant) {
@@ -335,27 +335,27 @@ class RoomService {
 
         function pw(func: handleParticipantEvent<any>, validation?: ((data: any) => boolean) | object): handleParticipantEvent {
             return (data: any, cb: any) => {
-                    if (validation) {
-                        if (typeof validation === "object") {
-                            const ajv = new Ajv();
-                            validation = ajv.compile({
-                                additionalProperties: false,
-                                type: "object",
-                                properties: {
-                                    ...validation as object
-                                }
-                            });
-                        }
-                        if (!(validation as Function)(data)) {
-                            cb({
-                                success: false,
-                                error: "Bad input",
-                                status: 400,
-                            })
-                            console.log(data);
-                            return;
-                        }
+                if (validation) {
+                    if (typeof validation === "object") {
+                        const ajv = new Ajv();
+                        validation = ajv.compile({
+                            additionalProperties: false,
+                            type: "object",
+                            properties: {
+                                ...validation as object
+                            }
+                        });
                     }
+                    if (!(validation as Function)(data)) {
+                        cb({
+                            success: false,
+                            error: "Bad input",
+                            status: 400,
+                        })
+                        console.log(data);
+                        return;
+                    }
+                }
                 func({...data, participant, room}, cb || (() => log("No CB Passed")))
             }
         }
@@ -368,7 +368,10 @@ class RoomService {
         participant.socket.on("update-room-settings", pw(Handlers.handleUpdateRoomSettings, Validation.handleUpdateRoomSettings));
         participant.socket.on("kick-participant", pw(Handlers.handleKickParticipant, {participantId: {type: "string"}}));
         participant.socket.on("send-message", pw(Handlers.handleSendMessage));
-        participant.socket.on("edit-message", pw(Handlers.handleEditMessage,  {messageId: {type: "string"}, newContent: {type: "string"}}));
+        participant.socket.on("edit-message", pw(Handlers.handleEditMessage, {
+            messageId: {type: "string"},
+            newContent: {type: "string"}
+        }));
         participant.socket.on("delete-message", pw(Handlers.handleDeleteMessage, {messageId: {type: "string"}}));
         participant.socket.on("transfer-host", pw(Handlers.handleTransferHost, {participantId: {type: "string"}}));
         participant.socket.on("change-name", pw(Handlers.handleUpdateName, {newName: {type: "string"}}));

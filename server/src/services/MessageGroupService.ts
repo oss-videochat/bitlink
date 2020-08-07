@@ -4,7 +4,7 @@ import {Participant} from "../interfaces/Participant";
 import {MessageGroupSummary} from "@bitlink/common";
 
 class MessageGroupService {
-    static create(name: string){
+    static create(name: string) {
         return {
             id: uuidv4(),
             name: name,
@@ -12,12 +12,15 @@ class MessageGroupService {
         }
     }
 
-    static addParticipant(messageGroup: MessageGroup, participant: Participant){
+    static addParticipant(messageGroup: MessageGroup, participant: Participant) {
         messageGroup.members.forEach(participant => {
-            if(!participant.isConnected){
+            if (!participant.isConnected) {
                 return;
             }
-            participant.socket.emit("participant-joined-group", {groupId: messageGroup.id, participantId: participant.id});
+            participant.socket.emit("participant-joined-group", {
+                groupId: messageGroup.id,
+                participantId: participant.id
+            });
         });
         messageGroup.members.push(participant);
         participant.socket.emit("added-to-group", {groupSummary: MessageGroupService.getSummary(messageGroup)});
@@ -25,7 +28,7 @@ class MessageGroupService {
 
     static changeName(messageGroup: MessageGroup, newName: string) {
         messageGroup.members.forEach(participant => {
-           participant.socket.emit("group-update-name", {groupId: messageGroup.id, newName});
+            participant.socket.emit("group-update-name", {groupId: messageGroup.id, newName});
         });
     }
 
@@ -37,4 +40,5 @@ class MessageGroupService {
         }
     }
 }
+
 export default MessageGroupService;

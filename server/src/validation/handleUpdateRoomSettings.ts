@@ -1,4 +1,4 @@
-import {HostDisconnectAction, RoomSettings} from "@bitlink/common";
+import {HostDisconnectAction} from "@bitlink/common";
 
 import * as Ajv from 'ajv';
 

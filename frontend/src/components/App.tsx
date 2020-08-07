@@ -49,7 +49,7 @@ const App: React.FunctionComponent = () => {
     }, []);
 
     function toggleFullscreen() {
-        if(!appRef.current){
+        if (!appRef.current) {
             return;
         }
         if (document.fullscreenElement) {

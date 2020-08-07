@@ -43,7 +43,11 @@ class SocketService {
 
         socket.on("get-rtp-capabilities", sw(handleGetRTPCapabilities, {roomId: {type: "string"}}));
         socket.on("create-room", sw(handleCreateRoom, {name: {type: "string"}}));
-        socket.on("join-room", sw(handleJoinRoom, {name: {type: "string"}, roomId: {type: "string"}, rtpCapabilities: {type: "object", additionalProperties: true}}));
+        socket.on("join-room", sw(handleJoinRoom, {
+            name: {type: "string"},
+            roomId: {type: "string"},
+            rtpCapabilities: {type: "object", additionalProperties: true}
+        }));
         socket.on("disconnect", sw(handleDisconnectSocket));
         SocketStore.sockets.push(socket);
     }

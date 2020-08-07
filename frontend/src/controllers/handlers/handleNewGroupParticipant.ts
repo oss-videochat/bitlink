@@ -10,7 +10,7 @@ interface handleNewGroupParticipantParam {
 export const handleNewGroupParticipant: handleEvent<handleNewGroupParticipantParam> = ({groupId, participantId}) => {
     const group = RoomService.getGroup(groupId);
     const participant = ParticipantService.getById(participantId);
-    if(group && participant){
+    if (group && participant) {
         group.members.push(participant);
     }
 };

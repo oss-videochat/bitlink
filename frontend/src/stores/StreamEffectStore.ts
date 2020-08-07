@@ -6,4 +6,5 @@ class StreamEffectStore {
     @observable image: HTMLImageElement | null = null;
     @observable blur: boolean = false;
 }
+
 export default new StreamEffectStore();

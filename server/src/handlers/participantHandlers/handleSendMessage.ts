@@ -47,7 +47,7 @@ export const handleSendMessage: handleParticipantEvent<handleSendMessageParam> =
         message = MessageService.create(messageInput, participant, {group: toGroup});
 
     }
-    if(room.latestMessage[participant.id] && Date.now() - room.latestMessage[participant.id] < 250){
+    if (room.latestMessage[participant.id] && Date.now() - room.latestMessage[participant.id] < 250) {
         cb({
             success: false,
             status: 429,

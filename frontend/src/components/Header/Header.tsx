@@ -2,7 +2,6 @@ import React from 'react';
 import {useObserver} from "mobx-react"
 import './Header.css';
 import RoomStore from "../../stores/RoomStore";
-import IO from "../../controllers/IO";
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
 import {faCogs, faComments, faExpand, faUsers} from '@fortawesome/free-solid-svg-icons'
 import UIStore from "../../stores/UIStore";

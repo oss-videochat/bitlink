@@ -4,8 +4,6 @@ import {PersonInferenceConfig} from "@tensorflow-models/body-pix/dist/body_pix_m
 import debug from "./debug";
 import * as StackBlur from 'stackblur-canvas';
 
-import {TimerWorkerMessageType, timerWorkerScript} from './TimerWorker';
-
 const log = debug("CameraStreamEffectsRunner");
 
 const bpModelPromise = bodyPix.load({
@@ -41,7 +39,7 @@ class CameraStreamEffectsRunner {
     private previousSegmentationComplete = true;
     private lastSegmentation: bodyPix.SemanticPersonSegmentation | null = null;
 
-   // private worker: Worker;
+    // private worker: Worker;
     private shouldContinue = true;
 
     private imageData: ImageData | null = null;
@@ -53,16 +51,16 @@ class CameraStreamEffectsRunner {
         this.stream = stream;
 
         this.blur = blur;
-    /*    this.worker = new Worker(timerWorkerScript, { name: 'Blur effect worker' });
-        this.worker.onmessage = (message) => {
-            if(message.data.type === TimerWorkerMessageType.TICK){
-                this.tick();
+        /*    this.worker = new Worker(timerWorkerScript, { name: 'Blur effect worker' });
+            this.worker.onmessage = (message) => {
+                if(message.data.type === TimerWorkerMessageType.TICK){
+                    this.tick();
+                }
             }
-        }
-        this.worker.postMessage({
-            type: TimerWorkerMessageType.START_TIMER,
-            timeMs: 1000 / 60,
-        })*/
+            this.worker.postMessage({
+                type: TimerWorkerMessageType.START_TIMER,
+                timeMs: 1000 / 60,
+            })*/
 
         this.tmpVideo.addEventListener('loadedmetadata', () => {
             this.setNewSettings(blur, image);
@@ -86,10 +84,10 @@ class CameraStreamEffectsRunner {
 
         this.finalCanvas.getContext('2d'); // firefox is stupid if we captureStream() without getting the context first
 
-      /*  this.finalCanvas.style.position = "fixed";
-        this.finalCanvas.style.left = "0";
-        this.finalCanvas.style.top = "0";
-        document.querySelector('body')!.appendChild(this.finalCanvas);*/
+        /*  this.finalCanvas.style.position = "fixed";
+          this.finalCanvas.style.left = "0";
+          this.finalCanvas.style.top = "0";
+          document.querySelector('body')!.appendChild(this.finalCanvas);*/
     }
 
     static async create(stream: MediaStream, blur: boolean, image?: HTMLImageElement) {
@@ -98,11 +96,32 @@ class CameraStreamEffectsRunner {
     }
 
     cancel() {
-    /*    this.worker.postMessage({
-            type: TimerWorkerMessageType.END_TIMER
-        })
-        this.worker.terminate();*/
+        /*    this.worker.postMessage({
+                type: TimerWorkerMessageType.END_TIMER
+            })
+            this.worker.terminate();*/
         this.shouldContinue = false;
+    }
+
+    setNewSettings(blur: boolean, image?: HTMLImageElement) {
+        log("Updating Camera Effects " + JSON.stringify({blur, image: !!image}))
+        if (blur && image) {
+            throw "I can't blur and replace image...well I can...but that would be stupid."
+        }
+        this.blur = blur;
+        if (image) {
+            this.generateImageData(image);
+        } else {
+            this.imageData = null;
+        }
+    }
+
+    getStream() {
+        if (!this.outStream) {
+            // @ts-ignore
+            this.outStream = this.finalCanvas.captureStream();
+        }
+        return this.outStream as MediaStream;
     }
 
     private tick() {
@@ -115,7 +134,7 @@ class CameraStreamEffectsRunner {
             });
         }
         this.processSegmentation(this.lastSegmentation);
-        if(this.shouldContinue){
+        if (this.shouldContinue) {
             setTimeout(this.tick.bind(this), 1000 / 60)
         }
     }
@@ -132,7 +151,7 @@ class CameraStreamEffectsRunner {
                     for (let y = 0; y < this.finalCanvas.height; y++) {
                         let n = y * this.finalCanvas.width + x;
                         if (segmentation.data[n] === 0) {
-                            dataL[n * 4] =  blurData.data[n * 4];
+                            dataL[n * 4] = blurData.data[n * 4];
                             dataL[n * 4 + 1] = blurData.data[n * 4 + 1];
                             dataL[n * 4 + 2] = blurData.data[n * 4 + 2];
                             dataL[n * 4 + 3] = blurData.data[n * 4 + 3];
@@ -140,7 +159,7 @@ class CameraStreamEffectsRunner {
                     }
                 }
             }
-            if(this.imageData) {
+            if (this.imageData) {
                 const dataL = liveData.data;
                 for (let x = 0; x < this.finalCanvas.width; x++) {
                     for (let y = 0; y < this.finalCanvas.height; y++) {
@@ -156,19 +175,6 @@ class CameraStreamEffectsRunner {
             }
         }
         ctx.putImageData(liveData, 0, 0)
-    }
-
-    setNewSettings(blur: boolean, image?: HTMLImageElement){
-        log("Updating Camera Effects " + JSON.stringify({blur, image: !!image}))
-        if (blur && image) {
-            throw "I can't blur and replace image...well I can...but that would be stupid."
-        }
-        this.blur = blur;
-        if(image){
-            this.generateImageData(image);
-        } else {
-            this.imageData = null;
-        }
     }
 
     private generateImageData(img: HTMLImageElement) {
@@ -222,14 +228,6 @@ class CameraStreamEffectsRunner {
         ctx.drawImage(img, cx, cy, cw, ch, x, y, w, h);
 
         this.imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    }
-
-    getStream() {
-        if(!this.outStream){
-            // @ts-ignore
-            this.outStream = this.finalCanvas.captureStream();
-        }
-        return this.outStream as MediaStream;
     }
 }
 

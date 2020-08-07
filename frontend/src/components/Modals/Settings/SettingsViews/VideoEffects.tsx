@@ -129,16 +129,16 @@ const VideoEffects: React.FunctionComponent<ISettingsPanelProps> = ({events, cha
         setShouldBlur(e.target.checked)
     }
 
-    function handleNoneSelect(){
+    function handleNoneSelect() {
         handleChangesMade(true);
-        if(!image){
+        if (!image) {
             return;
         }
         setImage(null);
     }
 
-    function handleAddNewImage(){
-        if(!fileUploadRef.current){
+    function handleAddNewImage() {
+        if (!fileUploadRef.current) {
             return;
         }
         fileUploadRef.current.click();
@@ -152,9 +152,9 @@ const VideoEffects: React.FunctionComponent<ISettingsPanelProps> = ({events, cha
                     <div className={"video-preview-wrapper"}>
                         {
                             !videoReady &&
-                                <div className={"video-spinner"}>
-                                    <Spinner size={"40px"}/>
-                                </div>
+                            <div className={"video-spinner"}>
+                                <Spinner size={"40px"}/>
+                            </div>
 
                         }
                         <video className={"video-preview " + (videoReady ? "ready" : "")} ref={videoRef}/>
@@ -163,11 +163,12 @@ const VideoEffects: React.FunctionComponent<ISettingsPanelProps> = ({events, cha
                 <label><input type={"checkbox"} onChange={handleBlurChange} checked={shouldBlur}/> Blur</label>
                 <div className={"virtual-background-box-container"}>
                     <VirtualBackgroundBox text={"None"} onClick={handleNoneSelect} selected={!image}/>
-                    { image &&
+                    {image &&
                     <VirtualBackgroundBox image={image} selected={true}/>
                     }
                     <VirtualBackgroundBox text={"New +"} onClick={handleAddNewImage} selected={false}/>
-                    <input hidden type={"file"} accept={"image/png, image/jpeg"} ref={fileUploadRef} onChange={handleFileUpload}/>
+                    <input hidden type={"file"} accept={"image/png, image/jpeg"} ref={fileUploadRef}
+                           onChange={handleFileUpload}/>
                 </div>
             </div>
         </div>

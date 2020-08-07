@@ -2,7 +2,7 @@ import * as mediasoup from "mediasoup";
 import {Participant} from "./Participant";
 import {Message} from "./Message";
 import {MessageGroup} from "./MessageGroup";
-import {HostDisconnectAction, RoomSettings} from "@bitlink/common";
+import {RoomSettings} from "@bitlink/common";
 
 export interface Room {
     id: string,

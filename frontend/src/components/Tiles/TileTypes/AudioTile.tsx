@@ -1,8 +1,8 @@
 import React from 'react';
 import './AudioTile.css';
 import {useObserver} from 'mobx-react';
-import AutoPlayAudio from "./AutoPlayAudio";
-import {ITileProps} from "./TileContainer";
+import AutoPlayAudio from "../AutoPlayAudio";
+import {ITileProps} from "../TileContainer";
 
 const AudioTile: React.FunctionComponent<ITileProps> = ({flexBasis, participant, maxWidth}) => useObserver(() => (
         <div className={"video-participant-wrapper audio video-pad"} style={{flexBasis, maxWidth}}>

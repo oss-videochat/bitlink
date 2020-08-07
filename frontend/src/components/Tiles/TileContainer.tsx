@@ -3,9 +3,9 @@ import {useObserver} from "mobx-react"
 import {reaction, when} from "mobx"
 import './TileContainer.css';
 import ParticipantsStore from "../../stores/ParticipantsStore";
-import VideoTile from "./VideoTile";
-import AudioTile from "./AudioTile";
-import TilePlaceholder from "./TilePlaceholder";
+import VideoTile from "./TileTypes/VideoTile";
+import AudioTile from "./TileTypes/AudioTile";
+import TilePlaceholder from "./TileTypes/TilePlaceholder";
 import MyInfo from "../../stores/MyInfoStore";
 import UIStore from "../../stores/UIStore";
 import {LayoutSizeCalculation} from "../../util/layout/LayoutSizeCalculation";
@@ -21,7 +21,7 @@ import {
     faVideoSlash
 } from '@fortawesome/free-solid-svg-icons'
 import RoomStore from "../../stores/RoomStore";
-import ScreenTile from "./ScreenTile";
+import ScreenTile from "./TileTypes/ScreenTile";
 import ScreenShareSlash from "./ScreenshareSlash";
 import HardwareService from "../../services/HardwareService";
 import ParticipantService from "../../services/ParticipantService";

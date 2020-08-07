@@ -1,7 +1,7 @@
 import React from 'react';
 import './TilePlaceholder.css'
-import RoomId from "../Header/RoomId";
-import RoomStore from "../../stores/RoomStore";
+import RoomId from "../../Header/RoomId";
+import RoomStore from "../../../stores/RoomStore";
 import {useObserver} from 'mobx-react';
 
 const TilePlaceholder: React.FunctionComponent = () => useObserver(() => (

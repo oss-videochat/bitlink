@@ -5,10 +5,10 @@ import MyInfo from "../../stores/MyInfoStore";
 import UIStore from "../../stores/UIStore";
 import RoomStore from "../../stores/RoomStore";
 import {prepareAudioBank} from "../Tiles/AutoPlayAudio";
-import logo from "../../assets/logo/logo.svg";
 import LegalText from "../LegalText";
 import NotificationService from "../../services/NotificationService";
 import {NotificationType} from "../../enum/NotificationType";
+import {Logo} from "../Util/Logo";
 
 const CreateDialog: React.FunctionComponent = () => {
     const [roomName, setRoomName] = useState("");
@@ -56,7 +56,7 @@ const CreateDialog: React.FunctionComponent = () => {
 
     return (
         <div className={"dialog-modal"}>
-            <img className={"dialog--logo"} src={logo}/>
+            <Logo/>
             <h2 className={"modal--title"}>Create Room</h2>
             <input data-private={"lipsum"} onBlur={() => setRoomNameValidationEnabled(true)}
                    className={"modal--input " + ((!roomNameValidationEnabled || roomNameIsValid()) ? "" : "invalid")}

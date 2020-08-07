@@ -9,6 +9,7 @@ import logo from "../../assets/logo/logo.svg";
 import LegalText from "../LegalText";
 import NotificationService from "../../services/NotificationService";
 import {NotificationType} from "../../enum/NotificationType";
+import {Logo} from "../Util/Logo";
 
 const JoinDialog: React.FunctionComponent = () => {
     const [roomId, setRoomId] = useState(UIStore.store.preFillJoinValue || "");
@@ -64,7 +65,7 @@ const JoinDialog: React.FunctionComponent = () => {
 
     return (
         <div className={"dialog-modal"}>
-            <img className={"dialog--logo"} src={logo}/>
+            <Logo/>
             <h2 className={"modal--title"}>Join Room</h2>
             <input data-private={"lipsum"} onBlur={() => setRoomIdValidationEnabled(true)}
                    value={roomId}

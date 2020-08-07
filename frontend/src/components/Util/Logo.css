@@ -1,0 +1,12 @@
+.logo {
+    width: 210px;
+    margin: 0 auto;
+    display: block;
+}
+
+.version {
+    display: block;
+    text-align: center;
+    margin: 0;
+    color: #6d6d6d;
+}

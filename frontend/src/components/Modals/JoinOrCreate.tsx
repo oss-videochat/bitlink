@@ -2,8 +2,8 @@ import React from 'react';
 import './Dialog.css';
 import './JoinOrCreate.css'
 import UIStore from "../../stores/UIStore";
-import logo from '../../assets/logo/logo.svg';
 import LegalText from "../LegalText";
+import {Logo} from "../Util/Logo";
 
 const JoinOrCreate: React.FunctionComponent = () => {
     function handleClick(chosen: string) {
@@ -18,7 +18,7 @@ const JoinOrCreate: React.FunctionComponent = () => {
 
     return (
         <div className={"dialog-modal join-or-create"}>
-            <img className={"dialog--logo"} src={logo}/>
+            <Logo/>
             <h2 className={"modal--title"}>Join or Create a Room</h2>
             <input onClick={() => handleClick("join")} type={"button"} value={"Join Room"}
                    className={"modal--button join-or-create-button"}/>

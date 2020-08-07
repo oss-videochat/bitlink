@@ -3,7 +3,7 @@
   "version": "0.4.0",
   "private": true,
   "scripts": {
-    "start": "ts-node ./bin/www",
+    "start": "ts-node-dev ./bin/www",
     "run": "node ./build/bin/www",
     "build": "tsc && npm run copy-assets",
     "copy-assets": "cp -R ./bin ./build;"
@@ -24,6 +24,7 @@
     "morgan": "~1.9.1",
     "pidusage": "latest",
     "socket.io": "^2.3.0",
+    "ts-node-dev": "^1.0.0-pre.56",
     "uuid": "^7.0.3"
   },
   "devDependencies": {

@@ -1,5 +1,4 @@
 import * as Ajv from "ajv";
-import {MediaState} from "@bitlink/common";
 
 const JSON = {
     additionalProperties: false,

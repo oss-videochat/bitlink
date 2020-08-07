@@ -16,8 +16,7 @@ import MessageService from "./MessageService";
 import * as mediasoup from 'mediasoup';
 import * as crypto from "crypto";
 import MediasoupPeerService from "./MediasoupPeerService";
-import {APIResponseCallback, handleParticipantEvent} from "../interfaces/handleEvent";
-import {handleUpdateRoomSettings} from "../validation/handleUpdateRoomSettings";
+import {handleParticipantEvent} from "../interfaces/handleEvent";
 import {DirectMessage, GroupMessage, Message, SystemMessage} from "../interfaces/Message";
 import * as Handlers from "../handlers/participantHandlers";
 import * as Validation from "../validation";
@@ -63,9 +62,12 @@ class RoomService {
 
     static destroy(room: Room) {
         log("Room destroyed %s" + room.settings.name);
-        room.participants.forEach(ParticipantService.leave);
-        room.router.close();
         RoomService.broadcast(room, "destroy");
+        room.participants.forEach(participant => {
+            ParticipantService.leave(participant);
+            MediasoupPeerService.destroy(participant.mediasoupPeer);
+        });
+        room.router.close();
         delete RoomStore.rooms[room.id]
     }
 

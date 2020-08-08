@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {KeyboardEvent, useState} from 'react';
 import './Dialog.css';
 import IO from "../../controllers/IO";
 import MyInfo from "../../stores/MyInfoStore";
@@ -54,6 +54,16 @@ const CreateDialog: React.FunctionComponent = () => {
         }
     }
 
+    function handleKeyDown(e: KeyboardEvent){
+        if(e.key !== "Enter"){
+            return;
+        }
+        e.preventDefault();
+        if(hasValidInput()){
+            handleCreateRoom();
+        }
+    }
+
     return (
         <div className={"dialog-modal"}>
             <Logo/>
@@ -63,11 +73,13 @@ const CreateDialog: React.FunctionComponent = () => {
                    onChange={(e) => {
                        setRoomName(e.target.value)
                    }}
-                   placeholder={"Room Name"}/>
+                   placeholder={"Room Name"}
+                   onKeyDown={handleKeyDown}/>
             <input data-private={"lipsum"} onBlur={() => setUserNameValidationEnabled(true)}
                    className={"modal--input " + ((!userNameValidationEnabled || userNameIsValid()) ? "" : "invalid")}
                    onChange={(e) => setUserName(e.target.value)}
-                   placeholder={"Your Name"}/>
+                   placeholder={"Your Name"}
+                   onKeyDown={handleKeyDown}/>
             <div className={"modal--button-container"}>
                 <input onClick={handleCancel} type={"button"} value={"Cancel"}
                        className={"modal--button cancel"}/>

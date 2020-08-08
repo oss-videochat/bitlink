@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {ClipboardEvent, KeyboardEvent, useState} from 'react';
 import './Dialog.css';
 import IO from "../../controllers/IO";
 import MyInfo from "../../stores/MyInfoStore";
@@ -53,7 +53,17 @@ const JoinDialog: React.FunctionComponent = () => {
         }
     }
 
-    function handlePaste(e: any) {
+    function handleKeyDown(e: KeyboardEvent){
+        if(e.key !== "Enter"){
+            return;
+        }
+        e.preventDefault();
+        if(hasValidInput()){
+            handleJoinRoom();
+        }
+    }
+
+    function handlePaste(e: ClipboardEvent) {
         const text = e.clipboardData.getData('text');
         const nums = text.match(/\/join\/(.+)$/);
         if (nums && nums[1]) {
@@ -74,6 +84,7 @@ const JoinDialog: React.FunctionComponent = () => {
                        setRoomIdValidationEnabled(true)
                    }}
                    onPaste={handlePaste}
+                   onKeyDown={handleKeyDown}
                    type={"tel"}
                    placeholder={"Room ID or Paste Link"}/>
             <input data-private={"lipsum"} onBlur={() => {
@@ -85,6 +96,7 @@ const JoinDialog: React.FunctionComponent = () => {
                        setUserName(e.target.value);
                        setUserNameValidationEnabled(true)
                    }}
+                   onKeyDown={handleKeyDown}
                    placeholder={"Your Name"}/>
             <div className={"modal--button-container"}>
                 <input onClick={handleCancel} type={"button"} value={"Cancel"}

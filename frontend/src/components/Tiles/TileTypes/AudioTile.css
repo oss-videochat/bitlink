@@ -1,7 +1,10 @@
-.video-participant-wrapper.audio {
+.audio-wrapper {
     overflow: hidden;
     padding-bottom: 0;
-    height: auto;
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    background: #2b2b2b;
 }
 
 .audio-participant--name {

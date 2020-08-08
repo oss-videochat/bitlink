@@ -1,0 +1,24 @@
+.tile-wrapper {
+    padding: 10px;
+}
+
+.tile-aspect-ratio-wrapper {
+    position: relative;
+    max-height: 100%;
+    padding-bottom: 56.25%;
+    overflow: hidden;
+}
+
+.tile-hover-menu {
+    opacity: 0;
+    pointer-events: none;
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    transition: opacity 200ms;
+}
+
+.tile-aspect-ratio-wrapper:hover .tile-hover-menu {
+    pointer-events: auto;
+    opacity: 1;
+}

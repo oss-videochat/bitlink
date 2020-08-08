@@ -1,10 +1,10 @@
 import React, {useEffect, useRef} from 'react';
 import './VideoTile.css';
 import './ScreenTile.css';
-import {ITileProps} from "../TileContainer";
+import {ITileProps} from "../TileWrapper";
 import {useObserver} from 'mobx-react';
 
-const ScreenTile: React.FunctionComponent<ITileProps> = ({participant, flexBasis, maxWidth}) => {
+const ScreenTile: React.FunctionComponent<ITileProps> = ({participant}) => {
     const videoRef = useRef<HTMLVideoElement>(null);
 
     useEffect(() => {
@@ -26,13 +26,11 @@ const ScreenTile: React.FunctionComponent<ITileProps> = ({participant, flexBasis
 
 
     return useObserver(() => (
-        <div className={"video-pad"} style={{flexBasis: flexBasis, maxWidth: maxWidth}}>
-            <div className={"video-participant-wrapper"}>
-                <video autoPlay={true} playsInline={true} muted={true} ref={videoRef}
-                       className={"screen-participant--video"}/>
-                <span className={"video-participant--name"}>{participant.info.name}'s Screen</span>
-            </div>
-        </div>
+        <>
+            <video autoPlay={true} playsInline={true} muted={true} ref={videoRef}
+                   className={"screen-participant--video"}/>
+            <span className={"video-participant--name"}>{participant.info.name}'s Screen</span>
+        </>
     ));
 }
 export default ScreenTile;

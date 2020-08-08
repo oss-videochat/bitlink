@@ -3,10 +3,10 @@ import './VideoTile.css';
 import {useObserver} from 'mobx-react';
 import {autorun} from 'mobx';
 import AutoPlayAudio from "../AutoPlayAudio";
-import {ITileProps} from "../TileContainer";
+import {ITileProps} from "../TileWrapper";
 
 
-const VideoTile: React.FunctionComponent<ITileProps> = ({participant, flexBasis, maxWidth}) => {
+const VideoTile: React.FunctionComponent<ITileProps> = ({participant}) => {
     const videoRef = useRef<HTMLVideoElement>(null);
     const [audioSrcObject, setAudioSrcObject] = useState<MediaStream | null>(null);
 
@@ -39,17 +39,15 @@ const VideoTile: React.FunctionComponent<ITileProps> = ({participant, flexBasis,
     }, [participant])
 
     return useObserver(() => (
-        <div className={"video-pad"} style={{flexBasis, maxWidth}}>
-            <div className={"video-participant-wrapper"}>
-                <video autoPlay={true} playsInline={true} muted={true} ref={videoRef}
-                       className={"video-participant--video"}/>
-                {
-                    audioSrcObject &&
-                    <AutoPlayAudio srcObject={audioSrcObject}/>
-                }
-                <span className={"video-participant--name"}>{participant.info.name}</span>
-            </div>
-        </div>
+        <>
+            <video autoPlay={true} playsInline={true} muted={true} ref={videoRef}
+                   className={"video-participant--video"}/>
+            {
+                audioSrcObject &&
+                <AutoPlayAudio srcObject={audioSrcObject}/>
+            }
+            <span className={"video-participant--name"}>{participant.info.name}</span>
+        </>
     ));
 }
 export default VideoTile;

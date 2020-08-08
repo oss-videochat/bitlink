@@ -26,12 +26,8 @@ import ScreenShareSlash from "./ScreenshareSlash";
 import HardwareService from "../../services/HardwareService";
 import ParticipantService from "../../services/ParticipantService";
 import StreamEffectStore from "../../stores/StreamEffectStore";
+import {TileWrapper} from "./TileWrapper";
 
-export interface ITileProps {
-    flexBasis: string,
-    participant: Participant,
-    maxWidth: string
-}
 
 export const TileContainer: React.FunctionComponent = () => {
     const [windowSize, setWindowSize] = useState({
@@ -183,23 +179,19 @@ export const TileContainer: React.FunctionComponent = () => {
                 <div data-private={""} className={"videos-list-wrapper"}>
                     {ParticipantsStore.participants.length > 1 ? // if your alone display the placeholder
                         [
-                            ...participantsMedia.map((participant, i, arr) => {
-                                if (participant.hasVideo) {
-                                    return <VideoTile flexBasis={basis} maxWidth={maxWidth}
-                                                      key={participant.info.id + "videop"}
-                                                      participant={participant}/>
-                                } else {
-                                    return <AudioTile flexBasis={basis} maxWidth={maxWidth}
-                                                      key={participant.info.id + "audiop"}
-                                                      participant={participant}/>
-                                }
-                            }),
-                            ...participantsScreen.map(participant => {
-                                    return <ScreenTile flexBasis={basis} maxWidth={maxWidth}
-                                                       key={participant.info.id + "screenp"}
-                                                       participant={participant}/>
-                                }
-                            )
+                            ...participantsMedia.map((participant, i, arr) => (
+                                <TileWrapper key={participant.info.id + participant.hasVideo} flexBasis={basis} maxWidth={maxWidth}>
+                                    { participant.hasVideo ?
+                                        <VideoTile participant={participant}/>
+                                        :  <AudioTile participant={participant}/>
+                                    }
+                                </TileWrapper>
+                            )),
+                            ...participantsScreen.map(participant => (
+                                <TileWrapper key={participant.info.id + participant.hasVideo} flexBasis={basis} maxWidth={maxWidth}>
+                                    <ScreenTile participant={participant}/>
+                                </TileWrapper>
+                            ))
                         ]
                         : <TilePlaceholder/>
                     }

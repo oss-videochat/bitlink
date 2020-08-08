@@ -2,13 +2,11 @@ import React from 'react';
 import './AudioTile.css';
 import {useObserver} from 'mobx-react';
 import AutoPlayAudio from "../AutoPlayAudio";
-import {ITileProps} from "../TileContainer";
+import {ITileProps} from "../TileWrapper";
 
-const AudioTile: React.FunctionComponent<ITileProps> = ({flexBasis, participant, maxWidth}) => useObserver(() => (
-        <div className={"video-participant-wrapper audio video-pad"} style={{flexBasis, maxWidth}}>
-            <div className={"audio-participant--spacer"}>
+const AudioTile: React.FunctionComponent<ITileProps> = ({participant}) => useObserver(() => (
+        <div className={"audio-wrapper"}>
                 <span className={"audio-participant--name"}>{participant.info.name}</span>
-            </div>
             <AutoPlayAudio srcObject={new MediaStream([participant.consumers.microphone!.track])}/>
         </div>
     )

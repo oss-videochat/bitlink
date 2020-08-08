@@ -21,17 +21,6 @@
     font-size: 13px;
 }
 
-.video-pad {
-    padding: 10px;
-}
-
-.video-participant-wrapper {
-    position: relative;
-    max-height: 100%;
-    padding-bottom: 56.25%;
-    overflow: hidden;
-}
-
 .preview-video {
     position: absolute;
     top: 0;

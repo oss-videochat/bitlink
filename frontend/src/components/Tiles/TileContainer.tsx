@@ -27,7 +27,12 @@ import HardwareService from "../../services/HardwareService";
 import ParticipantService from "../../services/ParticipantService";
 import StreamEffectStore from "../../stores/StreamEffectStore";
 import {TileWrapper} from "./TileWrapper";
+import {TileDisplayMode} from "../../enum/TileDisplayMode";
 
+interface ViewConfiguration {
+    mode: TileDisplayMode,
+    data: null | { participant: Participant }
+}
 
 export const TileContainer: React.FunctionComponent = () => {
     const [windowSize, setWindowSize] = useState({
@@ -40,6 +45,10 @@ export const TileContainer: React.FunctionComponent = () => {
     const [forceDisplayControls, setForceDisplayControls] = useState(true);
     const previewRef = useRef<HTMLVideoElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
+    const [viewConfiguration, setViewConfiguration] = useState<ViewConfiguration>({
+        mode: TileDisplayMode.GRID,
+        data: null
+    });
 
     useEffect(() => {
         let timeout: NodeJS.Timeout;
@@ -106,8 +115,13 @@ export const TileContainer: React.FunctionComponent = () => {
 
     useEffect(() => {
         return reaction(() => {
-            const living = ParticipantService.getLiving(true);
-            const numSquares = living.filter(participant => participant.hasAudio || participant.hasVideo).length + living.filter(participant => participant.hasScreen).length;
+            let numSquares;
+            if (viewConfiguration.mode === TileDisplayMode.GRID) {
+                const living = ParticipantService.getLiving(true);
+                numSquares = living.filter(participant => participant.hasAudio || participant.hasVideo).length + living.filter(participant => participant.hasScreen).length;
+            } else {
+                numSquares = 1;
+            }
 
             return {
                 chatPanel: UIStore.store.chatPanel,
@@ -124,15 +138,65 @@ export const TileContainer: React.FunctionComponent = () => {
             setBasis(result.basis);
             setMaxWidth(result.maxWidth);
         }, {fireImmediately: true});
-    }, [windowSize]);
+    }, [windowSize, viewConfiguration]);
+
+    function onPin(participant: Participant){
+        return () => setViewConfiguration({
+            mode: TileDisplayMode.PINNED_PARTICIPANT,
+            data: {participant: participant}
+        })
+    }
 
 
     return useObserver(() => {
+        if(viewConfiguration.mode === TileDisplayMode.PINNED_PARTICIPANT && (!viewConfiguration.data!.participant.hasVideo && !viewConfiguration.data!.participant.hasAudio)){
+            setViewConfiguration({mode: TileDisplayMode.GRID, data: null});
+            return null;
+        }
+        if(viewConfiguration.mode === TileDisplayMode.PINNED_SCREEN && !viewConfiguration.data!.participant.hasScreen){
+            setViewConfiguration({mode: TileDisplayMode.GRID, data: null});
+            return null;
+        }
+
         const participantsLiving: Participant[] = ParticipantService.getLiving();
 
-        const participantsMedia = participantsLiving.filter(participant => participant.hasAudio || participant.hasVideo);
-        const participantsScreen = participantsLiving.filter(participant => participant.hasScreen);
+        let tiles: React.ReactNode;
 
+        switch (viewConfiguration.mode) {
+            case TileDisplayMode.GRID: {
+                const participantsMedia = participantsLiving.filter(participant => participant.hasAudio || participant.hasVideo);
+                const participantsScreen = participantsLiving.filter(participant => participant.hasScreen);
+
+                tiles = [
+                    ...participantsMedia.map((participant, i, arr) => (
+                        <TileWrapper onPin={onPin(participant)} key={participant.info.id + participant.hasVideo} flexBasis={basis}
+                                     maxWidth={maxWidth}>
+                            {participant.hasVideo ?
+                                <VideoTile participant={participant}/>
+                                : <AudioTile participant={participant}/>
+                            }
+                        </TileWrapper>
+                    )),
+                    ...participantsScreen.map(participant => (
+                        <TileWrapper onPin={onPin(participant)} key={participant.info.id + participant.hasVideo} flexBasis={basis}
+                                     maxWidth={maxWidth}>
+                            <ScreenTile participant={participant}/>
+                        </TileWrapper>
+                    ))
+                ];
+                break;
+            }
+            case TileDisplayMode.PINNED_PARTICIPANT:
+                tiles = (
+                    <TileWrapper onPin={onPin(viewConfiguration.data!.participant)}  flexBasis={basis} maxWidth={maxWidth}>
+                        {viewConfiguration.data!.participant.hasVideo ?
+                            <VideoTile participant={viewConfiguration.data!.participant}/>
+                            : <AudioTile participant={viewConfiguration.data!.participant}/>
+                        }
+                    </TileWrapper>
+                );
+                break;
+        }
         return (
             <div ref={containerRef} className={"video-container"}>
                 {
@@ -178,21 +242,7 @@ export const TileContainer: React.FunctionComponent = () => {
 
                 <div data-private={""} className={"videos-list-wrapper"}>
                     {ParticipantsStore.participants.length > 1 ? // if your alone display the placeholder
-                        [
-                            ...participantsMedia.map((participant, i, arr) => (
-                                <TileWrapper key={participant.info.id + participant.hasVideo} flexBasis={basis} maxWidth={maxWidth}>
-                                    { participant.hasVideo ?
-                                        <VideoTile participant={participant}/>
-                                        :  <AudioTile participant={participant}/>
-                                    }
-                                </TileWrapper>
-                            )),
-                            ...participantsScreen.map(participant => (
-                                <TileWrapper key={participant.info.id + participant.hasVideo} flexBasis={basis} maxWidth={maxWidth}>
-                                    <ScreenTile participant={participant}/>
-                                </TileWrapper>
-                            ))
-                        ]
+                        tiles
                         : <TilePlaceholder/>
                     }
                 </div>

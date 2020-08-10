@@ -57,6 +57,7 @@
     cursor: pointer;
     user-select: none;
     -webkit-user-select: none;
+    white-space: nowrap;
 }
 
 .ellipsis_menu_item:hover {

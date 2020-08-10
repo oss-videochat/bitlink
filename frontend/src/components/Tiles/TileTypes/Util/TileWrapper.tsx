@@ -1,12 +1,14 @@
 import React, {CSSProperties, useEffect, useState} from 'react';
 import './TileWrapper.css';
 
+export interface TileMenuItem {
+    title: string,
+    toggle: () => void
+}
+
 interface TileWrapperProps {
     style?: CSSProperties,
-    menuItems?: {
-        title: string,
-        toggle: () => void
-    }[]
+    menuItems?: TileMenuItem[]
 }
 
 export const TileWrapper: React.FunctionComponent<TileWrapperProps> = ({style, menuItems, children}) => {

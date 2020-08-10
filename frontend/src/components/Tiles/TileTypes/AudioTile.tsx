@@ -1,8 +1,8 @@
 import React from 'react';
 import './AudioTile.css';
 import {useObserver} from 'mobx-react';
-import AutoPlayAudio from "../AutoPlayAudio";
-import {ITileProps} from "../TileWrapper";
+import AutoPlayAudio from "./Util/AutoPlayAudio";
+import {ITileProps} from "../TileContainer/TileContainer";
 
 const AudioTile: React.FunctionComponent<ITileProps> = ({participant}) => useObserver(() => (
         <div className={"audio-wrapper"}>

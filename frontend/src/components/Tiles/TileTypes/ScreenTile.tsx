@@ -1,7 +1,7 @@
 import React, {useEffect, useRef} from 'react';
 import './VideoTile.css';
 import './ScreenTile.css';
-import {ITileProps} from "../TileWrapper";
+import {ITileProps} from "../TileContainer/TileContainer";
 import {useObserver} from 'mobx-react';
 
 const ScreenTile: React.FunctionComponent<ITileProps> = ({participant}) => {

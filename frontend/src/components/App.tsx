@@ -1,6 +1,6 @@
 import React, {useEffect, useRef} from 'react';
 
-import {TileContainer} from "./Tiles/TileContainer";
+import {TileContainer} from "./Tiles/TileContainer/TileContainer";
 import Header from './Header/Header';
 import './App.css';
 import ChatContainer from "./Chat/ChatContainer";

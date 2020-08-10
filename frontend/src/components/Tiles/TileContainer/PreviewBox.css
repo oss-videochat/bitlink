@@ -1,0 +1,14 @@
+.preview-video-wrapper {
+    height: 0;
+    width: 100%;
+    padding-bottom: 56.25%;
+    overflow: hidden;
+    position: relative;
+}
+
+.preview-video video {
+    height: 100%;
+    width: 100%;
+    object-fit: cover;
+    position: absolute;
+}

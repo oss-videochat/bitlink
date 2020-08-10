@@ -2,8 +2,8 @@ import React, {useEffect, useRef, useState} from 'react';
 import './VideoTile.css';
 import {useObserver} from 'mobx-react';
 import {autorun} from 'mobx';
-import AutoPlayAudio from "../AutoPlayAudio";
-import {ITileProps} from "../TileWrapper";
+import AutoPlayAudio from "./Util/AutoPlayAudio";
+import {ITileProps} from "../TileContainer/TileContainer";
 
 
 const VideoTile: React.FunctionComponent<ITileProps> = ({participant}) => {

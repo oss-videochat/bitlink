@@ -4,7 +4,7 @@ import IO from "../../controllers/IO";
 import MyInfo from "../../stores/MyInfoStore";
 import UIStore from "../../stores/UIStore";
 import RoomStore from "../../stores/RoomStore";
-import {prepareAudioBank} from "../Tiles/AutoPlayAudio";
+import {prepareAudioBank} from "../Tiles/TileTypes/Util/AutoPlayAudio";
 import LegalText from "../LegalText";
 import NotificationService from "../../services/NotificationService";
 import {NotificationType} from "../../enum/NotificationType";

@@ -1,10 +1,5 @@
 import React, {useEffect, useState} from 'react';
 import './TileWrapper.css';
-import Participant from "../../models/Participant";
-
-export interface ITileProps {
-    participant: Participant,
-}
 
 interface TileWrapperProps {
     flexBasis: string,

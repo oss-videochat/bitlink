@@ -140,20 +140,45 @@ export const TileContainer: React.FunctionComponent = () => {
         }, {fireImmediately: true});
     }, [windowSize, viewConfiguration]);
 
-    function onPin(participant: Participant){
-        return () => setViewConfiguration({
-            mode: TileDisplayMode.PINNED_PARTICIPANT,
-            data: {participant: participant}
-        })
+    function onPin(participant: Participant) {
+        return () => {
+            setViewConfiguration(
+                isPinned(participant) ? {
+                    mode: TileDisplayMode.GRID,
+                    data: null
+                } : {
+                    mode: TileDisplayMode.PINNED_PARTICIPANT,
+                    data: {participant: participant}
+                }
+            );
+        }
+    }
+
+    function onPinScreen(participant: Participant) {
+        return () => {
+            setViewConfiguration(
+                isPinned(participant) ? {
+                    mode: TileDisplayMode.GRID,
+                    data: null
+                } : {
+                    mode: TileDisplayMode.PINNED_SCREEN,
+                    data: {participant: participant}
+                }
+            );
+        }
+    }
+
+    function isPinned(participant: Participant) {
+        return viewConfiguration.data?.participant === participant;
     }
 
 
     return useObserver(() => {
-        if(viewConfiguration.mode === TileDisplayMode.PINNED_PARTICIPANT && (!viewConfiguration.data!.participant.hasVideo && !viewConfiguration.data!.participant.hasAudio)){
+        if (viewConfiguration.mode === TileDisplayMode.PINNED_PARTICIPANT && (!viewConfiguration.data!.participant.hasVideo && !viewConfiguration.data!.participant.hasAudio)) {
             setViewConfiguration({mode: TileDisplayMode.GRID, data: null});
             return null;
         }
-        if(viewConfiguration.mode === TileDisplayMode.PINNED_SCREEN && !viewConfiguration.data!.participant.hasScreen){
+        if (viewConfiguration.mode === TileDisplayMode.PINNED_SCREEN && !viewConfiguration.data!.participant.hasScreen) {
             setViewConfiguration({mode: TileDisplayMode.GRID, data: null});
             return null;
         }
@@ -169,7 +194,8 @@ export const TileContainer: React.FunctionComponent = () => {
 
                 tiles = [
                     ...participantsMedia.map((participant, i, arr) => (
-                        <TileWrapper onPin={onPin(participant)} key={participant.info.id + participant.hasVideo} flexBasis={basis}
+                        <TileWrapper pinned={isPinned(participant)} onPinToggle={onPin(participant)}
+                                     key={participant.info.id + participant.hasVideo} flexBasis={basis}
                                      maxWidth={maxWidth}>
                             {participant.hasVideo ?
                                 <VideoTile participant={participant}/>
@@ -178,7 +204,8 @@ export const TileContainer: React.FunctionComponent = () => {
                         </TileWrapper>
                     )),
                     ...participantsScreen.map(participant => (
-                        <TileWrapper onPin={onPin(participant)} key={participant.info.id + participant.hasVideo} flexBasis={basis}
+                        <TileWrapper pinned={isPinned(participant)} onPinToggle={onPinScreen(participant)}
+                                     key={participant.info.id + participant.hasVideo} flexBasis={basis}
                                      maxWidth={maxWidth}>
                             <ScreenTile participant={participant}/>
                         </TileWrapper>
@@ -188,7 +215,9 @@ export const TileContainer: React.FunctionComponent = () => {
             }
             case TileDisplayMode.PINNED_PARTICIPANT:
                 tiles = (
-                    <TileWrapper onPin={onPin(viewConfiguration.data!.participant)}  flexBasis={basis} maxWidth={maxWidth}>
+                    <TileWrapper pinned={isPinned(viewConfiguration.data!.participant)}
+                                 onPinToggle={onPin(viewConfiguration.data!.participant)} flexBasis={basis}
+                                 maxWidth={maxWidth}>
                         {viewConfiguration.data!.participant.hasVideo ?
                             <VideoTile participant={viewConfiguration.data!.participant}/>
                             : <AudioTile participant={viewConfiguration.data!.participant}/>
@@ -196,6 +225,27 @@ export const TileContainer: React.FunctionComponent = () => {
                     </TileWrapper>
                 );
                 break;
+            case TileDisplayMode.PINNED_SCREEN: {
+                tiles = (
+                    <TileWrapper pinned={isPinned(viewConfiguration.data!.participant)}
+                                 onPinToggle={onPinScreen(viewConfiguration.data!.participant)} flexBasis={basis}
+                                 maxWidth={maxWidth}>
+                        <>
+                            <ScreenTile participant={viewConfiguration.data!.participant}/>
+                            {viewConfiguration.data!.participant.hasVideo && parseInt(basis.replace("px", "")) > 500 &&
+                            <div className={"screen-hover-camera"}>
+                                <TileWrapper pinned={isPinned(viewConfiguration.data!.participant)}
+                                             onPinToggle={onPin(viewConfiguration.data!.participant)} flexBasis={"100%"}
+                                             maxWidth={"100%"}>
+                                    <VideoTile participant={viewConfiguration.data!.participant}/>
+                                </TileWrapper>
+                            </div>
+                            }
+                        </>
+                    </TileWrapper>
+                );
+                break;
+            }
         }
         return (
             <div ref={containerRef} className={"video-container"}>

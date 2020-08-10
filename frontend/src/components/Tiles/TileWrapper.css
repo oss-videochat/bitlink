@@ -6,7 +6,7 @@
     position: relative;
     max-height: 100%;
     padding-bottom: 56.25%;
-    overflow: hidden;
+  /*  overflow: hidden; this maybe needed idk*/
 }
 
 .tile-hover-menu-wrapper {
@@ -23,11 +23,38 @@
 
 .tile-hover-menu {
     position: absolute;
-    margin: 10px;
+    margin-right: 10px;
     right: 0;
+    top: -10px;
 }
 
 .tile-aspect-ratio-wrapper:hover .tile-hover-menu-wrapper {
     pointer-events: auto;
     opacity: 1;
+}
+
+
+.ellipsis_menu_toggle {
+    display: block;
+    padding: 5px;
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+    font-size: 30px;
+}
+
+.ellipsis_menu {
+    position: absolute;
+    top: 100%;
+    right: 100%;
+    background: rgba(0,0,0, 0.7);
+    border-radius: 7px;
+    padding: 10px 20px;
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.ellipsis_menu > *:hover {
+    color: #aeaeae;
 }

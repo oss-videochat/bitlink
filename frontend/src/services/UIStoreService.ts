@@ -1,4 +1,5 @@
 import UIStore from "../stores/UIStore";
+import {TileDisplayMode} from "../enum/TileDisplayMode";
 
 class UIStoreService {
     static get defaultProperties() {
@@ -17,7 +18,11 @@ class UIStoreService {
             preFillJoinValue: null,
             messageIdEditControl: null,
             joinedDate: null,
-            title: "BitLink"
+            title: "BitLink",
+            layout: {
+                mode: TileDisplayMode.GRID,
+                participant: null
+            }
         };
     }
 

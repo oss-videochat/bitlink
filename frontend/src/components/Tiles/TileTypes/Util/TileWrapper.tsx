@@ -1,19 +1,20 @@
-import React, {useEffect, useState} from 'react';
+import React, {CSSProperties, useEffect, useState} from 'react';
 import './TileWrapper.css';
 
 interface TileWrapperProps {
-    flexBasis: string,
-    maxWidth: string,
-    onPinToggle: () => void,
-    pinned: boolean
+    style?: CSSProperties,
+    menuItems?: {
+        title: string,
+        toggle: () => void
+    }[]
 }
 
-export const TileWrapper: React.FunctionComponent<TileWrapperProps> = ({flexBasis, maxWidth, onPinToggle, pinned, children}) => {
+export const TileWrapper: React.FunctionComponent<TileWrapperProps> = ({style, menuItems, children}) => {
     const [showMenu, setShowMenu] = useState(false);
 
     useEffect(() => {
         setShowMenu(false);
-    }, [flexBasis, maxWidth]);
+    }, [style]);
 
     useEffect(() => {
         function click() {
@@ -24,7 +25,7 @@ export const TileWrapper: React.FunctionComponent<TileWrapperProps> = ({flexBasi
     }, []);
 
     return (
-        <div className={"tile-wrapper"} style={{flexBasis, maxWidth}}>
+        <div className={"tile-wrapper"} style={style}>
             <div className={"tile-aspect-ratio-wrapper"}>
                 <div className={"tile-hover-menu-wrapper"}>
                     <div className={"tile-hover-menu"}>
@@ -33,9 +34,11 @@ export const TileWrapper: React.FunctionComponent<TileWrapperProps> = ({flexBasi
                             setShowMenu(!showMenu)
                         }} className={"ellipsis_menu_toggle"}>...</span>
                         {
-                            showMenu &&
+                            menuItems && menuItems.length > 0 && showMenu &&
                             <div className={"ellipsis_menu"}>
-                                <span onClick={onPinToggle}>{pinned ? "Unpin" : "Pin"}</span>
+                                {
+                                    menuItems.map((item, index) => <span key={index} className={"ellipsis_menu_item"} onClick={item.toggle}>{item.title}</span>)
+                                }
                             </div>
                         }
                     </div>

@@ -14,6 +14,7 @@ import {
     faVideoSlash
 } from "@fortawesome/free-solid-svg-icons";
 import ScreenShareSlash from "./ScreenshareSlash";
+import { useObserver } from 'mobx-react';
 
 export const ControlBar: React.FunctionComponent = () => {
     const [forceDisplayControls, setForceDisplayControls] = useState(true);
@@ -31,7 +32,7 @@ export const ControlBar: React.FunctionComponent = () => {
         }
     }, []);
 
-    return (
+    return useObserver(() => (
         <div className={"controls-wrapper " + (forceDisplayControls && "force-display")}>
             <span onClick={() => IO.toggleMedia("camera")}>
                 {MyInfo.participant?.mediaState.camera ?
@@ -57,5 +58,5 @@ export const ControlBar: React.FunctionComponent = () => {
                 }
             </span>
         </div>
-    );
+    ));
 }

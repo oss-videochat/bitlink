@@ -1,5 +1,7 @@
 import {observable} from "mobx";
 import UIStoreService from "../services/UIStoreService";
+import {TileDisplayMode} from "../enum/TileDisplayMode";
+import Participant from "../models/Participant";
 
 interface UIStoreInterface {
     chatPanel: boolean,
@@ -16,7 +18,11 @@ interface UIStoreInterface {
     preFillJoinValue: null | string,
     messageIdEditControl: null | string,
     joinedDate: null | Date,
-    title: string
+    title: string,
+    layout: {
+        mode: TileDisplayMode,
+        participant: Participant | null
+    }
 
     [key: string]: any,
 }

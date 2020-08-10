@@ -49,14 +49,6 @@
     width: 100%;
 }
 
-.screen-hover-camera {
-    position: absolute;
-    bottom: 0;
-    right: 0;
-    margin: 10px;
-    width: 200px;
-}
-
 
 .video-container:hover .controls-wrapper, .controls-wrapper.force-display {
     opacity: 1;

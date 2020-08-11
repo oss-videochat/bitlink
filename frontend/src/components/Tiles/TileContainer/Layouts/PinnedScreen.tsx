@@ -26,7 +26,7 @@ export const PinnedScreen: React.FunctionComponent = () => {
 
         if(forceHideCamera){
             parentMenuItems.push({
-                title: "Unhide Camera",
+                title: "Show Camera",
                 toggle: () => setForceHideCamera(false)
             })
         } else {

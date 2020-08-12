@@ -16,9 +16,9 @@
     position: absolute;
     height: 100%;
     width: 100%;
-    transition: opacity 50ms;
+    transition: opacity 100ms;
     color: white;
-    background: rgba(0, 0, 0, 0.3);
+    background: rgba(0, 0, 0, 0.2);
 }
 
 .tile-hover-menu {
@@ -28,7 +28,7 @@
     top: -10px;
 }
 
-.tile-aspect-ratio-wrapper:hover .tile-hover-menu-wrapper {
+.tile-aspect-ratio-wrapper:hover > .tile-hover-menu-wrapper {
     pointer-events: auto;
     opacity: 1;
 }

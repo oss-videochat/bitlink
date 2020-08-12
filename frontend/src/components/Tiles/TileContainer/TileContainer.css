@@ -19,6 +19,7 @@
     border-bottom-right-radius: 7px;
     border-bottom-left-radius: 7px;
     font-size: 13px;
+    z-index: 1;
 }
 
 .preview-video {

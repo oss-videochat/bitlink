@@ -7,10 +7,15 @@ import ScreenTile from "../../TileTypes/ScreenTile";
 import './PinnedScreen.css';
 import {TileDisplayMode} from "../../../../enum/TileDisplayMode";
 import {AudioFiller} from "../AudioFiller";
+import {useLayoutCalculation} from "../../../../hooks/useLayoutCalculation";
 
-export const PinnedScreen: React.FunctionComponent = () => {
+interface PinnedScreenProps {
+    container: React.RefObject<HTMLDivElement>
+}
+
+export const PinnedScreen: React.FunctionComponent<PinnedScreenProps> = ({container}) => {
     const [forceHideCamera, setForceHideCamera] = useState(false);
-
+    const styles = useLayoutCalculation(1, container);
 
     return useObserver(() => {
         if (!UIStore.store.layout.participant!.hasScreen) {
@@ -41,7 +46,7 @@ export const PinnedScreen: React.FunctionComponent = () => {
         }
 
         return (
-            <TileWrapper menuItems={parentMenuItems} style={{height: "100%", width: "100%"}}>
+            <TileWrapper menuItems={parentMenuItems} style={styles}>
                 <>
                     <ScreenTile participant={UIStore.store.layout.participant!}/>
                     {

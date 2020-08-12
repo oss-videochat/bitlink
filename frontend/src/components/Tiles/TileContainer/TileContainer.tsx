@@ -38,10 +38,10 @@ export const TileContainer: React.FunctionComponent = () => {
                 break;
             }
             case TileDisplayMode.PINNED_PARTICIPANT:
-                layout = <PinnedParticipant/>
+                layout = <PinnedParticipant container={containerRef}/>
                 break;
             case TileDisplayMode.PINNED_SCREEN: {
-                layout = <PinnedScreen/>
+                layout = <PinnedScreen container={containerRef}/>
                 break;
             }
         }

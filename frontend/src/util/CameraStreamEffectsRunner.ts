@@ -3,6 +3,8 @@ import '@tensorflow/tfjs-backend-webgl';
 import {PersonInferenceConfig} from "@tensorflow-models/body-pix/dist/body_pix_model";
 import debug from "./debug";
 import * as StackBlur from 'stackblur-canvas';
+import NotificationService from "../services/NotificationService";
+import {NotificationType} from "../enum/NotificationType";
 
 const log = debug("CameraStreamEffectsRunner");
 
@@ -50,6 +52,9 @@ class CameraStreamEffectsRunner {
         this.bpModel = bpModel;
         this.stream = stream;
 
+        this.tmpVideo.muted = true;
+        this.tmpVideo.setAttribute("playsinline", "true");
+
         this.blur = blur;
         /*    this.worker = new Worker(timerWorkerScript, { name: 'Blur effect worker' });
             this.worker.onmessage = (message) => {
@@ -76,7 +81,10 @@ class CameraStreamEffectsRunner {
         });
 
         this.tmpVideo.addEventListener('loadeddata', () => {
-            this.tmpVideo.play();
+            this.tmpVideo.play()
+                .catch(e => {
+                    NotificationService.add(NotificationService.createUINotification(`Some error occurred. This shouldn't happen: "${e.toString()}"`, NotificationType.Error));
+                });
             this.tick();
         });
 
@@ -125,6 +133,7 @@ class CameraStreamEffectsRunner {
     }
 
     private tick() {
+        console.log("5 " + this.stream.getTracks()[0].readyState);
         this.videoRenderCanvasCtx.drawImage(this.tmpVideo, 0, 0);
         if (this.previousSegmentationComplete) {
             this.previousSegmentationComplete = false;

@@ -3,6 +3,8 @@ import MyInfo from "../../../../stores/MyInfoStore";
 import IO from "../../../../controllers/IO";
 import {ISettingsPanelProps} from '../SettingsViewer';
 import HardwareService from "../../../../services/HardwareService";
+import NotificationService from "../../../../services/NotificationService";
+import {NotificationType} from "../../../../enum/NotificationType";
 
 const MySettings: React.FunctionComponent<ISettingsPanelProps> = ({events, changesMade, handleChangesMade}) => {
     const [nameInput, setNameInput] = useState(MyInfo.participant!.name);
@@ -16,7 +18,9 @@ const MySettings: React.FunctionComponent<ISettingsPanelProps> = ({events, chang
                 navigator.mediaDevices.enumerateDevices()
                     .then(deviceList => {
                         setDeviceList(deviceList as any)
-                    });
+                    }).catch(e => {
+                    NotificationService.add(NotificationService.createUINotification(`Some error occurred. This shouldn't happen: "${e.toString()}"`, NotificationType.Error));
+                });
             };
 
             HardwareService.getRawStream("camera")
@@ -36,7 +40,9 @@ const MySettings: React.FunctionComponent<ISettingsPanelProps> = ({events, chang
 
 
     useEffect(() => {
-        updateDeviceList();
+        updateDeviceList().catch(e => {
+            NotificationService.add(NotificationService.createUINotification(`Some error occurred. This shouldn't happen: "${e.toString()}"`, NotificationType.Error));
+        });
     }, []);
 
     useEffect(() => {

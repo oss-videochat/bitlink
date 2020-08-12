@@ -6,6 +6,8 @@ import HardwareService from "../../../../services/HardwareService";
 import CameraStreamEffectsRunner from "../../../../util/CameraStreamEffectsRunner";
 import StreamEffectService from "../../../../services/StreamEffectService";
 import Spinner from "../../../Util/Spinner";
+import NotificationService from "../../../../services/NotificationService";
+import {NotificationType} from "../../../../enum/NotificationType";
 
 interface IVirtualBackgroundBox {
     text?: string,
@@ -39,7 +41,9 @@ const VideoEffects: React.FunctionComponent<ISettingsPanelProps> = ({events, cha
 
         function canplay() {
             setVideoReady(true)
-            el!.play();
+            el!.play().catch(e => {
+                NotificationService.add(NotificationService.createUINotification(`Some error occurred. This shouldn't happen: "${e.toString()}"`, NotificationType.Error));
+            });
         }
 
         if (videoRef.current) {
@@ -157,7 +161,7 @@ const VideoEffects: React.FunctionComponent<ISettingsPanelProps> = ({events, cha
                             </div>
 
                         }
-                        <video className={"video-preview " + (videoReady ? "ready" : "")} ref={videoRef}/>
+                        <video muted={true} playsInline={true} className={"video-preview " + (videoReady ? "ready" : "")} ref={videoRef}/>
                     </div>
                 </div>
                 <label><input type={"checkbox"} onChange={handleBlurChange} checked={shouldBlur}/> Blur</label>

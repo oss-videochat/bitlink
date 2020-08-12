@@ -4,6 +4,8 @@ import MyInfo from "../../../stores/MyInfoStore";
 import HardwareService from "../../../services/HardwareService";
 import {reaction} from "mobx";
 import StreamEffectStore from "../../../stores/StreamEffectStore";
+import NotificationService from "../../../services/NotificationService";
+import {NotificationType} from "../../../enum/NotificationType";
 
 export const PreviewBox: React.FunctionComponent = () => {
     const previewRef = useRef<HTMLVideoElement>(null);
@@ -25,7 +27,9 @@ export const PreviewBox: React.FunctionComponent = () => {
         }
 
         function play() {
-            previewRef.current!.play();
+            previewRef.current!.play().catch(e => {
+                NotificationService.add(NotificationService.createUINotification(`Some error occurred. This shouldn't happen: "${e.toString()}"`, NotificationType.Error));
+            });
         }
 
         previewRef.current.addEventListener("canplay", play);
@@ -33,7 +37,9 @@ export const PreviewBox: React.FunctionComponent = () => {
     }, [previewRef]);
 
     useEffect(() => {
-        updateMedia();
+        updateMedia().catch(e => {
+            NotificationService.add(NotificationService.createUINotification(`Some error occurred. This shouldn't happen: "${e.toString()}"`, NotificationType.Error));
+        });
 
         return reaction(() => ({
             video: MyInfo.preferredInputs.video,

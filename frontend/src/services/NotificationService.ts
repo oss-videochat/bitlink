@@ -44,10 +44,27 @@ class NotificationService {
         if (!("Notification" in window)) {
             return;
         }
-        if (Notification.permission !== "granted") {
-            Notification.requestPermission();
+        if (Notification.permission !== "granted" && Notification.requestPermission) {
+            if(checkNotificationPromise()){
+                Notification.requestPermission().catch(e => {
+                    NotificationService.add(NotificationService.createUINotification(`Some error occurred. This shouldn't happen: "${e.toString()}"`, NotificationType.Error));
+                });
+            } else {
+                Notification.requestPermission();
+            }
+
         }
     }
+}
+
+function checkNotificationPromise() {
+    try {
+        Notification.requestPermission().then();
+    } catch(e) {
+        return false;
+    }
+
+    return true;
 }
 
 export default NotificationService;

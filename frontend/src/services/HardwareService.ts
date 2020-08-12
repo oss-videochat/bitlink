@@ -40,7 +40,7 @@ class HardwareService {
         }
 
         // we have a previously selected preferred
-        if (!MyInfoStore.cachedStreams[source] || MyInfoStore.cachedStreams[source]!.getTracks()[0].getSettings().deviceId !== MyInfoStore.preferredInputs[mediaType]) {
+        if (!MyInfoStore.cachedStreams[source] || MyInfoStore.cachedStreams[source]!.getTracks()[0].readyState === "ended" || MyInfoStore.cachedStreams[source]!.getTracks()[0].getSettings().deviceId !== MyInfoStore.preferredInputs[mediaType]) {
             MyInfoStore.cachedStreams[source] = await navigator.mediaDevices.getUserMedia({[mediaType]: {deviceId: MyInfoStore.preferredInputs[mediaType]!}});
         }
 
@@ -49,7 +49,6 @@ class HardwareService {
         }
 
         MyInfoStore.preferredInputs[mediaType] = MyInfoStore.cachedStreams[source]!.getTracks()[0].getSettings().deviceId!;
-
         return MyInfoStore.cachedStreams[source]!;
     }
 

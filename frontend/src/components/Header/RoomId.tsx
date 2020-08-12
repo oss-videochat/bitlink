@@ -10,7 +10,9 @@ import {NotificationType} from "../../enum/NotificationType";
 const RoomId: React.FunctionComponent = () => {
     function copyLink() {
         if (navigator.clipboard) {
-            navigator.clipboard.writeText(window.location.href);
+            navigator.clipboard.writeText(window.location.href).catch(e => {
+                NotificationService.add(NotificationService.createUINotification(`Some error occurred. This shouldn't happen: "${e.toString()}"`, NotificationType.Error));
+            });
             NotificationService.add(NotificationService.createUINotification(`Link copied!`, NotificationType.Success));
         } else {
             if (copyFallback(window.location.href)) {
@@ -36,13 +38,13 @@ const RoomId: React.FunctionComponent = () => {
 
 
     function copyFallback(text: string) {
-        const textArea: any = document.createElement("textarea");
+        const textArea = document.createElement("textarea");
         textArea.style.position = 'fixed';
-        textArea.style.top = 0;
-        textArea.style.left = 0;
-        textArea.style.width = '2em';
-        textArea.style.height = '2em';
-        textArea.style.padding = 0;
+        textArea.style.top = "0";
+        textArea.style.left = "0";
+        textArea.style.width = '0';
+        textArea.style.height = '0';
+        textArea.style.padding = "0";
         textArea.style.border = 'none';
         textArea.style.outline = 'none';
         textArea.style.boxShadow = 'none';
@@ -57,6 +59,8 @@ const RoomId: React.FunctionComponent = () => {
         } catch (e) {
             NotificationService.add(NotificationService.createUINotification(`An error occurred copying.`, NotificationType.Error));
             return false;
+        } finally {
+            textArea.remove();
         }
     }
 }

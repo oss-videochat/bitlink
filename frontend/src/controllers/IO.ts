@@ -49,6 +49,10 @@ interface MediaStateUpdate {
     source: MediaSource,
     action: MediaAction;
 }
+const isSafari = ((/iPad|iPhone|iPod/.test(navigator.platform) ||
+    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)) &&
+    !window.MSStream) || /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+
 
 class IO {
     private io: SocketIOClient.Socket;
@@ -194,6 +198,12 @@ class IO {
                     throw response.error;
                 }
                 RoomStore.device = new mediasoupclient.Device();
+                if(isSafari){
+                    response.data.headerExtensions =
+                        response.data.headerExtensions.filter(
+                            (ext: any) => ext.uri !== 'urn:3gpp:video-orientation' // firefox doesn't support orientation metadata so we simply tell Safari to encode the video with the proper orientation https://mediasoup.discourse.group/t/disabling-rtp-orientation-header-extension-for-mobile-safari/392
+                        );
+                }
                 return RoomStore.device.load({routerRtpCapabilities: response.data});
             })
             .then(() => {

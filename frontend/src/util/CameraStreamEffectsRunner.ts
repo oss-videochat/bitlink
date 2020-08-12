@@ -6,6 +6,8 @@ import * as StackBlur from 'stackblur-canvas';
 import NotificationService from "../services/NotificationService";
 import {NotificationType} from "../enum/NotificationType";
 
+const isiOS = /iPad|iPhone|iPod/.test(navigator.platform) || (navigator.userAgent.includes("Mac") && "ontouchend" in document);
+
 const log = debug("CameraStreamEffectsRunner");
 
 const bpModelPromise = bodyPix.load({
@@ -92,10 +94,16 @@ class CameraStreamEffectsRunner {
 
         this.finalCanvas.getContext('2d'); // firefox is stupid if we captureStream() without getting the context first
 
-        /*  this.finalCanvas.style.position = "fixed";
-          this.finalCanvas.style.left = "0";
-          this.finalCanvas.style.top = "0";
-          document.querySelector('body')!.appendChild(this.finalCanvas);*/
+        if(isiOS){ // iOS won't keep the stream alive (it will become stream.state === 'ended') unless a DOM element using it is on screen. So we just add the tmpVideo, which uses the stream, to the body and hide it.
+            this.tmpVideo.style.position = "fixed";
+            this.tmpVideo.style.left = "0";
+            this.tmpVideo.style.top = "0";
+            this.tmpVideo.style.height = "0px";
+            this.tmpVideo.style.width = "0px";
+            this.tmpVideo.style.overflow = "hidden";
+            this.tmpVideo.style.opacity = "0";
+            document.querySelector('body')!.appendChild(this.tmpVideo);
+        }
     }
 
     static async create(stream: MediaStream, blur: boolean, image?: HTMLImageElement) {
@@ -108,6 +116,9 @@ class CameraStreamEffectsRunner {
                 type: TimerWorkerMessageType.END_TIMER
             })
             this.worker.terminate();*/
+        if(isiOS){
+            this.tmpVideo.remove();
+        }
         this.shouldContinue = false;
     }
 
@@ -129,11 +140,10 @@ class CameraStreamEffectsRunner {
             // @ts-ignore
             this.outStream = this.finalCanvas.captureStream();
         }
-        return this.outStream as MediaStream;
+        return this.outStream as MediaStream; // While iOS will send out the proper stream, it can't display it due to a bug: https://bugs.webkit.org/show_bug.cgi?id=181663.
     }
 
     private tick() {
-        console.log("5 " + this.stream.getTracks()[0].readyState);
         this.videoRenderCanvasCtx.drawImage(this.tmpVideo, 0, 0);
         if (this.previousSegmentationComplete) {
             this.previousSegmentationComplete = false;

@@ -16,7 +16,7 @@ BitLink has a robust integrated chat system. Participants can send messages indi
 
 ### Background Replacement / Blur
 
-BitLink has built in background replacement (virtual background) support and blur background functionality. Powered by Tensorflow's BodyPix library, we are able to achieve great accuracy while still acheiving high preforamnce. Many laptops can apply background replacement without fan spin.
+BitLink has built in background replacement (virtual background) support and blur background functionality. Powered by Tensorflow's BodyPix library, we are able to achieve great accuracy while still achieving high performance. Many laptops can apply background replacement without fan spin.
 
 ### Waiting Room
 

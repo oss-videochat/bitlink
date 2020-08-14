@@ -8,8 +8,7 @@ export const Logo: React.FunctionComponent = () => {
   return (
     <>
       <img className={"logo"} src={logo} />
-      <span className={"version"}>v{version + " alpha (prerelease)"}</span>
-      <b className={"version"}>{"Unstable!"}</b>
+      <span className={"version"}>v{version}</span>
     </>
   );
 };

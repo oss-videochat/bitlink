@@ -1,5 +1,5 @@
-import debug from 'debug';
+import debug from "debug";
 
 export default function (name: string) {
-    return debug(`BitLink:${name}`);
+  return debug(`BitLink:${name}`);
 }

@@ -5,9 +5,9 @@ import RoomService from "../services/RoomService";
 import MyInfoService from "../services/MyInfoService";
 
 export function ResetStores() {
-    ChatStoreService.reset();
-    ParticipantService.reset();
-    RoomService.reset();
-    MyInfoService.reset();
-    UIStore.store.joinedDate = null;
+  ChatStoreService.reset();
+  ParticipantService.reset();
+  RoomService.reset();
+  MyInfoService.reset();
+  UIStore.store.joinedDate = null;
 }

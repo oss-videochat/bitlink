@@ -1,15 +1,21 @@
-import {handleEvent} from "../../interfaces/handleEvent";
+import { handleEvent } from "../../interfaces/handleEvent";
 import UIStore from "../../stores/UIStore";
 import NotificationService from "../../services/NotificationService";
-import {NotificationType} from "../../enum/NotificationType";
+import { NotificationType } from "../../enum/NotificationType";
 
 interface handleWaitingRoomRejectionParam {
-    reason: string
+  reason: string;
 }
 
-export const handleWaitingRoomRejection: handleEvent<handleWaitingRoomRejectionParam> = ({reason}, cb) => {
-    NotificationService.add(NotificationService.createUINotification(reason, NotificationType.Error), true);
-    UIStore.store.modalStore.waitingRoom = false;
-    UIStore.store.modalStore.joiningRoom = false;
-    UIStore.store.modalStore.join = true;
+export const handleWaitingRoomRejection: handleEvent<handleWaitingRoomRejectionParam> = (
+  { reason },
+  cb
+) => {
+  NotificationService.add(
+    NotificationService.createUINotification(reason, NotificationType.Error),
+    true
+  );
+  UIStore.store.modalStore.waitingRoom = false;
+  UIStore.store.modalStore.joiningRoom = false;
+  UIStore.store.modalStore.join = true;
 };

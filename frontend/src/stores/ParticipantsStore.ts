@@ -1,10 +1,9 @@
-import {observable} from "mobx"
+import { observable } from "mobx";
 import Participant from "../models/Participant";
 
 class ParticipantsStore {
-    @observable public participants: Participant[] = [];
-    @observable public waitingRoom: Participant[] = [];
+  @observable public participants: Participant[] = [];
+  @observable public waitingRoom: Participant[] = [];
 }
-
 
 export default new ParticipantsStore();

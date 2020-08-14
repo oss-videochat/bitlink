@@ -1,4 +1,4 @@
 export enum HostDisconnectAction {
-    CLOSE_ROOM,
-    TRANSFER_HOST
+  CLOSE_ROOM,
+  TRANSFER_HOST,
 }

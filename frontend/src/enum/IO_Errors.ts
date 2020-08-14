@@ -1,3 +1,1 @@
-export enum IO_Error {
-
-}
+export enum IO_Error {}

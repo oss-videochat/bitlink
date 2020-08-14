@@ -1,17 +1,19 @@
-import React from 'react';
-import './SystemMessage.css'
-import {Message} from "../../../interfaces/Message";
+import React from "react";
+import "./SystemMessage.css";
+import { Message } from "../../../interfaces/Message";
 
 interface ISystemMessageProps {
-    message: Message,
+  message: Message;
 }
 
-const SystemMessage: React.FunctionComponent<ISystemMessageProps> = ({message}) => (
-    <div className={"message system"}>
-        <div className={"message--content-container"}>
-            <span className={"message--date"}>{(new Date(message.created)).toLocaleString()}</span>
-            <span data-private={""} className={"message--content"}>{message.content}</span>
-        </div>
+const SystemMessage: React.FunctionComponent<ISystemMessageProps> = ({ message }) => (
+  <div className={"message system"}>
+    <div className={"message--content-container"}>
+      <span className={"message--date"}>{new Date(message.created).toLocaleString()}</span>
+      <span data-private={""} className={"message--content"}>
+        {message.content}
+      </span>
     </div>
+  </div>
 );
 export default SystemMessage;

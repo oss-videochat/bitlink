@@ -1,7 +1,7 @@
-import {HostDisconnectAction} from "..";
+import { HostDisconnectAction } from "..";
 
 export interface RoomSettings {
-    name: string
-    waitingRoom: boolean,
-    hostDisconnectAction: HostDisconnectAction
+  name: string;
+  waitingRoom: boolean;
+  hostDisconnectAction: HostDisconnectAction;
 }

@@ -4,10 +4,14 @@
   "private": true,
   "scripts": {
     "setup": "lerna bootstrap",
-    "start": "lerna run --parallel start"
+    "start": "lerna run --parallel start",
+    "prettier": "prettier -c --write \"**/*.{js,jsx,ts,tsx}\""
   },
   "dependencies": {
     "lerna": "^3.22.1",
     "morgan": "^1.10.0"
+  },
+  "devDependencies": {
+    "prettier": "2.0.5"
   }
 }

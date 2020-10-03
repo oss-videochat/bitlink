@@ -16,8 +16,4 @@ COPY . .
 RUN lerna run build
 
 WORKDIR server
-ENV IP=127.0.0.1
-ENV MEDIASOUP_LISTEN_IP=$IP
-ENV PORT=3000
-EXPOSE $PORT
 CMD ["npm", "run", "run"]

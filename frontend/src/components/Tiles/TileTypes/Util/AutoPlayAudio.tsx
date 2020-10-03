@@ -13,78 +13,80 @@ don't tell the nonexistent marketing team.
 import React, { useEffect, useRef } from "react";
 
 const isSafari =
-  ((/iPad|iPhone|iPod/.test(navigator.platform) ||
-    (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1)) &&
-    !window.MSStream) ||
-  /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+    ((/iPad|iPhone|iPod/.test(navigator.platform) ||
+        (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1)) &&
+        !window.MSStream) ||
+    /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 
 let audioBank: HTMLAudioElement[] = [];
 
 if (isSafari) {
-  audioBank = Array.from(
-    { length: 100 },
-    (el) => (document.createElement("audio") as unknown) as HTMLAudioElement
-  );
+    audioBank = Array.from(
+        { length: 100 },
+        (el) => (document.createElement("audio") as unknown) as HTMLAudioElement
+    );
 }
 
 let prepared = false;
 
 export function prepareAudioBank() {
-  if (prepared || !isSafari) {
-    return;
-  }
-
-  audioBank.forEach((audioElement: HTMLAudioElement) => {
-    try {
-      audioElement.play().catch(() => {
-        // this will error, but that's ok
-      });
-      audioElement.pause();
-    } catch (e) {
-      console.error("uh oh");
+    if (prepared || !isSafari) {
+        return;
     }
-  });
 
-  prepared = true;
+    audioBank.forEach((audioElement: HTMLAudioElement) => {
+        try {
+            audioElement.play().catch(() => {
+                // this will error, but that's ok
+            });
+            audioElement.pause();
+        } catch (e) {
+            console.error("uh oh");
+        }
+    });
+
+    prepared = true;
 }
 
 interface IAutoPlayAudioProps {
-  srcObject?: MediaStream;
+    srcObject?: MediaStream;
 }
 
 const AutoPlayAudio: React.FunctionComponent<IAutoPlayAudioProps> = ({ srcObject }) => {
-  const audioElement = useRef<HTMLAudioElement>(audioBank.pop() || document.createElement("audio")); // if the bank runs out, we just create another audio element. This will work for non-mobile/non-ios devices. But for those devices, we kind of screw them over here.
+    const audioElement = useRef<HTMLAudioElement>(
+        audioBank.pop() || document.createElement("audio")
+    ); // if the bank runs out, we just create another audio element. This will work for non-mobile/non-ios devices. But for those devices, we kind of screw them over here.
 
-  useEffect(() => {
-    if (!prepared && isSafari) {
-      throw new Error("Audios are not prepared");
-    }
-    if (!srcObject) {
-      return;
-    }
-    const element = audioElement.current;
+    useEffect(() => {
+        if (!prepared && isSafari) {
+            throw new Error("Audios are not prepared");
+        }
+        if (!srcObject) {
+            return;
+        }
+        const element = audioElement.current;
 
-    function canplay() {
-      element.play().catch((e) => {
-        console.error(e);
-        //document.addEventListener("click", canplay)
-      });
-    }
+        function canplay() {
+            element.play().catch((e) => {
+                console.error(e);
+                //document.addEventListener("click", canplay)
+            });
+        }
 
-    element.addEventListener("canplay", canplay);
-    element.srcObject = srcObject;
+        element.addEventListener("canplay", canplay);
+        element.srcObject = srcObject;
 
-    return () => {
-      element.pause();
-      element.removeEventListener("canplay", canplay);
-      //            document.removeEventListener("click", canplay)
-      element.srcObject = null;
-      if (isSafari) {
-        audioBank.push(element); // recycling is good for the world
-      }
-    };
-  }, [srcObject]);
+        return () => {
+            element.pause();
+            element.removeEventListener("canplay", canplay);
+            //            document.removeEventListener("click", canplay)
+            element.srcObject = null;
+            if (isSafari) {
+                audioBank.push(element); // recycling is good for the world
+            }
+        };
+    }, [srcObject]);
 
-  return <div ref={(el) => el && el.appendChild(audioElement.current)} />;
+    return <div ref={(el) => el && el.appendChild(audioElement.current)} />;
 };
 export default AutoPlayAudio;

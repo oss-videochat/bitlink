@@ -1,10 +1,10 @@
 export enum Reactions {
-  ThumbsUp,
-  ThumbsDown,
-  Laugh,
-  Confused,
-  Celebrate,
-  OneHundred,
-  QuestionMark,
-  Clap,
+    ThumbsUp,
+    ThumbsDown,
+    Laugh,
+    Confused,
+    Celebrate,
+    OneHundred,
+    QuestionMark,
+    Clap,
 }

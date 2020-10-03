@@ -6,29 +6,29 @@ import ParticipantService from "../../services/ParticipantService";
 const log = debug("Handlers:MediaStateUpdate");
 
 interface MediaStateUpdate {
-  id: string;
-  source: MediaSource;
-  action: MediaAction;
+    id: string;
+    source: MediaSource;
+    action: MediaAction;
 }
 
 interface handleMediaStateUpdateParam {
-  update: MediaStateUpdate;
+    update: MediaStateUpdate;
 }
 
 export const handleMediaStateUpdate: handleEvent<handleMediaStateUpdateParam> = async (
-  { update },
-  cb
+    { update },
+    cb
 ) => {
-  const participant = ParticipantService.getById(update.id);
-  if (!participant) {
-    return;
-  }
-  log("Media state update %s: %s - %s", participant.info.name, update.source, update.action);
-  if (participant.consumers[update.source]) {
-    participant.consumers[update.source]![update.action]();
-    if (update.action === "close") {
-      participant.consumers[update.source] = null;
+    const participant = ParticipantService.getById(update.id);
+    if (!participant) {
+        return;
     }
-  }
-  participant.info.mediaState[update.source] = update.action === "resume";
+    log("Media state update %s: %s - %s", participant.info.name, update.source, update.action);
+    if (participant.consumers[update.source]) {
+        participant.consumers[update.source]![update.action]();
+        if (update.action === "close") {
+            participant.consumers[update.source] = null;
+        }
+    }
+    participant.info.mediaState[update.source] = update.action === "resume";
 };

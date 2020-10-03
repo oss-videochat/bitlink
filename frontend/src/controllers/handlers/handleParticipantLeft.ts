@@ -4,21 +4,21 @@ import NotificationService from "../../services/NotificationService";
 import { NotificationType } from "../../enum/NotificationType";
 
 interface handleParticipantLeftParam {
-  participantId: string;
+    participantId: string;
 }
 
 export const handleParticipantLeft: handleEvent<handleParticipantLeftParam> = ({
-  participantId,
+    participantId,
 }) => {
-  const participant = ParticipantService.getById(participantId);
-  if (participant) {
-    participant.info.isAlive = false;
-    NotificationService.add(
-      NotificationService.createUINotification(
-        `${participant.info.name} left!`,
-        NotificationType.Alert
-      )
-    );
-  }
-  ParticipantService.removeFromWaitingRoom(participantId);
+    const participant = ParticipantService.getById(participantId);
+    if (participant) {
+        participant.info.isAlive = false;
+        NotificationService.add(
+            NotificationService.createUINotification(
+                `${participant.info.name} left!`,
+                NotificationType.Alert
+            )
+        );
+    }
+    ParticipantService.removeFromWaitingRoom(participantId);
 };

@@ -11,39 +11,39 @@ import { SettingsModal } from "./Settings/SettingsModal";
 import LeaveDialog from "./LeaveDialog";
 
 const Modal: React.FunctionComponent = () => {
-  function getModalElements(): ReactNode | null {
-    const modalStore = UIStore.store.modalStore;
-    if (modalStore.joinOrCreate) {
-      return <JoinOrCreate />;
+    function getModalElements(): ReactNode | null {
+        const modalStore = UIStore.store.modalStore;
+        if (modalStore.joinOrCreate) {
+            return <JoinOrCreate />;
+        }
+        if (modalStore.join) {
+            return <JoinDialog />;
+        }
+        if (modalStore.joiningRoom) {
+            return <Joining />;
+        }
+        if (modalStore.waitingRoom) {
+            return <WaitingRoom />;
+        }
+        if (modalStore.create) {
+            return <CreateDialog />;
+        }
+        if (modalStore.settings) {
+            return <SettingsModal />;
+        }
+        if (modalStore.leaveMenu) {
+            return <LeaveDialog />;
+        }
+        return null;
     }
-    if (modalStore.join) {
-      return <JoinDialog />;
-    }
-    if (modalStore.joiningRoom) {
-      return <Joining />;
-    }
-    if (modalStore.waitingRoom) {
-      return <WaitingRoom />;
-    }
-    if (modalStore.create) {
-      return <CreateDialog />;
-    }
-    if (modalStore.settings) {
-      return <SettingsModal />;
-    }
-    if (modalStore.leaveMenu) {
-      return <LeaveDialog />;
-    }
-    return null;
-  }
 
-  return useObserver(() => {
-    const modal = getModalElements();
-    if (modal) {
-      return <div className={"modal-wrapper"}>{modal}</div>;
-    }
-    return null;
-  });
+    return useObserver(() => {
+        const modal = getModalElements();
+        if (modal) {
+            return <div className={"modal-wrapper"}>{modal}</div>;
+        }
+        return null;
+    });
 };
 
 export default Modal;

@@ -7,64 +7,64 @@ import NotificationService from "../services/NotificationService";
 import { NotificationType } from "../enum/NotificationType";
 
 const isiOS =
-  /iPad|iPhone|iPod/.test(navigator.platform) ||
-  (navigator.userAgent.includes("Mac") && "ontouchend" in document);
+    /iPad|iPhone|iPod/.test(navigator.platform) ||
+    (navigator.userAgent.includes("Mac") && "ontouchend" in document);
 
 const log = debug("CameraStreamEffectsRunner");
 
 const bpModelPromise = bodyPix.load({
-  architecture: "MobileNetV1",
-  outputStride: 16,
-  multiplier: 0.5,
-  quantBytes: 2,
+    architecture: "MobileNetV1",
+    outputStride: 16,
+    multiplier: 0.5,
+    quantBytes: 2,
 });
 
 const segmentationProperties: PersonInferenceConfig = {
-  flipHorizontal: false,
-  internalResolution: "medium",
-  segmentationThreshold: 0.7,
-  scoreThreshold: 0.2,
-  maxDetections: 1,
+    flipHorizontal: false,
+    internalResolution: "medium",
+    segmentationThreshold: 0.7,
+    scoreThreshold: 0.2,
+    maxDetections: 1,
 };
 
 class CameraStreamEffectsRunner {
-  private bpModel: bodyPix.BodyPix;
-  private stream: MediaStream;
+    private bpModel: bodyPix.BodyPix;
+    private stream: MediaStream;
 
-  private tmpVideo = document.createElement("video");
+    private tmpVideo = document.createElement("video");
 
-  private videoRenderCanvas = document.createElement("canvas");
-  private videoRenderCanvasCtx = this.videoRenderCanvas.getContext("2d")!;
+    private videoRenderCanvas = document.createElement("canvas");
+    private videoRenderCanvasCtx = this.videoRenderCanvas.getContext("2d")!;
 
-  private bodyPixCanvas = document.createElement("canvas");
-  private bodyPixCtx = this.bodyPixCanvas.getContext("2d")!;
+    private bodyPixCanvas = document.createElement("canvas");
+    private bodyPixCtx = this.bodyPixCanvas.getContext("2d")!;
 
-  private finalCanvas = document.createElement("canvas");
+    private finalCanvas = document.createElement("canvas");
 
-  private previousSegmentationComplete = true;
-  private lastSegmentation: bodyPix.SemanticPersonSegmentation | null = null;
+    private previousSegmentationComplete = true;
+    private lastSegmentation: bodyPix.SemanticPersonSegmentation | null = null;
 
-  // private worker: Worker;
-  private shouldContinue = true;
+    // private worker: Worker;
+    private shouldContinue = true;
 
-  private imageData: ImageData | null = null;
-  private blur: boolean = false;
-  private outStream: MediaStream | null = null;
+    private imageData: ImageData | null = null;
+    private blur: boolean = false;
+    private outStream: MediaStream | null = null;
 
-  constructor(
-    bpModel: bodyPix.BodyPix,
-    stream: MediaStream,
-    blur: boolean,
-    image?: HTMLImageElement
-  ) {
-    this.bpModel = bpModel;
-    this.stream = stream;
+    constructor(
+        bpModel: bodyPix.BodyPix,
+        stream: MediaStream,
+        blur: boolean,
+        image?: HTMLImageElement
+    ) {
+        this.bpModel = bpModel;
+        this.stream = stream;
 
-    this.tmpVideo.muted = true;
-    this.tmpVideo.setAttribute("playsinline", "true");
+        this.tmpVideo.muted = true;
+        this.tmpVideo.setAttribute("playsinline", "true");
 
-    this.blur = blur;
-    /*    this.worker = new Worker(timerWorkerScript, { name: 'Blur effect worker' });
+        this.blur = blur;
+        /*    this.worker = new Worker(timerWorkerScript, { name: 'Blur effect worker' });
             this.worker.onmessage = (message) => {
                 if(message.data.type === TimerWorkerMessageType.TICK){
                     this.tick();
@@ -75,201 +75,205 @@ class CameraStreamEffectsRunner {
                 timeMs: 1000 / 60,
             })*/
 
-    this.tmpVideo.addEventListener("loadedmetadata", () => {
-      this.setNewSettings(blur, image);
-      this.finalCanvas.width = this.tmpVideo.videoWidth;
-      this.finalCanvas.height = this.tmpVideo.videoHeight;
-      this.videoRenderCanvas.width = this.tmpVideo.videoWidth;
-      this.videoRenderCanvas.height = this.tmpVideo.videoHeight;
-      this.bodyPixCanvas.width = this.tmpVideo.videoWidth;
-      this.bodyPixCanvas.height = this.tmpVideo.videoHeight;
+        this.tmpVideo.addEventListener("loadedmetadata", () => {
+            this.setNewSettings(blur, image);
+            this.finalCanvas.width = this.tmpVideo.videoWidth;
+            this.finalCanvas.height = this.tmpVideo.videoHeight;
+            this.videoRenderCanvas.width = this.tmpVideo.videoWidth;
+            this.videoRenderCanvas.height = this.tmpVideo.videoHeight;
+            this.bodyPixCanvas.width = this.tmpVideo.videoWidth;
+            this.bodyPixCanvas.height = this.tmpVideo.videoHeight;
 
-      const finalCanvasCtx = this.finalCanvas.getContext("2d")!;
-      finalCanvasCtx.drawImage(this.tmpVideo, 0, 0);
-    });
+            const finalCanvasCtx = this.finalCanvas.getContext("2d")!;
+            finalCanvasCtx.drawImage(this.tmpVideo, 0, 0);
+        });
 
-    this.tmpVideo.addEventListener("loadeddata", () => {
-      this.tmpVideo.play().catch((e) => {
-        NotificationService.add(
-          NotificationService.createUINotification(
-            `Some error occurred. This shouldn't happen: "${e.toString()}"`,
-            NotificationType.Error
-          )
-        );
-      });
-      this.tick();
-    });
+        this.tmpVideo.addEventListener("loadeddata", () => {
+            this.tmpVideo.play().catch((e) => {
+                NotificationService.add(
+                    NotificationService.createUINotification(
+                        `Some error occurred. This shouldn't happen: "${e.toString()}"`,
+                        NotificationType.Error
+                    )
+                );
+            });
+            this.tick();
+        });
 
-    this.tmpVideo.srcObject = stream;
+        this.tmpVideo.srcObject = stream;
 
-    this.finalCanvas.getContext("2d"); // firefox is stupid if we captureStream() without getting the context first
+        this.finalCanvas.getContext("2d"); // firefox is stupid if we captureStream() without getting the context first
 
-    if (isiOS) {
-      // iOS won't keep the stream alive (it will become stream.state === 'ended') unless a DOM element using it is on screen. So we just add the tmpVideo, which uses the stream, to the body and hide it.
-      this.tmpVideo.style.position = "fixed";
-      this.tmpVideo.style.left = "0";
-      this.tmpVideo.style.top = "0";
-      this.tmpVideo.style.height = "0px";
-      this.tmpVideo.style.width = "0px";
-      this.tmpVideo.style.overflow = "hidden";
-      this.tmpVideo.style.opacity = "0";
-      document.querySelector("body")!.appendChild(this.tmpVideo);
+        if (isiOS) {
+            // iOS won't keep the stream alive (it will become stream.state === 'ended') unless a DOM element using it is on screen. So we just add the tmpVideo, which uses the stream, to the body and hide it.
+            this.tmpVideo.style.position = "fixed";
+            this.tmpVideo.style.left = "0";
+            this.tmpVideo.style.top = "0";
+            this.tmpVideo.style.height = "0px";
+            this.tmpVideo.style.width = "0px";
+            this.tmpVideo.style.overflow = "hidden";
+            this.tmpVideo.style.opacity = "0";
+            document.querySelector("body")!.appendChild(this.tmpVideo);
+        }
     }
-  }
 
-  static async create(stream: MediaStream, blur: boolean, image?: HTMLImageElement) {
-    const bpModel = await bpModelPromise;
-    return new CameraStreamEffectsRunner(bpModel, stream, blur, image);
-  }
+    static async create(stream: MediaStream, blur: boolean, image?: HTMLImageElement) {
+        const bpModel = await bpModelPromise;
+        return new CameraStreamEffectsRunner(bpModel, stream, blur, image);
+    }
 
-  cancel() {
-    /*    this.worker.postMessage({
+    cancel() {
+        /*    this.worker.postMessage({
                 type: TimerWorkerMessageType.END_TIMER
             })
             this.worker.terminate();*/
-    if (isiOS) {
-      this.tmpVideo.remove();
-    }
-    this.shouldContinue = false;
-  }
-
-  setNewSettings(blur: boolean, image?: HTMLImageElement) {
-    log("Updating Camera Effects " + JSON.stringify({ blur, image: !!image }));
-    if (blur && image) {
-      throw "I can't blur and replace image...well I can...but that would be stupid.";
-    }
-    this.blur = blur;
-    if (image) {
-      this.generateImageData(image);
-    } else {
-      this.imageData = null;
-    }
-  }
-
-  getStream() {
-    if (!this.outStream) {
-      // @ts-ignore
-      this.outStream = this.finalCanvas.captureStream();
-    }
-    return this.outStream as MediaStream; // While iOS will send out the proper stream, it can't display it due to a bug: https://bugs.webkit.org/show_bug.cgi?id=181663.
-  }
-
-  private tick() {
-    this.videoRenderCanvasCtx.drawImage(this.tmpVideo, 0, 0);
-    if (this.previousSegmentationComplete) {
-      this.previousSegmentationComplete = false;
-      this.bpModel
-        .segmentPerson(this.videoRenderCanvas, segmentationProperties)
-        .then((segmentation) => {
-          this.lastSegmentation = segmentation;
-          this.previousSegmentationComplete = true;
-        });
-    }
-    this.processSegmentation(this.lastSegmentation);
-    if (this.shouldContinue) {
-      setTimeout(this.tick.bind(this), 1000 / 60);
-    }
-  }
-
-  private processSegmentation(segmentation: bodyPix.SemanticPersonSegmentation | null) {
-    const ctx = this.finalCanvas.getContext("2d")!;
-    const liveData = this.videoRenderCanvasCtx.getImageData(
-      0,
-      0,
-      this.videoRenderCanvas.width,
-      this.videoRenderCanvas.height
-    );
-    if (segmentation) {
-      if (this.blur) {
-        const blurData = new ImageData(liveData.data.slice(), liveData.width, liveData.height);
-        StackBlur.imageDataRGB(blurData, 0, 0, liveData.width, liveData.height, 12);
-        const dataL = liveData.data;
-        for (let x = 0; x < this.finalCanvas.width; x++) {
-          for (let y = 0; y < this.finalCanvas.height; y++) {
-            let n = y * this.finalCanvas.width + x;
-            if (segmentation.data[n] === 0) {
-              dataL[n * 4] = blurData.data[n * 4];
-              dataL[n * 4 + 1] = blurData.data[n * 4 + 1];
-              dataL[n * 4 + 2] = blurData.data[n * 4 + 2];
-              dataL[n * 4 + 3] = blurData.data[n * 4 + 3];
-            }
-          }
+        if (isiOS) {
+            this.tmpVideo.remove();
         }
-      }
-      if (this.imageData) {
-        const dataL = liveData.data;
-        for (let x = 0; x < this.finalCanvas.width; x++) {
-          for (let y = 0; y < this.finalCanvas.height; y++) {
-            let n = y * this.finalCanvas.width + x;
-            if (segmentation.data[n] === 0) {
-              dataL[n * 4] = this.imageData!.data[n * 4];
-              dataL[n * 4 + 1] = this.imageData!.data[n * 4 + 1];
-              dataL[n * 4 + 2] = this.imageData!.data[n * 4 + 2];
-              dataL[n * 4 + 3] = this.imageData!.data[n * 4 + 3];
-            }
-          }
-        }
-      }
+        this.shouldContinue = false;
     }
-    ctx.putImageData(liveData, 0, 0);
-  }
 
-  private generateImageData(img: HTMLImageElement) {
-    /**
-     * https://stackoverflow.com/a/21961894/7886229
-     * By Ken Fyrstenberg Nilsen
-     *
-     * drawImageProp(context, image [, x, y, width, height [,offsetX, offsetY]])
-     *
-     * If image and context are only arguments rectangle will equal canvas
-     */
-    const canvas = document.createElement("canvas");
-    canvas.height = this.tmpVideo.videoHeight;
-    canvas.width = this.tmpVideo.videoWidth;
-    const ctx = canvas.getContext("2d")!;
-    const x = 0;
-    const y = 0;
-    const w = ctx.canvas.width;
-    const h = ctx.canvas.height;
+    setNewSettings(blur: boolean, image?: HTMLImageElement) {
+        log("Updating Camera Effects " + JSON.stringify({ blur, image: !!image }));
+        if (blur && image) {
+            throw "I can't blur and replace image...well I can...but that would be stupid.";
+        }
+        this.blur = blur;
+        if (image) {
+            this.generateImageData(image);
+        } else {
+            this.imageData = null;
+        }
+    }
 
-    const offsetX = 0.5;
-    const offsetY = 0.5;
+    getStream() {
+        if (!this.outStream) {
+            // @ts-ignore
+            this.outStream = this.finalCanvas.captureStream();
+        }
+        return this.outStream as MediaStream; // While iOS will send out the proper stream, it can't display it due to a bug: https://bugs.webkit.org/show_bug.cgi?id=181663.
+    }
 
-    const iw = img.width;
-    const ih = img.height;
-    const r = Math.min(w / iw, h / ih);
-    let nw = iw * r; // new prop. width
-    let nh = ih * r; // new prop. height
-    let cx,
-      cy,
-      cw,
-      ch,
-      ar = 1;
+    private tick() {
+        this.videoRenderCanvasCtx.drawImage(this.tmpVideo, 0, 0);
+        if (this.previousSegmentationComplete) {
+            this.previousSegmentationComplete = false;
+            this.bpModel
+                .segmentPerson(this.videoRenderCanvas, segmentationProperties)
+                .then((segmentation) => {
+                    this.lastSegmentation = segmentation;
+                    this.previousSegmentationComplete = true;
+                });
+        }
+        this.processSegmentation(this.lastSegmentation);
+        if (this.shouldContinue) {
+            setTimeout(this.tick.bind(this), 1000 / 60);
+        }
+    }
 
-    // decide which gap to fill
-    if (nw < w) ar = w / nw;
-    if (Math.abs(ar - 1) < 1e-14 && nh < h) ar = h / nh; // updated
-    nw *= ar;
-    nh *= ar;
+    private processSegmentation(segmentation: bodyPix.SemanticPersonSegmentation | null) {
+        const ctx = this.finalCanvas.getContext("2d")!;
+        const liveData = this.videoRenderCanvasCtx.getImageData(
+            0,
+            0,
+            this.videoRenderCanvas.width,
+            this.videoRenderCanvas.height
+        );
+        if (segmentation) {
+            if (this.blur) {
+                const blurData = new ImageData(
+                    liveData.data.slice(),
+                    liveData.width,
+                    liveData.height
+                );
+                StackBlur.imageDataRGB(blurData, 0, 0, liveData.width, liveData.height, 12);
+                const dataL = liveData.data;
+                for (let x = 0; x < this.finalCanvas.width; x++) {
+                    for (let y = 0; y < this.finalCanvas.height; y++) {
+                        let n = y * this.finalCanvas.width + x;
+                        if (segmentation.data[n] === 0) {
+                            dataL[n * 4] = blurData.data[n * 4];
+                            dataL[n * 4 + 1] = blurData.data[n * 4 + 1];
+                            dataL[n * 4 + 2] = blurData.data[n * 4 + 2];
+                            dataL[n * 4 + 3] = blurData.data[n * 4 + 3];
+                        }
+                    }
+                }
+            }
+            if (this.imageData) {
+                const dataL = liveData.data;
+                for (let x = 0; x < this.finalCanvas.width; x++) {
+                    for (let y = 0; y < this.finalCanvas.height; y++) {
+                        let n = y * this.finalCanvas.width + x;
+                        if (segmentation.data[n] === 0) {
+                            dataL[n * 4] = this.imageData!.data[n * 4];
+                            dataL[n * 4 + 1] = this.imageData!.data[n * 4 + 1];
+                            dataL[n * 4 + 2] = this.imageData!.data[n * 4 + 2];
+                            dataL[n * 4 + 3] = this.imageData!.data[n * 4 + 3];
+                        }
+                    }
+                }
+            }
+        }
+        ctx.putImageData(liveData, 0, 0);
+    }
 
-    // calc source rectangle
-    cw = iw / (nw / w);
-    ch = ih / (nh / h);
+    private generateImageData(img: HTMLImageElement) {
+        /**
+         * https://stackoverflow.com/a/21961894/7886229
+         * By Ken Fyrstenberg Nilsen
+         *
+         * drawImageProp(context, image [, x, y, width, height [,offsetX, offsetY]])
+         *
+         * If image and context are only arguments rectangle will equal canvas
+         */
+        const canvas = document.createElement("canvas");
+        canvas.height = this.tmpVideo.videoHeight;
+        canvas.width = this.tmpVideo.videoWidth;
+        const ctx = canvas.getContext("2d")!;
+        const x = 0;
+        const y = 0;
+        const w = ctx.canvas.width;
+        const h = ctx.canvas.height;
 
-    cx = (iw - cw) * offsetX;
-    cy = (ih - ch) * offsetY;
+        const offsetX = 0.5;
+        const offsetY = 0.5;
 
-    // make sure source rectangle is valid
-    if (cx < 0) cx = 0;
-    if (cy < 0) cy = 0;
-    if (cw > iw) cw = iw;
-    if (ch > ih) ch = ih;
+        const iw = img.width;
+        const ih = img.height;
+        const r = Math.min(w / iw, h / ih);
+        let nw = iw * r; // new prop. width
+        let nh = ih * r; // new prop. height
+        let cx,
+            cy,
+            cw,
+            ch,
+            ar = 1;
 
-    // fill image in dest. rectangle
-    ctx.drawImage(img, cx, cy, cw, ch, x, y, w, h);
+        // decide which gap to fill
+        if (nw < w) ar = w / nw;
+        if (Math.abs(ar - 1) < 1e-14 && nh < h) ar = h / nh; // updated
+        nw *= ar;
+        nh *= ar;
 
-    this.imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-  }
+        // calc source rectangle
+        cw = iw / (nw / w);
+        ch = ih / (nh / h);
+
+        cx = (iw - cw) * offsetX;
+        cy = (ih - ch) * offsetY;
+
+        // make sure source rectangle is valid
+        if (cx < 0) cx = 0;
+        if (cy < 0) cy = 0;
+        if (cw > iw) cw = iw;
+        if (ch > ih) ch = ih;
+
+        // fill image in dest. rectangle
+        ctx.drawImage(img, cx, cy, cw, ch, x, y, w, h);
+
+        this.imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    }
 }
 
 export default CameraStreamEffectsRunner;

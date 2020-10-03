@@ -1,5 +1,5 @@
 export enum MessageType {
-  GROUP,
-  DIRECT,
-  SYSTEM,
+    GROUP,
+    DIRECT,
+    SYSTEM,
 }

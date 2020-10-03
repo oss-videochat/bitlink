@@ -3,12 +3,12 @@ import "./Logo.css";
 import logo from "../../assets/logo/logo.svg";
 
 export const Logo: React.FunctionComponent = () => {
-  const version = "1.0.0";
+    const version = "1.0.0";
 
-  return (
-    <>
-      <img className={"logo"} src={logo} />
-      <span className={"version"}>v{version}</span>
-    </>
-  );
+    return (
+        <>
+            <img className={"logo"} src={logo} />
+            <span className={"version"}>v{version}</span>
+        </>
+    );
 };

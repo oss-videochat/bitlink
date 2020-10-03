@@ -1,53 +1,53 @@
 import { MediaState, MessageType, ParticipantRole, Reactions } from "..";
 
 export interface RoomSummary {
-  id: string;
-  idHash: string;
-  name: string;
-  myId: string;
-  participants: ParticipantSummary[];
-  messages: MessageSummary[];
+    id: string;
+    idHash: string;
+    name: string;
+    myId: string;
+    participants: ParticipantSummary[];
+    messages: MessageSummary[];
 }
 
 export interface MessageGroupSummary {
-  id: string;
-  name: string;
-  members: string[];
+    id: string;
+    name: string;
+    members: string[];
 }
 
 export interface ParticipantSummary {
-  id: string;
-  name: string;
-  role: ParticipantRole;
-  isAlive: boolean;
-  mediaState: MediaState;
+    id: string;
+    name: string;
+    role: ParticipantRole;
+    isAlive: boolean;
+    mediaState: MediaState;
 }
 
 export interface MessageSummary {
-  id: string;
-  content: string;
-  created: number;
-  type: MessageType;
+    id: string;
+    content: string;
+    created: number;
+    type: MessageType;
 }
 
 export interface SystemMessageSummary extends MessageSummary {
-  permission: ParticipantRole;
-  type: MessageType.SYSTEM;
+    permission: ParticipantRole;
+    type: MessageType.SYSTEM;
 }
 
 export interface GroupMessageSummary extends MessageSummary {
-  type: MessageType.GROUP;
-  group: string;
-  from: string;
+    type: MessageType.GROUP;
+    group: string;
+    from: string;
 }
 
 export interface DirectMessageSummary extends MessageSummary {
-  type: MessageType.DIRECT;
-  to: string;
-  from: string;
+    type: MessageType.DIRECT;
+    to: string;
+    from: string;
 }
 
 export interface ReactionSummary {
-  type: Reactions;
-  participant: string;
+    type: Reactions;
+    participant: string;
 }

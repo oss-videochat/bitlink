@@ -15,61 +15,61 @@ import { PinnedParticipant } from "./Layouts/PinnedParticipant";
 import { PinnedScreen } from "./Layouts/PinnedScreen";
 
 export interface ITileProps {
-  participant: Participant;
+    participant: Participant;
 }
 
 export const TileContainer: React.FunctionComponent = () => {
-  const containerRef = useRef<HTMLDivElement>(null);
+    const containerRef = useRef<HTMLDivElement>(null);
 
-  return useObserver(() => {
-    let layout: React.ReactNode;
+    return useObserver(() => {
+        let layout: React.ReactNode;
 
-    if (
-      (UIStore.store.layout.mode === TileDisplayMode.PINNED_SCREEN &&
-        !UIStore.store.layout.participant!.hasScreen) ||
-      (UIStore.store.layout.mode === TileDisplayMode.PINNED_PARTICIPANT &&
-        !UIStore.store.layout.participant!.hasVideo &&
-        !UIStore.store.layout.participant!.hasAudio) ||
-      (UIStore.store.layout.participant && !UIStore.store.layout.participant.info.isAlive)
-    ) {
-      UIStore.store.layout = { mode: TileDisplayMode.GRID, participant: null };
-    }
+        if (
+            (UIStore.store.layout.mode === TileDisplayMode.PINNED_SCREEN &&
+                !UIStore.store.layout.participant!.hasScreen) ||
+            (UIStore.store.layout.mode === TileDisplayMode.PINNED_PARTICIPANT &&
+                !UIStore.store.layout.participant!.hasVideo &&
+                !UIStore.store.layout.participant!.hasAudio) ||
+            (UIStore.store.layout.participant && !UIStore.store.layout.participant.info.isAlive)
+        ) {
+            UIStore.store.layout = { mode: TileDisplayMode.GRID, participant: null };
+        }
 
-    switch (UIStore.store.layout.mode) {
-      case TileDisplayMode.GRID: {
-        layout = <Grid container={containerRef} />;
-        break;
-      }
-      case TileDisplayMode.PINNED_PARTICIPANT:
-        layout = <PinnedParticipant container={containerRef} />;
-        break;
-      case TileDisplayMode.PINNED_SCREEN: {
-        layout = <PinnedScreen container={containerRef} />;
-        break;
-      }
-    }
+        switch (UIStore.store.layout.mode) {
+            case TileDisplayMode.GRID: {
+                layout = <Grid container={containerRef} />;
+                break;
+            }
+            case TileDisplayMode.PINNED_PARTICIPANT:
+                layout = <PinnedParticipant container={containerRef} />;
+                break;
+            case TileDisplayMode.PINNED_SCREEN: {
+                layout = <PinnedScreen container={containerRef} />;
+                break;
+            }
+        }
 
-    return (
-      <div ref={containerRef} className={"video-container"}>
-        {MyInfo.participant?.mediaState.screen && (
-          <div className={"screen-sharing-warning"}>
-            <span>You are sharing your screen</span>
-          </div>
-        )}
-        {MyInfo.participant?.mediaState.camera && (
-          <div data-private={""} className={"preview-video"}>
-            <PreviewBox />
-          </div>
-        )}
-        {RoomStore.info && <ControlBar />}
-        <div data-private={""} className={"videos-list-wrapper"}>
-          {ParticipantsStore.participants.length > 1 ? ( // if your alone display the placeholder
-            layout
-          ) : (
-            <TilePlaceholder />
-          )}
-        </div>
-      </div>
-    );
-  });
+        return (
+            <div ref={containerRef} className={"video-container"}>
+                {MyInfo.participant?.mediaState.screen && (
+                    <div className={"screen-sharing-warning"}>
+                        <span>You are sharing your screen</span>
+                    </div>
+                )}
+                {MyInfo.participant?.mediaState.camera && (
+                    <div data-private={""} className={"preview-video"}>
+                        <PreviewBox />
+                    </div>
+                )}
+                {RoomStore.info && <ControlBar />}
+                <div data-private={""} className={"videos-list-wrapper"}>
+                    {ParticipantsStore.participants.length > 1 ? ( // if your alone display the placeholder
+                        layout
+                    ) : (
+                        <TilePlaceholder />
+                    )}
+                </div>
+            </div>
+        );
+    });
 };

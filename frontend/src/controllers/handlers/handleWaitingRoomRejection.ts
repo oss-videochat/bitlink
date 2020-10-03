@@ -4,18 +4,18 @@ import NotificationService from "../../services/NotificationService";
 import { NotificationType } from "../../enum/NotificationType";
 
 interface handleWaitingRoomRejectionParam {
-  reason: string;
+    reason: string;
 }
 
 export const handleWaitingRoomRejection: handleEvent<handleWaitingRoomRejectionParam> = (
-  { reason },
-  cb
+    { reason },
+    cb
 ) => {
-  NotificationService.add(
-    NotificationService.createUINotification(reason, NotificationType.Error),
-    true
-  );
-  UIStore.store.modalStore.waitingRoom = false;
-  UIStore.store.modalStore.joiningRoom = false;
-  UIStore.store.modalStore.join = true;
+    NotificationService.add(
+        NotificationService.createUINotification(reason, NotificationType.Error),
+        true
+    );
+    UIStore.store.modalStore.waitingRoom = false;
+    UIStore.store.modalStore.joiningRoom = false;
+    UIStore.store.modalStore.join = true;
 };

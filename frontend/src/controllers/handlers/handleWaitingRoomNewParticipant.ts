@@ -4,12 +4,12 @@ import ParticipantsStore from "../../stores/ParticipantsStore";
 import { ParticipantSummary } from "@bitlink/common";
 
 interface handleWaitingRoomNewParticipantParam {
-  participant: ParticipantSummary;
+    participant: ParticipantSummary;
 }
 
 export const handleWaitingRoomNewParticipant: handleEvent<handleWaitingRoomNewParticipantParam> = (
-  { participant },
-  cb
+    { participant },
+    cb
 ) => {
-  ParticipantsStore.waitingRoom.push(new Participant(participant));
+    ParticipantsStore.waitingRoom.push(new Participant(participant));
 };

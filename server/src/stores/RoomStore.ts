@@ -1,11 +1,11 @@
 import { Room } from "../interfaces/Room";
 
 interface RoomStorage {
-  [key: string]: Room;
+    [key: string]: Room;
 }
 
 class RoomStore {
-  rooms: RoomStorage = {};
+    rooms: RoomStorage = {};
 }
 
 export default new RoomStore();

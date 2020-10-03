@@ -5,15 +5,15 @@ import ParticipantsStore from "../../../../stores/ParticipantsStore";
 import WaitingRoomListParticipant from "./WaitingRoomListParticipant";
 
 const WaitingRoomList: React.FunctionComponent = () =>
-  useObserver(() => (
-    <div className={"waiting-room-list"}>
-      <span className={"waiting-room--title"}>Waiting Room</span>
-      {ParticipantsStore.waitingRoom.map((patientParticipant) => (
-        <WaitingRoomListParticipant
-          key={patientParticipant.info.id}
-          participant={patientParticipant}
-        />
-      ))}
-    </div>
-  ));
+    useObserver(() => (
+        <div className={"waiting-room-list"}>
+            <span className={"waiting-room--title"}>Waiting Room</span>
+            {ParticipantsStore.waitingRoom.map((patientParticipant) => (
+                <WaitingRoomListParticipant
+                    key={patientParticipant.info.id}
+                    participant={patientParticipant}
+                />
+            ))}
+        </div>
+    ));
 export default WaitingRoomList;

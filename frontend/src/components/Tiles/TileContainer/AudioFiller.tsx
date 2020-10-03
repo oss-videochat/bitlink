@@ -11,25 +11,27 @@ bug, we simply include this element that goes through and adds any audio element
 */
 
 interface AudioFillerProps {
-  exclusionList?: Participant[];
+    exclusionList?: Participant[];
 }
 
 export const AudioFiller: React.FunctionComponent<AudioFillerProps> = ({ exclusionList }) => {
-  if (!exclusionList) {
-    exclusionList = [];
-  }
-  return useObserver(() => {
-    const living = ParticipantService.getLiving(true);
-    const participants = living.filter(
-      (participant) => participant.hasAudio && !exclusionList!.includes(participant)
-    );
+    if (!exclusionList) {
+        exclusionList = [];
+    }
+    return useObserver(() => {
+        const living = ParticipantService.getLiving(true);
+        const participants = living.filter(
+            (participant) => participant.hasAudio && !exclusionList!.includes(participant)
+        );
 
-    return (
-      <>
-        {participants.map((participant) => (
-          <AutoPlayAudio srcObject={new MediaStream([participant.consumers.microphone!.track])} />
-        ))}
-      </>
-    );
-  });
+        return (
+            <>
+                {participants.map((participant) => (
+                    <AutoPlayAudio
+                        srcObject={new MediaStream([participant.consumers.microphone!.track])}
+                    />
+                ))}
+            </>
+        );
+    });
 };

@@ -7,21 +7,21 @@ import NotificationService from "../../services/NotificationService";
 import { NotificationType } from "../../enum/NotificationType";
 
 interface handleNewParticipantParam {
-  participantSummary: ParticipantSummary;
+    participantSummary: ParticipantSummary;
 }
 
 export const handleNewParticipant: handleEvent<handleNewParticipantParam> = (
-  { participantSummary },
-  cb
+    { participantSummary },
+    cb
 ) => {
-  ParticipantService.removeFromWaitingRoom(participantSummary.id);
+    ParticipantService.removeFromWaitingRoom(participantSummary.id);
 
-  const participant = new Participant(participantSummary);
-  ParticipantsStore.participants.push(participant);
-  NotificationService.add(
-    NotificationService.createUINotification(
-      `${participant.info.name} joined!`,
-      NotificationType.Alert
-    )
-  );
+    const participant = new Participant(participantSummary);
+    ParticipantsStore.participants.push(participant);
+    NotificationService.add(
+        NotificationService.createUINotification(
+            `${participant.info.name} joined!`,
+            NotificationType.Alert
+        )
+    );
 };

@@ -4,11 +4,11 @@ import NotificationService from "../../services/NotificationService";
 import { NotificationType } from "../../enum/NotificationType";
 
 export const handleKick: handleEvent = () => {
-  IO.reset();
-  NotificationService.add(
-    NotificationService.createUINotification(
-      "You have been kicked from the room",
-      NotificationType.Warning
-    )
-  );
+    IO.reset();
+    NotificationService.add(
+        NotificationService.createUINotification(
+            "You have been kicked from the room",
+            NotificationType.Warning
+        )
+    );
 };

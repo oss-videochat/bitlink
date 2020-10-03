@@ -6,49 +6,49 @@ import AutoPlayAudio from "./Util/AutoPlayAudio";
 import { ITileProps } from "../TileContainer/TileContainer";
 
 const VideoTile: React.FunctionComponent<ITileProps> = ({ participant }) => {
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const [audioSrcObject, setAudioSrcObject] = useState<MediaStream | null>(null);
+    const videoRef = useRef<HTMLVideoElement>(null);
+    const [audioSrcObject, setAudioSrcObject] = useState<MediaStream | null>(null);
 
-  useEffect(() => {
-    if (!videoRef.current) {
-      return;
-    }
-    const element = videoRef.current;
+    useEffect(() => {
+        if (!videoRef.current) {
+            return;
+        }
+        const element = videoRef.current;
 
-    function canplay() {
-      element.play().catch((e) => console.error(e.toString()));
-    }
+        function canplay() {
+            element.play().catch((e) => console.error(e.toString()));
+        }
 
-    element.addEventListener("canplay", canplay);
-    return () => element.removeEventListener("canplay", canplay);
-  }, [videoRef]);
+        element.addEventListener("canplay", canplay);
+        return () => element.removeEventListener("canplay", canplay);
+    }, [videoRef]);
 
-  useEffect(() => {
-    return autorun(() => {
-      if (!videoRef.current) {
-        return;
-      }
+    useEffect(() => {
+        return autorun(() => {
+            if (!videoRef.current) {
+                return;
+            }
 
-      videoRef.current.srcObject = new MediaStream([participant.consumers.camera!.track]);
+            videoRef.current.srcObject = new MediaStream([participant.consumers.camera!.track]);
 
-      if (participant.hasAudio) {
-        setAudioSrcObject(new MediaStream([participant.consumers.microphone!.track]));
-      }
-    });
-  }, [participant]);
+            if (participant.hasAudio) {
+                setAudioSrcObject(new MediaStream([participant.consumers.microphone!.track]));
+            }
+        });
+    }, [participant]);
 
-  return useObserver(() => (
-    <>
-      <video
-        autoPlay={true}
-        playsInline={true}
-        muted={true}
-        ref={videoRef}
-        className={"video-participant--video"}
-      />
-      {audioSrcObject && <AutoPlayAudio srcObject={audioSrcObject} />}
-      <span className={"video-participant--name"}>{participant.info.name}</span>
-    </>
-  ));
+    return useObserver(() => (
+        <>
+            <video
+                autoPlay={true}
+                playsInline={true}
+                muted={true}
+                ref={videoRef}
+                className={"video-participant--video"}
+            />
+            {audioSrcObject && <AutoPlayAudio srcObject={audioSrcObject} />}
+            <span className={"video-participant--name"}>{participant.info.name}</span>
+        </>
+    ));
 };
 export default VideoTile;

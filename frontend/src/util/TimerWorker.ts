@@ -1,7 +1,7 @@
 export enum TimerWorkerMessageType {
-  START_TIMER,
-  END_TIMER,
-  TICK,
+    START_TIMER,
+    END_TIMER,
+    TICK,
 }
 
 const code = `
@@ -29,5 +29,5 @@ onmessage = function(request) {
 }
 `;
 export const timerWorkerScript = URL.createObjectURL(
-  new Blob([code], { type: "application/javascript" })
+    new Blob([code], { type: "application/javascript" })
 );

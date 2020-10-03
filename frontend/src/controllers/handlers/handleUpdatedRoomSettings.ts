@@ -3,14 +3,14 @@ import RoomStore from "../../stores/RoomStore";
 import { RoomSettings } from "@bitlink/common";
 
 interface handleUpdatedRoomSettingsParam {
-  newSettings: RoomSettings;
+    newSettings: RoomSettings;
 }
 
 export const handleUpdatedRoomSettings: handleEvent<handleUpdatedRoomSettingsParam> = (
-  { newSettings },
-  cb
+    { newSettings },
+    cb
 ) => {
-  if (RoomStore.info!.name !== newSettings.name) {
-    RoomStore.info!.name = newSettings.name;
-  }
+    if (RoomStore.info!.name !== newSettings.name) {
+        RoomStore.info!.name = newSettings.name;
+    }
 };

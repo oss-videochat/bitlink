@@ -4,7 +4,7 @@ import { MessageType } from "@bitlink/common";
 import { MessageGroup } from "../MessageGroup";
 
 export interface GroupMessage extends Message {
-  type: MessageType.GROUP;
-  group: MessageGroup;
-  from: Participant;
+    type: MessageType.GROUP;
+    group: MessageGroup;
+    from: Participant;
 }

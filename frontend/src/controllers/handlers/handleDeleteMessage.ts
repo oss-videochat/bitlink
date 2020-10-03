@@ -3,12 +3,12 @@ import { MessageSummary } from "@bitlink/common";
 import ChatStoreService from "../../services/ChatStoreService";
 
 interface handleDeleteMessageParam {
-  messageSummary: MessageSummary;
+    messageSummary: MessageSummary;
 }
 
 export const handleDeleteMessage: handleEvent<handleDeleteMessageParam> = (
-  { messageSummary },
-  cb
+    { messageSummary },
+    cb
 ) => {
-  ChatStoreService.removeMessage(messageSummary.id);
+    ChatStoreService.removeMessage(messageSummary.id);
 };

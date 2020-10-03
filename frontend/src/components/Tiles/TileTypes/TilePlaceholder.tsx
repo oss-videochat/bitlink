@@ -5,12 +5,12 @@ import RoomStore from "../../../stores/RoomStore";
 import { useObserver } from "mobx-react";
 
 const TilePlaceholder: React.FunctionComponent = () =>
-  useObserver(() => (
-    <div className={"video-placeholder"}>
-      <span className={"video-placeholder--message"}>
-        Click the button to invite others.
-        {RoomStore.info ? <RoomId /> : null}
-      </span>
-    </div>
-  ));
+    useObserver(() => (
+        <div className={"video-placeholder"}>
+            <span className={"video-placeholder--message"}>
+                Click the button to invite others.
+                {RoomStore.info ? <RoomId /> : null}
+            </span>
+        </div>
+    ));
 export default TilePlaceholder;

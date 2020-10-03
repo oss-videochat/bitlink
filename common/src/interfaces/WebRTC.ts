@@ -1,7 +1,7 @@
 export interface MediaState {
-  camera: boolean;
-  microphone: boolean;
-  screen: boolean;
+    camera: boolean;
+    microphone: boolean;
+    screen: boolean;
 }
 
 export type MediaSource = keyof MediaState;

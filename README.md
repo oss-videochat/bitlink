@@ -35,7 +35,7 @@ npm install
 lerna bootstrap
 lerna link # may hang, see note below
 cd server
-MEDIASOUP_LISTEN_IP=<YOUR IP ADDRESS>; npm run run
+MEDIASOUP_LISTEN_IP=<YOUR IP ADDRESS>; npm run start
 ```
 
 `lerna run build` should work, but if it doesn't, manually build with
@@ -50,7 +50,7 @@ cd ../server && npm run build
 
 ```shell script
 cd server
-MEDIASOUP_LISTEN_IP=<YOUR IP ADDRESS>; npm run run
+MEDIASOUP_LISTEN_IP=<YOUR IP ADDRESS>; npm run start
 ```
 
 ## Contributing

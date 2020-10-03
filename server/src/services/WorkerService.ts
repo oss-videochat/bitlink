@@ -11,7 +11,7 @@ class WorkerService {
     for (let i = 0; i < config.mediasoup.numWorkers; i++) {
       const worker = await mediasoup.createWorker({
         logLevel: config.mediasoup.workerSettings.logLevel as mediasoup.types.WorkerLogLevel,
-        logTags: config.mediasoup.workerSettings.logTags,
+        logTags: config.mediasoup.workerSettings.logTags as mediasoup.types.WorkerLogTag[],
         rtcMinPort: Number(config.mediasoup.workerSettings.rtcMinPort),
         rtcMaxPort: Number(config.mediasoup.workerSettings.rtcMaxPort),
       });

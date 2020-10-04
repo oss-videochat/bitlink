@@ -54,6 +54,30 @@ cd server
 MEDIASOUP_LISTEN_IP=<YOUR IP ADDRESS>; npm run start
 ```
 
+# Docker
+
+Mediasoup requires some special network configuration that wouldn't be needed for a typical web server.
+
+You can hit the ground running using `docker-compose` for very quick setup:
+
+```
+docker-compose up
+```
+
+This configures some sensible defaults for running BitLink locally for demo purposes.
+Feel free to adjust `docker-compose.yml` to configure default ports, etc.
+
+If you want to run BitLink in production, you should instead run the Docker image directly and configure Mediasoup manually:
+
+```
+docker build -t bitlink .
+docker run -e "PORT=80" -p 80:80 -e "MEDIASOUP_LISTEN_IP=x.x.x.x" -e "MEDIASOUP_ANNOUNCED_IP=x.x.x.x" \
+    -e "MEDIASOUP_MIN_PORT=10000" -e "MEDIASOUP_MAX_PORT=20000" -p "10000-20000:10000-20000/tcp" -p "10000-20000:10000-20000/udp" bitlink
+```
+
+Please read the [Mediasoup documentation](https://github.com/versatica/mediasoup-demo/blob/v3/server/DOCKER.md)
+for more information about these variables.
+
 # FireFox Development Issues
 
 Firefox and Chrome both don't allow WebRTC connections to `127.0.0.1`/`localhost` via UDP. Chrome, however, does allows connecting to `127.0.0.1`/`localhost` via TCP. As such, Chrome should work without issue in development. Firefox on the other hand will likely error with something to the effect of "`ICE failed, add a STUN server and see about:webrtc for more details`". 

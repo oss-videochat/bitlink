@@ -24,7 +24,7 @@ BitLink has a waiting room feature. Once the host enables the waiting room, new 
 
 ### Screen Sharing
 
-User's can share their screen with other users in the room.
+Users can share their screen with other users in the room.
 
 ## Installation
 
@@ -33,7 +33,8 @@ git clone https://github.com/oss-videochat/bitlink.git`
 cd bitlink
 npm install
 lerna bootstrap
-lerna link # may hang, see note below
+lerna link 
+lerna run build # may hang, see note below
 cd server
 MEDIASOUP_LISTEN_IP=<YOUR IP ADDRESS>; npm run start
 ```
@@ -52,6 +53,23 @@ cd ../server && npm run build
 cd server
 MEDIASOUP_LISTEN_IP=<YOUR IP ADDRESS>; npm run start
 ```
+
+# FireFox Development Issues
+
+Firefox and Chrome both don't allow WebRTC connections to `127.0.0.1`/`localhost` via UDP. Chrome, however, does allows connecting to `127.0.0.1`/`localhost` via TCP. As such, Chrome should work without issue in development. Firefox on the other hand will likely error with something to the effect of "`ICE failed, add a STUN server and see about:webrtc for more details`". 
+
+To work around this you must use an IP address not in the range of 127.0.0.1 - 127.255.255.255 and pass it to the `MEDIASOUP_LISTEN_IP` environment variable.
+
+We suggest either using your internal IP address, e.g `MEDIASOUP_LISTEN_IP=192.168.1.197` or aliasing another address to your localhost. On macOS and Linux this can be accomplished by running:
+
+```shell script
+sudo ifconfig lo0 alias 172.0.0.1
+```
+and then passing the chosen IP to Mediasoup, e.g. `MEDIASOUP_LISTEN_IP=172.0.0.1`.
+
+**Note**: To reverse and remove the alias run `sudo ifconfig lo0 -alias 172.0.0.1`.
+
+Regardless of the chosen method, you can still access the site at `localhost`/`127.0.0.1`.
 
 ## Contributing
 

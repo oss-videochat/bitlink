@@ -56,7 +56,7 @@ const isSafari =
     /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 
 class IO {
-    private io: SocketIOClient.Socket;
+    readonly io: SocketIOClient.Socket;
 
     constructor(ioAddress: string) {
         this.io = io(ioAddress);
@@ -66,6 +66,8 @@ class IO {
         function iw(func: handleEvent<any>): handleEvent {
             return (data: any, cb: any) => func({ ...data, io: iolocal }, cb);
         }
+
+        this.io.on("disconnect", iw(Handlers.handleDisconnect));
 
         this.io.on("kicked", iw(Handlers.handleKick));
 

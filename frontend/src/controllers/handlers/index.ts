@@ -1,3 +1,4 @@
+export * from "./handleDisconnect";
 export * from "./handleKick";
 export * from "./handleJoinRoom";
 export * from "./handleWaitingRoomAccept";

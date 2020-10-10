@@ -14,6 +14,7 @@ interface UIStoreInterface {
         create: boolean;
         settings: boolean;
         leaveMenu: boolean;
+        disconnected: boolean;
     };
     preFillJoinValue: null | string;
     messageIdEditControl: null | string;

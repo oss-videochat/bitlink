@@ -3,7 +3,7 @@ import "./Logo.css";
 import logo from "../../assets/logo/logo.svg";
 
 export const Logo: React.FunctionComponent = () => {
-    const version = "1.0.0";
+    const version = "1.0.2";
 
     return (
         <>

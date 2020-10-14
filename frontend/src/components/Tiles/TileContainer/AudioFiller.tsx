@@ -11,7 +11,7 @@ bug, we simply include this element that goes through and adds any audio element
 */
 
 interface AudioFillerProps {
-    exclusionList?: Participant[];
+    exclusionList: Participant[];
 }
 
 export const AudioFiller: React.FunctionComponent<AudioFillerProps> = ({ exclusionList }) => {

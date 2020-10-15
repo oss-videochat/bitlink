@@ -62,13 +62,6 @@ export const PinnedScreen: React.FunctionComponent<PinnedScreenProps> = ({ conta
                             </TileWrapper>
                         </div>
                     )}
-                    <AudioFiller
-                        exclusionList={
-                            forceHideCamera || !UIStore.store.layout.participant!.hasVideo
-                                ? []
-                                : [UIStore.store.layout.participant!]
-                        }
-                    />
                 </>
             </TileWrapper>
         );

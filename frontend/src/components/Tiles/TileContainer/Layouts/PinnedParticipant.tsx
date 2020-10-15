@@ -42,7 +42,6 @@ export const PinnedParticipant: React.FunctionComponent<PinnedParticipantProps> 
                 ) : (
                     <AudioTile participant={UIStore.store.layout.participant!} />
                 )}
-                <AudioFiller exclusionList={[UIStore.store.layout.participant!]} />
             </TileWrapper>
         );
     });

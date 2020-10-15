@@ -13,6 +13,7 @@ import { ControlBar } from "./ControlBar/ControlBar";
 import { Grid } from "./Layouts/Grid";
 import { PinnedParticipant } from "./Layouts/PinnedParticipant";
 import { PinnedScreen } from "./Layouts/PinnedScreen";
+import { AudioFiller } from "./AudioFiller";
 
 export interface ITileProps {
     participant: Participant;
@@ -69,6 +70,7 @@ export const TileContainer: React.FunctionComponent = () => {
                         <TilePlaceholder />
                     )}
                 </div>
+                <AudioFiller exclusionList={[]} />
             </div>
         );
     });

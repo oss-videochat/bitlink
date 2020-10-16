@@ -5,8 +5,8 @@ import AudioTile from "../../TileTypes/AudioTile";
 import { TileWrapper } from "../../TileTypes/Util/TileWrapper";
 import { useObserver } from "mobx-react";
 import { TileDisplayMode } from "../../../../enum/TileDisplayMode";
-import { AudioFiller } from "../AudioFiller";
 import { useLayoutCalculation } from "../../../../hooks/useLayoutCalculation";
+import { TileMenuItem } from "../../TileTypes/Util/TileMenuItem";
 
 interface PinnedParticipantProps {
     container: React.RefObject<HTMLDivElement>;
@@ -26,14 +26,16 @@ export const PinnedParticipant: React.FunctionComponent<PinnedParticipantProps> 
         return (
             <TileWrapper
                 menuItems={[
-                    {
-                        title: "Unpin",
-                        toggle: () =>
+                    <TileMenuItem
+                        onClick={() =>
                             (UIStore.store.layout = {
                                 mode: TileDisplayMode.GRID,
                                 participant: null,
-                            }),
-                    },
+                            })
+                        }
+                    >
+                        Unpin
+                    </TileMenuItem>,
                 ]}
                 style={styles}
             >

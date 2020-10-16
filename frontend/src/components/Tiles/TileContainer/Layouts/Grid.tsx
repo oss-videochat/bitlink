@@ -9,6 +9,7 @@ import ParticipantService from "../../../../services/ParticipantService";
 import UIStore from "../../../../stores/UIStore";
 import { TileDisplayMode } from "../../../../enum/TileDisplayMode";
 import { useLayoutCalculation } from "../../../../hooks/useLayoutCalculation";
+import { TileMenuItem } from "../../TileTypes/Util/TileMenuItem";
 
 interface GridProps {
     container: React.RefObject<HTMLDivElement>;
@@ -37,14 +38,16 @@ export const Grid: React.FunctionComponent<GridProps> = ({ container }) => {
                 {participantsMedia.map((participant, i, arr) => (
                     <TileWrapper
                         menuItems={[
-                            {
-                                title: "Pin",
-                                toggle: () =>
+                            <TileMenuItem
+                                onClick={() =>
                                     (UIStore.store.layout = {
                                         mode: TileDisplayMode.PINNED_PARTICIPANT,
                                         participant,
-                                    }),
-                            },
+                                    })
+                                }
+                            >
+                                Pin
+                            </TileMenuItem>,
                         ]}
                         key={participant.info.id + participant.hasVideo}
                         style={styles}
@@ -59,14 +62,16 @@ export const Grid: React.FunctionComponent<GridProps> = ({ container }) => {
                 {participantsScreen.map((participant) => (
                     <TileWrapper
                         menuItems={[
-                            {
-                                title: "Pin",
-                                toggle: () =>
+                            <TileMenuItem
+                                onClick={() =>
                                     (UIStore.store.layout = {
                                         mode: TileDisplayMode.PINNED_SCREEN,
                                         participant,
-                                    }),
-                            },
+                                    })
+                                }
+                            >
+                                Pin
+                            </TileMenuItem>,
                         ]}
                         key={participant.info.id + participant.hasVideo}
                         style={styles}

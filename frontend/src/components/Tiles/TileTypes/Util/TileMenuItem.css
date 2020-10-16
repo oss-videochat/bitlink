@@ -1,0 +1,12 @@
+.tile_menu_item {
+    padding: 10px 20px;
+    display: block;
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+    white-space: nowrap;
+}
+
+.tile_menu_item:hover {
+    color: #aeaeae;
+}

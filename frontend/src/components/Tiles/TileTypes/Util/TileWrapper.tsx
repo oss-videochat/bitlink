@@ -1,14 +1,9 @@
 import React, { CSSProperties, useEffect, useState } from "react";
 import "./TileWrapper.css";
 
-export interface TileMenuItem {
-    title: string;
-    toggle: () => void;
-}
-
 interface TileWrapperProps {
     style?: CSSProperties;
-    menuItems?: TileMenuItem[];
+    menuItems?: React.ReactNode[];
 }
 
 export const TileWrapper: React.FunctionComponent<TileWrapperProps> = ({
@@ -46,14 +41,8 @@ export const TileWrapper: React.FunctionComponent<TileWrapperProps> = ({
                         </span>
                         {menuItems && menuItems.length > 0 && showMenu && (
                             <div className={"ellipsis_menu"}>
-                                {menuItems.map((item, index) => (
-                                    <span
-                                        key={index}
-                                        className={"ellipsis_menu_item"}
-                                        onClick={item.toggle}
-                                    >
-                                        {item.title}
-                                    </span>
+                                {menuItems.map((el, index) => (
+                                    <React.Fragment key={index}>{el}</React.Fragment>
                                 ))}
                             </div>
                         )}

@@ -3,6 +3,7 @@ import { computed, observable } from "mobx";
 import { MediaSource, ParticipantRole, ParticipantSummary } from "@bitlink/common";
 
 export default class Participant {
+    @observable volume = 1.0;
     @observable info: ParticipantSummary;
     @observable consumers: { [key in MediaSource]: types.Consumer | null } = {
         camera: null,

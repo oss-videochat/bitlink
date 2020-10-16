@@ -50,9 +50,13 @@ export function prepareAudioBank() {
 
 interface IAutoPlayAudioProps {
     srcObject?: MediaStream;
+    volume?: number;
 }
 
-const AutoPlayAudio: React.FunctionComponent<IAutoPlayAudioProps> = ({ srcObject }) => {
+const AutoPlayAudio: React.FunctionComponent<IAutoPlayAudioProps> = ({
+    srcObject,
+    volume = 1.0,
+}) => {
     const audioElement = useRef<HTMLAudioElement>(
         audioBank.pop() || document.createElement("audio")
     ); // if the bank runs out, we just create another audio element. This will work for non-mobile/non-ios devices. But for those devices, we kind of screw them over here.
@@ -86,6 +90,14 @@ const AutoPlayAudio: React.FunctionComponent<IAutoPlayAudioProps> = ({ srcObject
             }
         };
     }, [srcObject]);
+
+    useEffect(() => {
+        const element = audioElement.current;
+        element.volume = volume;
+        return () => {
+            element.volume = 1.0;
+        };
+    }, [volume]);
 
     return <div ref={(el) => el && el.appendChild(audioElement.current)} />;
 };

@@ -1,13 +1,13 @@
 import React, { useState } from "react";
 import UIStore from "../../../../stores/UIStore";
 import VideoTile from "../../TileTypes/VideoTile";
-import { TileMenuItem, TileWrapper } from "../../TileTypes/Util/TileWrapper";
+import { TileWrapper } from "../../TileTypes/Util/TileWrapper";
 import { useObserver } from "mobx-react";
 import ScreenTile from "../../TileTypes/ScreenTile";
 import "./PinnedScreen.css";
 import { TileDisplayMode } from "../../../../enum/TileDisplayMode";
-import { AudioFiller } from "../AudioFiller";
 import { useLayoutCalculation } from "../../../../hooks/useLayoutCalculation";
+import { TileMenuItem } from "../../TileTypes/Util/TileMenuItem";
 
 interface PinnedScreenProps {
     container: React.RefObject<HTMLDivElement>;
@@ -22,30 +22,29 @@ export const PinnedScreen: React.FunctionComponent<PinnedScreenProps> = ({ conta
             return null;
         }
 
-        const parentMenuItems: TileMenuItem[] = [
-            {
-                title: "Unpin",
-                toggle: () =>
-                    (UIStore.store.layout = { mode: TileDisplayMode.GRID, participant: null }),
-            },
+        const parentMenuItems = [
+            <TileMenuItem
+                onClick={() =>
+                    (UIStore.store.layout = { mode: TileDisplayMode.GRID, participant: null })
+                }
+            >
+                Unpin
+            </TileMenuItem>,
         ];
 
-        const childMenu: TileMenuItem[] = [];
+        const childMenu = [];
 
         if (forceHideCamera) {
-            parentMenuItems.push({
-                title: "Show Camera",
-                toggle: () => setForceHideCamera(false),
-            });
+            parentMenuItems.push(
+                <TileMenuItem onClick={() => setForceHideCamera(false)}>Show Camera</TileMenuItem>
+            );
         } else {
-            parentMenuItems.push({
-                title: "Hide Camera",
-                toggle: () => setForceHideCamera(true),
-            });
-            childMenu.push({
-                title: "Hide Camera",
-                toggle: () => setForceHideCamera(true),
-            });
+            parentMenuItems.push(
+                <TileMenuItem onClick={() => setForceHideCamera(true)}>Hide Camera</TileMenuItem>
+            );
+            childMenu.push(
+                <TileMenuItem onClick={() => setForceHideCamera(true)}>Hide Camera</TileMenuItem>
+            );
         }
 
         return (

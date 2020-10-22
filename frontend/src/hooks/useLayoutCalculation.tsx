@@ -1,4 +1,4 @@
-import React, { RefObject, useEffect, useState } from "react";
+import { RefObject, useEffect, useState } from "react";
 import { reaction } from "mobx";
 import UIStore from "../stores/UIStore";
 import { LayoutSizeCalculation } from "../util/layout/LayoutSizeCalculation";

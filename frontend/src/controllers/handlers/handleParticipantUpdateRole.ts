@@ -12,12 +12,6 @@ export const handleParticipantUpdateRole: handleEvent<handleParticipantUpdateRol
     { participantId, newRole },
     cb
 ) => {
-    const roleLookup = {
-        [ParticipantRole.HOST]: "host",
-        [ParticipantRole.MANAGER]: "manager",
-        [ParticipantRole.MEMBER]: "member",
-    };
-
     const participant = ParticipantService.getById(participantId);
     if (participant) {
         participant.info.role = newRole;

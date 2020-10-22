@@ -136,7 +136,9 @@ class CameraStreamEffectsRunner {
     setNewSettings(blur: boolean, image?: HTMLImageElement) {
         log("Updating Camera Effects " + JSON.stringify({ blur, image: !!image }));
         if (blur && image) {
-            throw "I can't blur and replace image...well I can...but that would be stupid.";
+            throw new Error(
+                "I can't blur and replace image...well I can...but that would be stupid."
+            );
         }
         this.blur = blur;
         if (image) {

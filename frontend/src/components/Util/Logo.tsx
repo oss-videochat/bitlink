@@ -7,7 +7,7 @@ export const Logo: React.FunctionComponent = () => {
 
     return (
         <>
-            <img className={"logo"} src={logo} />
+            <img className={"logo"} src={logo} alt={"BitLink Logo"} />
             <span className={"version"}>v{version}</span>
         </>
     );

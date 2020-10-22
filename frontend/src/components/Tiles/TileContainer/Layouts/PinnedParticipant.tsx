@@ -7,6 +7,7 @@ import { useObserver } from "mobx-react";
 import { TileDisplayMode } from "../../../../enum/TileDisplayMode";
 import { useLayoutCalculation } from "../../../../hooks/useLayoutCalculation";
 import { TileMenuItem } from "../../TileTypes/Util/TileMenuItem";
+import { VolumeSlider } from "../VolumeSlider/VolumeSlider";
 
 interface PinnedParticipantProps {
     container: React.RefObject<HTMLDivElement>;
@@ -36,6 +37,9 @@ export const PinnedParticipant: React.FunctionComponent<PinnedParticipantProps> 
                     >
                         Unpin
                     </TileMenuItem>,
+                    UIStore.store.layout.participant!.hasAudio && (
+                        <VolumeSlider participant={UIStore.store.layout.participant!} />
+                    ),
                 ]}
                 style={styles}
             >

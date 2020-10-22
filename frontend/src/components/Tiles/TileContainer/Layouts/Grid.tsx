@@ -10,6 +10,7 @@ import UIStore from "../../../../stores/UIStore";
 import { TileDisplayMode } from "../../../../enum/TileDisplayMode";
 import { useLayoutCalculation } from "../../../../hooks/useLayoutCalculation";
 import { TileMenuItem } from "../../TileTypes/Util/TileMenuItem";
+import { VolumeSlider } from "../VolumeSlider/VolumeSlider";
 
 interface GridProps {
     container: React.RefObject<HTMLDivElement>;
@@ -48,6 +49,7 @@ export const Grid: React.FunctionComponent<GridProps> = ({ container }) => {
                             >
                                 Pin
                             </TileMenuItem>,
+                            participant.hasAudio && <VolumeSlider participant={participant} />,
                         ]}
                         key={participant.info.id + participant.hasVideo}
                         style={styles}

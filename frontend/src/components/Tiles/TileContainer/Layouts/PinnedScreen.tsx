@@ -8,6 +8,7 @@ import "./PinnedScreen.css";
 import { TileDisplayMode } from "../../../../enum/TileDisplayMode";
 import { useLayoutCalculation } from "../../../../hooks/useLayoutCalculation";
 import { TileMenuItem } from "../../TileTypes/Util/TileMenuItem";
+import { VolumeSlider } from "../VolumeSlider/VolumeSlider";
 
 interface PinnedScreenProps {
     container: React.RefObject<HTMLDivElement>;
@@ -45,6 +46,9 @@ export const PinnedScreen: React.FunctionComponent<PinnedScreenProps> = ({ conta
             childMenu.push(
                 <TileMenuItem onClick={() => setForceHideCamera(true)}>Hide Camera</TileMenuItem>
             );
+            if (UIStore.store.layout.participant!.hasAudio) {
+                childMenu.push(<VolumeSlider participant={UIStore.store.layout.participant!} />);
+            }
         }
 
         return (

@@ -28,6 +28,7 @@ export const AudioFiller: React.FunctionComponent<AudioFillerProps> = ({ exclusi
             <>
                 {participants.map((participant) => (
                     <AutoPlayAudio
+                        key={participant.info.id}
                         volume={participant.volume}
                         srcObject={new MediaStream([participant.consumers.microphone!.track])}
                     />

@@ -12,6 +12,14 @@ app.use(cookieParser());
 
 app.use(express.static(__dirname + "/../node_modules/@bitlink/frontend/build"));
 
+app.get(["/api/analytics"], (req, res, next) => {
+    res.json({
+        logrocket: {
+            appID: process.env.LOGROCKET,
+        },
+    });
+});
+
 app.all(["/", "/join", "/join/*", "/create"], (req, res, next) => {
     res.sendFile(path.resolve(__dirname + "/../node_modules/@bitlink/frontend/build/index.html"));
 });

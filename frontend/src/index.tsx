@@ -11,7 +11,13 @@ import IO from "./controllers/IO";
 if (process.env.NODE_ENV === "development") {
     debug.enable("BitLink:*");
 } else {
-    LogRocket.init("wbok98/bitlink");
+    fetch("/api/analytics")
+        .then((resp) => resp.json())
+        .then((json) => {
+            if (json.logrocket.appID) {
+                LogRocket.init(json.logrocket.appID);
+            }
+        });
 }
 
 ReactDOM.render(

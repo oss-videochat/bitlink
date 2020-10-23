@@ -29,6 +29,7 @@
     "stackblur-canvas": "^2.4.0",
     "typescript": "~3.7.2"
   },
+  "proxy": "http://localhost:3001",
   "scripts": {
     "start": "CI=true react-scripts start",
     "build": "react-scripts build",

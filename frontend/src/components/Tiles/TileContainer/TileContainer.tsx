@@ -14,6 +14,7 @@ import { Grid } from "./Layouts/Grid";
 import { PinnedParticipant } from "./Layouts/PinnedParticipant";
 import { PinnedScreen } from "./Layouts/PinnedScreen";
 import { AudioFiller } from "./AudioFiller";
+import ParticipantService from "../../../services/ParticipantService";
 
 export interface ITileProps {
     participant: Participant;
@@ -64,7 +65,10 @@ export const TileContainer: React.FunctionComponent = () => {
                 )}
                 {RoomStore.info && <ControlBar />}
                 <div data-private={""} className={"videos-list-wrapper"}>
-                    {ParticipantsStore.participants.length > 1 ? ( // if your alone display the placeholder
+                    {ParticipantService.getLiving(true).filter(
+                        (participant) =>
+                            participant.hasVideo || participant.hasAudio || participant.hasScreen
+                    ).length > 0 ? ( // if no one is showing, show the placeholder
                         layout
                     ) : (
                         <TilePlaceholder />

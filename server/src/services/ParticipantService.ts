@@ -63,7 +63,7 @@ class ParticipantService {
     }
 
     static mediaStateUpdate(participant: Participant, source: MediaSource, action: MediaAction) {
-        log("Participant %s media state update %s:%S", participant.name, source, action);
+        log("Participant %s media state update %s:%s", participant.name, source, action);
         participant.mediaState[source] = action === "resume";
     }
 }

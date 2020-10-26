@@ -71,7 +71,7 @@ class HardwareService {
         MyInfoStore.preferredInputs[mediaType] = MyInfoStore.cachedStreams[
             source
         ]!.getTracks()[0].getSettings().deviceId!;
-        return MyInfoStore.cachedStreams[source]!;
+        return MyInfoStore.cachedStreams[source]!.clone(); // TODO memory leak :(
     }
 
     static async getStream(source: MediaSource): Promise<MediaStream> {

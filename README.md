@@ -1,3 +1,6 @@
+# *Archived as of 4/11/21* Not actively maintained.
+
+
 ![BitLink Logo](assets/logo.svg)
 
 BitLink is an open source video conference chat program.

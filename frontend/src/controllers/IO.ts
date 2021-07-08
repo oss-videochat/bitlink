@@ -58,8 +58,8 @@ const isSafari =
 class IO {
     private io: SocketIOClient.Socket;
 
-    constructor(ioAddress: string) {
-        this.io = io(ioAddress);
+    constructor() {
+        this.io = io();
 
         const iolocal = this.io;
 
@@ -575,9 +575,4 @@ class IO {
     }
 }
 
-const ioAddress =
-    process.env.NODE_ENV === "development"
-        ? "http://" + window.location.hostname + ":3001"
-        : "https://" + window.location.hostname;
-
-export default new IO(ioAddress);
+export default new IO();

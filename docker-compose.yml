@@ -1,0 +1,12 @@
+version: '3.8'
+
+services:
+  server:
+    build: .
+    environment:
+      PORT: "3000"
+      MEDIASOUP_MIN_PORT: "3001"
+      MEDIASOUP_MAX_PORT: "3020"
+    ports:
+      - "3000-3020:3000-3020/tcp"
+      - "3000-3020:3000-3020/udp"

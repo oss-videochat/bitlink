@@ -1,5 +1,10 @@
 import * as os from "os";
 
+const listenIp = {
+    ip: process.env.MEDIASOUP_LISTEN_IP || "0.0.0.0",
+    announcedIp: process.env.MEDIASOUP_ANNOUNCED_IP || "127.0.0.1",
+};
+
 export const config = {
     mediasoup: {
         // Number of mediasoup workers to launch.
@@ -80,12 +85,7 @@ export const config = {
         // libmediasoupclient).
         // See https://mediasoup.org/documentation/v3/mediasoup/api/#WebRtcTransportOptions
         webRtcTransportOptions: {
-            listenIps: [
-                {
-                    ip: process.env.MEDIASOUP_LISTEN_IP,
-                    announcedIp: process.env.MEDIASOUP_ANNOUNCED_IP,
-                },
-            ],
+            listenIps: [listenIp],
             initialAvailableOutgoingBitrate: 1000000,
             minimumAvailableOutgoingBitrate: 600000,
             maxSctpMessageSize: 262144,
@@ -99,10 +99,7 @@ export const config = {
         // GStreamer).
         // See https://mediasoup.org/documentation/v3/mediasoup/api/#PlainTransportOptions
         plainTransportOptions: {
-            listenIp: {
-                ip: process.env.MEDIASOUP_LISTEN_IP || "1.2.3.4",
-                announcedIp: process.env.MEDIASOUP_ANNOUNCED_IP,
-            },
+            listenIp,
             maxSctpMessageSize: 262144,
         },
     },

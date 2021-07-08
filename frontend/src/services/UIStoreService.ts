@@ -14,6 +14,7 @@ class UIStoreService {
                 create: false,
                 settings: false,
                 leaveMenu: false,
+                disconnected: false,
             },
             preFillJoinValue: null,
             messageIdEditControl: null,

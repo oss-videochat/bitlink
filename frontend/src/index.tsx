@@ -51,7 +51,7 @@ if (!window.navigator.standalone) {
 }
 
 window.addEventListener("beforeunload", (e) => {
-    if (RoomStore.info) {
+    if (RoomStore.info && IO.io.connected) {
         e.preventDefault();
         e.returnValue = "";
         IO.leave();

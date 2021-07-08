@@ -9,10 +9,14 @@ import Joining from "./Joining";
 import WaitingRoom from "./WaitingRoom";
 import { SettingsModal } from "./Settings/SettingsModal";
 import LeaveDialog from "./LeaveDialog";
+import Disconnected from "./Disconnected";
 
 const Modal: React.FunctionComponent = () => {
     function getModalElements(): ReactNode | null {
         const modalStore = UIStore.store.modalStore;
+        if (modalStore.disconnected) {
+            return <Disconnected />;
+        }
         if (modalStore.joinOrCreate) {
             return <JoinOrCreate />;
         }
